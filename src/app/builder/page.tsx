@@ -13,46 +13,17 @@ type Message = {
 
 type Pages = Record<string, string>;
 
-function parsePages(raw: string): Pages {
-  const pages: Pages = {};
-
-  const filePattern = /---\s*FILE:\s*([^\s-]+)\s*---/gi;
-  const matches = [...raw.matchAll(filePattern)];
-
-  if (matches.length > 0) {
-    for (let i = 0; i < matches.length; i++) {
-      const match = matches[i];
-      const filename = match[1];
-      const startIndex = (match.index ?? 0) + match[0].length;
-      const endIndex = matches[i + 1]?.index ?? raw.length;
-      let content = raw.slice(startIndex, endIndex).trim();
-
-      if (content.startsWith("```html")) {
-        content = content.slice(7);
-      } else if (content.startsWith("```")) {
-        content = content.slice(3);
-      }
-      if (content.endsWith("```")) {
-        content = content.slice(0, -3);
-      }
-      content = content.trim();
-
-      if (filename && content) {
-        pages[filename] = content;
-      }
-    }
-  }
-
-  if (Object.keys(pages).length === 0 && raw.includes("<!DOCTYPE")) {
-    let content = raw.trim();
-    if (content.startsWith("```html")) content = content.slice(7);
-    else if (content.startsWith("```")) content = content.slice(3);
-    if (content.endsWith("```")) content = content.slice(0, -3);
-    pages["index.html"] = content.trim();
-  }
-
-  return pages;
-}
+type SiteSpec = {
+  name: string;
+  tagline: string;
+  type: string;
+  industry: string;
+  colorPalette: {
+    primary: string;
+    secondary: string;
+    accent: string;
+  };
+};
 
 function injectNavigationScript(html: string): string {
   const script = `
@@ -81,6 +52,7 @@ function injectNavigationScript(html: string): string {
 
 function BuilderContent() {
   const [user, setUser] = useState<User | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState("Untitled");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -91,7 +63,10 @@ function BuilderContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
+  const [siteSpec, setSiteSpec] = useState<SiteSpec | null>(null);
+  const [generationPhase, setGenerationPhase] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const didAutoSendRef = useRef(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
@@ -104,6 +79,7 @@ function BuilderContent() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
+      setAuthChecked(true);
     });
   }, [supabase.auth]);
 
@@ -144,10 +120,18 @@ function BuilderContent() {
     return () => window.removeEventListener("message", handleMessage);
   }, [pages]);
 
-  async function handleSend() {
-    if (!input.trim() || isGenerating) return;
+  async function sendMessage(text: string) {
+    if (!text.trim() || isGenerating) return;
 
-    const userMessage: Message = { role: "user", content: input.trim() };
+    if (!user) {
+      const returnUrl = encodeURIComponent(
+        `/builder?prompt=${encodeURIComponent(text.trim())}`,
+      );
+      router.push(`/auth/login?redirect=${returnUrl}`);
+      return;
+    }
+
+    const userMessage: Message = { role: "user", content: text.trim() };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setInput("");
@@ -155,12 +139,15 @@ function BuilderContent() {
     setError(null);
 
     try {
+      setGenerationPhase("Starting...");
+
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: newMessages,
           currentPages: Object.keys(pages).length > 0 ? pages : undefined,
+          existingSpec: siteSpec,
         }),
       });
 
@@ -172,18 +159,84 @@ function BuilderContent() {
       if (!reader) throw new Error("No response body");
 
       const decoder = new TextDecoder();
-      let accumulated = "";
+      let buffer = "";
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        accumulated += decoder.decode(value, { stream: true });
 
-        const parsed = parsePages(accumulated);
-        if (Object.keys(parsed).length > 0) {
-          setPages(parsed);
-          if (!parsed[currentPage] && parsed["index.html"]) {
-            setCurrentPage("index.html");
+        buffer += decoder.decode(value, { stream: true });
+
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const rawLine of lines) {
+          const line = rawLine.trim();
+          if (!line || !line.startsWith("data: ")) continue;
+          const data = line.slice(6);
+
+          if (data === "[DONE]") continue;
+
+          try {
+            const event = JSON.parse(data);
+
+            switch (event.type) {
+              case "status":
+                setGenerationPhase(event.message);
+                break;
+
+              case "spec":
+                setSiteSpec(event.spec);
+                if (event.spec.name && event.spec.name !== "Website") {
+                  setProjectName(event.spec.name);
+                }
+                break;
+
+              case "page":
+                if (
+                  event.html &&
+                  typeof event.html === "string" &&
+                  event.html.toLowerCase().includes("<!doctype")
+                ) {
+                  setPages((prev) => ({
+                    ...prev,
+                    [event.filename]: event.html,
+                  }));
+                  if (event.filename === "index.html") {
+                    setCurrentPage("index.html");
+                  }
+                }
+                break;
+
+              case "complete":
+                if (event.pages && typeof event.pages === "object") {
+                  const validPages: Record<string, string> = {};
+                  for (const [filename, html] of Object.entries(event.pages)) {
+                    if (
+                      typeof html === "string" &&
+                      html.toLowerCase().includes("<!doctype")
+                    ) {
+                      validPages[filename] = html;
+                    }
+                  }
+                  if (Object.keys(validPages).length > 0) {
+                    setPages(validPages);
+                  }
+                }
+                if (event.spec) {
+                  setSiteSpec(event.spec);
+                  if (event.spec.name && event.spec.name !== "Website") {
+                    setProjectName(event.spec.name);
+                  }
+                }
+                break;
+
+              case "error":
+                setError(event.error);
+                break;
+            }
+          } catch {
+            // Ignore parse errors for partial chunks
           }
         }
       }
@@ -192,12 +245,17 @@ function BuilderContent() {
         ...newMessages,
         { role: "assistant", content: "Updated the website." },
       ]);
+      setGenerationPhase("");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       setError(message);
     } finally {
       setIsGenerating(false);
     }
+  }
+
+  async function handleSend() {
+    await sendMessage(input);
   }
 
   async function handleSave() {
@@ -255,6 +313,28 @@ function BuilderContent() {
     }
   }
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only run once to bootstrap from URL prompt after auth check
+  useEffect(() => {
+    if (didAutoSendRef.current) return;
+    if (!authChecked) return;
+
+    const project = searchParams.get("project");
+    if (project) {
+      didAutoSendRef.current = true;
+      return;
+    }
+
+    const prompt = searchParams.get("prompt")?.trim();
+    if (!prompt) {
+      didAutoSendRef.current = true;
+      return;
+    }
+
+    didAutoSendRef.current = true;
+    router.replace("/builder");
+    sendMessage(prompt);
+  }, [searchParams, router, authChecked]);
+
   function downloadAll() {
     for (const [filename, content] of Object.entries(pages)) {
       const blob = new Blob([content], { type: "text/html" });
@@ -296,16 +376,43 @@ function BuilderContent() {
           </div>
         </div>
 
-        {/* Project name */}
+        {/* Project name & spec */}
         {pageNames.length > 0 && (
-          <div className="border-b border-zinc-800 px-4 py-2">
+          <div className="border-b border-zinc-800 px-4 py-3">
             <input
               type="text"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
-              className="w-full bg-transparent text-sm text-zinc-300 focus:outline-none"
+              className="w-full bg-transparent text-sm font-medium text-zinc-200 focus:outline-none"
               placeholder="Project name..."
             />
+            {siteSpec && (
+              <div className="mt-2 flex items-center gap-2">
+                <span className="rounded bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">
+                  {siteSpec.type}
+                </span>
+                <span className="text-xs text-zinc-500">
+                  {siteSpec.industry}
+                </span>
+                <div className="ml-auto flex gap-1">
+                  <span
+                    className="h-3 w-3 rounded-full"
+                    style={{ backgroundColor: siteSpec.colorPalette.primary }}
+                    title="Primary"
+                  />
+                  <span
+                    className="h-3 w-3 rounded-full"
+                    style={{ backgroundColor: siteSpec.colorPalette.secondary }}
+                    title="Secondary"
+                  />
+                  <span
+                    className="h-3 w-3 rounded-full"
+                    style={{ backgroundColor: siteSpec.colorPalette.accent }}
+                    title="Accent"
+                  />
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -346,7 +453,7 @@ function BuilderContent() {
                 <div className="mr-4 rounded-lg bg-zinc-800 p-3 text-sm text-zinc-400">
                   <span className="inline-flex items-center gap-2">
                     <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
-                    Generating...
+                    {generationPhase || "Generating..."}
                   </span>
                 </div>
               )}

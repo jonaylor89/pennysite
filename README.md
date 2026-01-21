@@ -15,15 +15,22 @@ Pennysite lets users describe the website they want in natural language, generat
 
 ## 🏗️ Architecture
 
-Pennysite follows a **serverless-first, no-build** architecture:
+Pennysite follows a **serverless-first, no-build** architecture with an **agentic AI workflow**:
 
 ```
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│   Next.js App   │────▶│   OpenAI API     │────▶│  Generated HTML │
-│   (Frontend +   │     │   (GPT-4o)       │     │  (Tailwind +    │
+│   Next.js App   │────▶│  pi-agent-core   │────▶│  Generated HTML │
+│   (Frontend +   │     │   Agent Loop     │     │  (Tailwind +    │
 │    API Routes)  │     │                  │     │   Alpine.js)    │
 └─────────────────┘     └──────────────────┘     └─────────────────┘
-         │
+         │                      │
+         │               ┌──────┴──────┐
+         │               ▼             ▼
+         │      ┌─────────────┐ ┌─────────────┐
+         │      │  Anthropic  │ │   OpenAI    │
+         │      │  Claude 4   │ │   GPT-4o    │
+         │      │ (preferred) │ │ (fallback)  │
+         │      └─────────────┘ └─────────────┘
          ▼
 ┌─────────────────┐
 │    Supabase     │
@@ -31,12 +38,28 @@ Pennysite follows a **serverless-first, no-build** architecture:
 └─────────────────┘
 ```
 
+### Agent Tools
+
+The AI uses a multi-step coding agent with 4 specialized tools:
+
+| Tool | Purpose |
+|------|---------|
+| `plan_site` | Analyzes the request and creates a site structure plan |
+| `generate_page` | Generates HTML for a single page |
+| `fix_page` | Fixes validation errors in generated HTML |
+| `validate_site` | Validates HTML and checks for issues |
+
+The agent runs in a **self-healing loop**: after generating pages, it validates the HTML and automatically fixes any issues before returning the final result. Progress is streamed to the client in real-time via Server-Sent Events.
+
+> 📖 See [docs/agent.md](docs/agent.md) for detailed agent documentation.
+
 ### Why this architecture?
 
 1. **Instant preview** — No npm install, no webpack, no waiting. Generated HTML renders immediately in an iframe.
 2. **Zero hosting cost** — Static HTML can be hosted free on Cloudflare Pages, Vercel, Netlify, or any static host.
 3. **Portable output** — Users get clean, standard HTML they can take anywhere. No vendor lock-in.
 4. **Pay-per-use economics** — The only variable cost is AI generation, which can be metered per-request.
+5. **Self-healing generation** — The agent validates and fixes its own output, ensuring higher quality results.
 
 ## 🛠️ Tech Stack
 
@@ -44,7 +67,9 @@ Pennysite follows a **serverless-first, no-build** architecture:
 |-----------|------------|---------|
 | Framework | Next.js 16 (App Router) | Full-stack React framework |
 | Styling | Tailwind CSS v4 | Utility-first CSS |
-| AI | Vercel AI SDK + OpenAI GPT-4o | Streaming text generation |
+| Agent Framework | @mariozechner/pi-agent-core | Multi-step agent loop with tool execution |
+| LLM Abstraction | @mariozechner/pi-ai | Unified API for Anthropic and OpenAI |
+| AI Models | Claude Sonnet 4 / GPT-4o | LLM providers (Anthropic preferred) |
 | Auth & Database | Supabase | PostgreSQL + Row Level Security |
 | Linting | Biome | Fast linting and formatting |
 
@@ -61,7 +86,9 @@ Pennysite follows a **serverless-first, no-build** architecture:
 
 - Node.js 18+
 - A Supabase account (free tier works)
-- An OpenAI API key
+- An Anthropic API key (preferred) or OpenAI API key
+
+> 💡 **Anthropic Claude Sonnet 4 is recommended** for better design quality and more reliable multi-page generation. OpenAI GPT-4o works as a fallback.
 
 ### 1. Clone and install
 
@@ -86,9 +113,12 @@ Edit `.env.local`:
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 
-# OpenAI
+# AI Provider (at least one required, Anthropic preferred)
+ANTHROPIC_API_KEY=sk-ant-your-api-key
 OPENAI_API_KEY=sk-your-api-key
 ```
+
+> ⚠️ If both keys are set, Anthropic will be used. Set only `OPENAI_API_KEY` to force OpenAI.
 
 ### 3. Set up the database
 
