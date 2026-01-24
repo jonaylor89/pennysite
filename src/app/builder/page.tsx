@@ -25,6 +25,16 @@ type SiteSpec = {
   };
 };
 
+type CreditBalance = {
+  availableCredits: number;
+  reservedCredits: number;
+  generationCost: {
+    min: number;
+    typical: number;
+    max: number;
+  };
+};
+
 function injectNavigationScript(html: string): string {
   const script = `
 <script>
@@ -50,9 +60,121 @@ function injectNavigationScript(html: string): string {
   return script + html;
 }
 
+function BuyCreditsModal({
+  onClose,
+  availableCredits,
+  requiredCredits,
+}: {
+  onClose: () => void;
+  availableCredits: number;
+  requiredCredits: number;
+}) {
+  const [isLoading, setIsLoading] = useState<string | null>(null);
+
+  const packs = [
+    { id: "starter", name: "Starter", credits: 50, price: 5 },
+    { id: "basic", name: "Basic", credits: 220, price: 20, popular: true },
+    { id: "pro", name: "Pro", credits: 600, price: 50 },
+    { id: "max", name: "Max", credits: 1300, price: 100 },
+  ];
+
+  async function buyPack(packId: string) {
+    setIsLoading(packId);
+    try {
+      const res = await fetch("/api/billing/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ packId }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error || "Failed to start checkout");
+        setIsLoading(null);
+      }
+    } catch {
+      alert("Failed to start checkout");
+      setIsLoading(null);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl">
+        <div className="mb-6 text-center">
+          <div className="mb-3 text-4xl">⚡</div>
+          <h2 className="text-xl font-semibold text-white">
+            You need credits to generate
+          </h2>
+          <p className="mt-2 text-sm text-zinc-400">
+            You have{" "}
+            <span className="font-medium text-white">{availableCredits}</span>{" "}
+            credits, but generation requires up to{" "}
+            <span className="font-medium text-white">{requiredCredits}</span>.
+          </p>
+          <p className="mt-1 text-xs text-zinc-500">
+            Typical generation costs ~47 credits. Unused credits are refunded.
+          </p>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          {packs.map((pack) => (
+            <button
+              key={pack.id}
+              type="button"
+              onClick={() => buyPack(pack.id)}
+              disabled={isLoading !== null}
+              className={`relative rounded-xl border p-4 text-left transition-all ${
+                pack.popular
+                  ? "border-emerald-500/50 bg-emerald-500/10"
+                  : "border-zinc-700 bg-zinc-800/50 hover:border-zinc-600"
+              } ${isLoading === pack.id ? "opacity-70" : ""}`}
+            >
+              {pack.popular && (
+                <span className="absolute -top-2 right-3 rounded-full bg-emerald-500 px-2 py-0.5 text-xs font-medium text-black">
+                  Popular
+                </span>
+              )}
+              <div className="text-lg font-semibold text-white">
+                {pack.credits} credits
+              </div>
+              <div className="text-2xl font-bold text-white">${pack.price}</div>
+              <div className="mt-1 text-xs text-zinc-400">
+                ${((pack.price / pack.credits) * 100).toFixed(1)}¢ per credit
+              </div>
+              {isLoading === pack.id && (
+                <div className="mt-2 text-xs text-zinc-400">Redirecting...</div>
+              )}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-6 flex justify-center">
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-sm text-zinc-400 hover:text-white"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function BuilderContent() {
   const [user, setUser] = useState<User | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
+  const [creditBalance, setCreditBalance] = useState<CreditBalance | null>(
+    null,
+  );
+  const [showBuyCredits, setShowBuyCredits] = useState(false);
+  const [insufficientCreditsInfo, setInsufficientCreditsInfo] = useState<{
+    available: number;
+    required: number;
+  } | null>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState("Untitled");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -65,6 +187,12 @@ function BuilderContent() {
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const [siteSpec, setSiteSpec] = useState<SiteSpec | null>(null);
   const [generationPhase, setGenerationPhase] = useState<string>("");
+  const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
+  const [liveUsage, setLiveUsage] = useState<{
+    inputTokens: number;
+    outputTokens: number;
+    estimatedCredits: number;
+  } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const didAutoSendRef = useRef(false);
   const router = useRouter();
@@ -82,6 +210,20 @@ function BuilderContent() {
       setAuthChecked(true);
     });
   }, [supabase.auth]);
+
+  // Fetch credit balance when user is loaded
+  useEffect(() => {
+    if (user) {
+      fetch("/api/credits/balance")
+        .then((res) => res.json())
+        .then((data) => {
+          if (!data.error) {
+            setCreditBalance(data);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user]);
 
   // Load project if ID in URL
   useEffect(() => {
@@ -120,6 +262,29 @@ function BuilderContent() {
     return () => window.removeEventListener("message", handleMessage);
   }, [pages]);
 
+  // Refresh balance after returning from Stripe
+  // biome-ignore lint/correctness/useExhaustiveDependencies: sendMessage is stable, we want to trigger on pendingPrompt change
+  useEffect(() => {
+    const success = searchParams.get("success");
+    if (success === "true" && user) {
+      fetch("/api/credits/balance")
+        .then((res) => res.json())
+        .then((data) => {
+          if (!data.error) {
+            setCreditBalance(data);
+            // If we had a pending prompt, try again
+            if (pendingPrompt) {
+              const prompt = pendingPrompt;
+              setPendingPrompt(null);
+              sendMessage(prompt);
+            }
+          }
+        });
+      // Clean URL
+      router.replace("/builder");
+    }
+  }, [searchParams, user, router, pendingPrompt]);
+
   async function sendMessage(text: string) {
     if (!text.trim() || isGenerating) return;
 
@@ -137,6 +302,7 @@ function BuilderContent() {
     setInput("");
     setIsGenerating(true);
     setError(null);
+    setLiveUsage(null);
 
     try {
       setGenerationPhase("Starting...");
@@ -148,8 +314,27 @@ function BuilderContent() {
           messages: newMessages,
           currentPages: Object.keys(pages).length > 0 ? pages : undefined,
           existingSpec: siteSpec,
+          idempotencyKey: crypto.randomUUID(),
         }),
       });
+
+      // Handle insufficient credits
+      if (response.status === 402) {
+        const data = await response.json();
+        if (data.error === "INSUFFICIENT_CREDITS") {
+          setInsufficientCreditsInfo({
+            available: data.availableCredits || 0,
+            required: data.requiredCredits || 150,
+          });
+          setPendingPrompt(text.trim());
+          setShowBuyCredits(true);
+          // Remove the user message since we didn't actually generate
+          setMessages(messages);
+          setIsGenerating(false);
+          setGenerationPhase("");
+          return;
+        }
+      }
 
       if (!response.ok) {
         throw new Error(`Generation failed: ${response.status}`);
@@ -208,6 +393,21 @@ function BuilderContent() {
                 }
                 break;
 
+              case "usage":
+                // Real-time token usage update
+                if (event.usage) {
+                  const base = 5;
+                  const inputCost = event.usage.inputTokens * 0.001;
+                  const outputCost = event.usage.outputTokens * 0.005;
+                  const estimated = Math.ceil(base + inputCost + outputCost);
+                  setLiveUsage({
+                    inputTokens: event.usage.inputTokens,
+                    outputTokens: event.usage.outputTokens,
+                    estimatedCredits: estimated,
+                  });
+                }
+                break;
+
               case "complete":
                 if (event.pages && typeof event.pages === "object") {
                   const validPages: Record<string, string> = {};
@@ -229,10 +429,18 @@ function BuilderContent() {
                     setProjectName(event.spec.name);
                   }
                 }
+                // Clear live usage and refresh actual balance
+                setLiveUsage(null);
+                fetch("/api/credits/balance")
+                  .then((res) => res.json())
+                  .then((data) => {
+                    if (!data.error) setCreditBalance(data);
+                  });
                 break;
 
               case "error":
                 setError(event.error);
+                setLiveUsage(null);
                 break;
             }
           } catch {
@@ -303,6 +511,7 @@ function BuilderContent() {
   async function handleSignOut() {
     await supabase.auth.signOut();
     setUser(null);
+    setCreditBalance(null);
     router.refresh();
   }
 
@@ -320,6 +529,14 @@ function BuilderContent() {
 
     const project = searchParams.get("project");
     if (project) {
+      didAutoSendRef.current = true;
+      return;
+    }
+
+    // Don't auto-send if returning from Stripe
+    const success = searchParams.get("success");
+    const canceled = searchParams.get("canceled");
+    if (success || canceled) {
       didAutoSendRef.current = true;
       return;
     }
@@ -349,22 +566,54 @@ function BuilderContent() {
 
   return (
     <div className="flex h-screen bg-zinc-950">
+      {/* Buy Credits Modal */}
+      {showBuyCredits && insufficientCreditsInfo && (
+        <BuyCreditsModal
+          onClose={() => {
+            setShowBuyCredits(false);
+            setInsufficientCreditsInfo(null);
+          }}
+          availableCredits={insufficientCreditsInfo.available}
+          requiredCredits={insufficientCreditsInfo.required}
+        />
+      )}
+
       {/* Left Panel - Chat */}
       <div className="flex w-96 flex-col border-r border-zinc-800 bg-zinc-900">
         <div className="flex items-center justify-between border-b border-zinc-800 p-4">
           <div>
-            <h1 className="text-lg font-semibold text-white">Pennysite</h1>
+            <Link href="/" className="text-lg font-semibold text-white">
+              Pennysite
+            </Link>
             <p className="text-sm text-zinc-400">Chat with your website</p>
           </div>
           <div className="text-right">
             {user ? (
-              <button
-                type="button"
-                onClick={handleSignOut}
-                className="text-xs text-zinc-500 hover:text-zinc-300"
-              >
-                Sign out
-              </button>
+              <div className="flex flex-col items-end gap-1">
+                {creditBalance && (
+                  <div className="flex flex-col items-end gap-0.5">
+                    <Link
+                      href="/billing"
+                      className="flex items-center gap-1 rounded-full border border-zinc-700 bg-zinc-800 px-2 py-1 text-xs text-zinc-300 hover:border-zinc-600"
+                    >
+                      <span className="text-emerald-400">⚡</span>
+                      {creditBalance.availableCredits} credits
+                    </Link>
+                    {isGenerating && liveUsage && (
+                      <span className="text-xs text-amber-400">
+                        ~{liveUsage.estimatedCredits} used
+                      </span>
+                    )}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="text-xs text-zinc-500 hover:text-zinc-300"
+                >
+                  Sign out
+                </button>
+              </div>
             ) : (
               <Link
                 href="/auth/login"
@@ -434,6 +683,29 @@ function BuilderContent() {
                   "Simple landing page for a SaaS product"
                 </p>
               </div>
+              {user &&
+                creditBalance &&
+                creditBalance.availableCredits < 150 && (
+                  <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+                    <p className="text-xs text-amber-200">
+                      You have {creditBalance.availableCredits} credits. Buy
+                      more to start generating.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setInsufficientCreditsInfo({
+                          available: creditBalance.availableCredits,
+                          required: 150,
+                        });
+                        setShowBuyCredits(true);
+                      }}
+                      className="mt-2 rounded bg-amber-500 px-3 py-1 text-xs font-medium text-black hover:bg-amber-400"
+                    >
+                      Buy Credits
+                    </button>
+                  </div>
+                )}
             </div>
           ) : (
             <div className="space-y-3">

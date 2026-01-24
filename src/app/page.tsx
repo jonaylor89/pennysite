@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HeaderNav } from "./components/HeaderNav";
 
 export default function Home() {
   return (
@@ -12,17 +13,7 @@ export default function Home() {
         <Link href="/" className="text-sm font-semibold tracking-wide">
           Pennysite
         </Link>
-        <nav className="flex items-center gap-4 text-sm text-zinc-300">
-          <Link href="/projects" className="hover:text-white">
-            Projects
-          </Link>
-          <Link
-            href="/auth/login"
-            className="rounded-full border border-zinc-800 bg-zinc-900/40 px-3 py-1.5 text-white hover:bg-zinc-900"
-          >
-            Sign in
-          </Link>
-        </nav>
+        <HeaderNav />
       </header>
 
       <main className="relative mx-auto w-full max-w-6xl px-6 pb-20 pt-10 lg:pb-28 lg:pt-16">
