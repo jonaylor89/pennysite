@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bean Dream - Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        body { background-color: #FFF8EF; color: #3E2A1C; }
+    </style>
+</head>
+<body class="font-serif">
+    <!-- Hero Section -->
+    <section class="relative min-h-screen bg-[url('https://images.unsplash.com/photo-1561047029-3000e72a8707?w=800&q=80')] bg-cover bg-center">
+        <div class="absolute inset-0 bg-opacity-50 bg-[#6B4E25]"></div>
+        <div class="relative mx-auto max-w-7xl px-6 py-32 text-center text-white">
+            <h1 class="mb-4 text-5xl font-bold">Welcome to Bean Dream</h1>
+            <p class="mb-6 text-lg">Awaken Your Senses</p>
+            <a href="#" class="inline-block rounded-full bg-[#FFD34E] px-8 py-4 text-[#3E2A1C] font-medium shadow-lg transition hover:bg-yellow-500">Order Now</a>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-24">
+        <div class="mx-auto max-w-7xl px-6 text-center">
+            <h2 class="text-4xl font-semibold mb-8">Our Specialties</h2>
+            <p class="mb-12 text-lg text-[#3E2A1C]">Handcrafted and Delicious</p>
+            <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+                <div class="flex flex-col items-center p-6 bg-white shadow-lg rounded-3xl">
+                    <img src="https://images.unsplash.com/photo-1511920170033-f8396924c348?w=200&q=80" alt="Artisan coffee" class="mb-4 h-32 w-32 rounded-full object-cover">
+                    <h3 class="text-2xl font-bold mb-2">Artisan Blends</h3>
+                    <p>Crafted by our expert baristas.</p>
+                </div>
+                <div class="flex flex-col items-center p-6 bg-white shadow-lg rounded-3xl">
+                    <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&q=80" alt="Cozy atmosphere" class="mb-4 h-32 w-32 rounded-full object-cover">
+                    <h3 class="text-2xl font-bold mb-2">Cozy Atmosphere</h3>
+                    <p>Relax and enjoy your coffee.</p>
+                </div>
+                <div class="flex flex-col items-center p-6 bg-white shadow-lg rounded-3xl">
+                    <img src="https://images.unsplash.com/photo-1558979158-65c38d1df31e?w=200&q=80" alt="Expert baristas" class="mb-4 h-32 w-32 rounded-full object-cover">
+                    <h3 class="text-2xl font-bold mb-2">Expert Baristas</h3>
+                    <p>Perfecting your cup, every time.</p>
+                </div>
+                <div class="flex flex-col items-center p-6 bg-white shadow-lg rounded-3xl">
+                    <img src="https://images.unsplash.com/photo-1559333118-ec53d297be3a?w=200&q=80" alt="Locally sourced ingredients" class="mb-4 h-32 w-32 rounded-full object-cover">
+                    <h3 class="text-2xl font-bold mb-2">Locally Sourced</h3>
+                    <p>Fresh and sustainable.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Us Section -->
+    <section class="py-24 bg-[#D9C4A8]">
+        <div class="mx-auto max-w-7xl px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <img src="https://images.unsplash.com/photo-1499653154507-d848fa9f6d7c?w=800&q=80" alt="Coffee Shop Interior" class="w-full h-full rounded-3xl object-cover">
+            <div>
+                <h2 class="text-4xl font-bold mb-4">About Us</h2>
+                <p class="text-lg mb-6">Our Passion for Coffee</p>
+                <p class="text-[#3E2A1C] leading-relaxed">At Bean Dream, our love for coffee transcends every cup we make. Our focus is on crafting perfect blends and creating an inviting space for everyone to enjoy. Join us in our journey of quality and flavor.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action Section -->
+    <section class="py-24">
+        <div class="mx-auto max-w-7xl px-6 text-center">
+            <h2 class="text-4xl font-bold mb-4">Visit Us Today</h2>
+            <p class="text-lg mb-8">Your perfect cup awaits</p>
+            <a href="#" class="inline-block rounded-full bg-[#FFD34E] px-8 py-4 text-[#3E2A1C] font-medium shadow-lg transition hover:bg-yellow-500">Find Us</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-[#6B4E25] py-8 text-white">
+        <div class="mx-auto max-w-7xl px-6 text-center">
+            <p class="mb-4">Connect with us on social media</p>
+            <div class="flex justify-center gap-4">
+                <a href="#" class="transition hover:text-[#FFD34E]">
+                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"></path>
+                    </svg>
+                </a>
+                <a href="#" class="transition hover:text-[#FFD34E]">
+                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"></path>
+                    </svg>
+                </a>
+            </div>
+            <p class="mt-4">Find us at: 123 Coffee St, Brewtown</p>
+        </div>
+    </footer>
+</body>
+</html>

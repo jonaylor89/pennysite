@@ -1,0 +1,74 @@
+{
+  "name": "Bean Dream",
+  "tagline": "Awaken Your Senses with Every Sip",
+  "type": "landing",
+  "industry": "Coffee Shop",
+  "audience": "Coffee enthusiasts and local community members",
+  "tone": "playful",
+  "colorPalette": {
+    "primary": "#6F4E37",
+    "secondary": "#D9A775",
+    "accent": "#8C6E53",
+    "background": "#F5F3EE",
+    "text": "#2E2E2E"
+  },
+  "typography": {
+    "headingStyle": "modern",
+    "bodyFont": "serif"
+  },
+  "pages": [
+    {
+      "filename": "index.html",
+      "title": "Home",
+      "purpose": "Introduce the coffee shop and entice visitors to explore the offerings.",
+      "sections": [
+        {
+          "type": "hero",
+          "headline": "Welcome to Bean Dream",
+          "subheadline": "Awaken Your Senses with Every Sip",
+          "content": "A cozy haven for coffee lovers, where every cup is crafted with passion and care.",
+          "layout": "centered",
+          "elements": [
+            "call-to-action button",
+            "illustrative image",
+            "navigation links"
+          ]
+        },
+        {
+          "type": "features",
+          "headline": "Our Specialties",
+          "subheadline": "Crafted with Love",
+          "content": "Highlight our unique coffee blends, pastries, and local partnerships.",
+          "layout": "grid",
+          "elements": ["images", "descriptions", "icons"]
+        },
+        {
+          "type": "testimonials",
+          "headline": "Hear from Our Customers",
+          "content": "Real reviews from our cherished community.",
+          "layout": "cards",
+          "elements": ["customer photos", "quotes"]
+        },
+        {
+          "type": "contact",
+          "headline": "Visit Us",
+          "content": "Find our location and get in touch.",
+          "layout": "split",
+          "elements": ["map", "contact form", "social media icons"]
+        },
+        {
+          "type": "footer",
+          "content": "Links to other pages, social media, and contact information.",
+          "layout": "list",
+          "elements": ["navigation links", "social media icons"]
+        }
+      ]
+    }
+  ],
+  "features": [
+    "Unique coffee blends",
+    "Artisan pastries",
+    "Community focus",
+    "Locally sourced ingredients"
+  ]
+}
