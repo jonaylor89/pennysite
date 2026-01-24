@@ -107,7 +107,24 @@ These examples serve as inspiration—the agent adapts colors, content, and stru
 | File | Purpose |
 |------|---------|
 | `src/lib/generation/agent.ts` | Main agent implementation with tools and event handling |
+| `src/lib/generation/agent-interface.ts` | Types and interfaces for testable agent abstraction |
+| `src/lib/generation/agent.test.ts` | Unit tests using FakeAgent for isolated testing |
 | `src/lib/generation/prompts.ts` | System prompts and prompt builders |
 | `src/lib/generation/components.ts` | Component examples for reference |
 | `src/lib/generation/types.ts` | TypeScript types (`SiteSpec`, `PageSpec`, etc.) |
 | `src/app/api/generate/route.ts` | API route that streams SSE events to clients |
+
+## Testing
+
+The agent uses dependency injection to enable testing without real AI model calls:
+
+```typescript
+// Inject a FakeAgent for testing
+const events = await collectEvents(
+  generateWebsite("Create a test website", undefined, undefined, {
+    agentFactory: (config, _getApiKey) => new FakeAgent(config.tools, script),
+  }),
+);
+```
+
+Run tests with: `npm run test`

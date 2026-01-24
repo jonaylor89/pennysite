@@ -208,12 +208,56 @@ npm run format
 npm run build
 ```
 
+## 💳 Billing Setup
+
+Pennysite uses a **prepaid credit system** with Stripe. Users purchase credits upfront, and each generation costs credits based on actual token usage.
+
+### Credit Pricing
+
+| Pack | Price | Credits | Cost per credit |
+|------|-------|---------|-----------------|
+| Starter | $5 | 50 | $0.10 |
+| Basic | $20 | 220 | $0.09 |
+| Pro | $50 | 600 | $0.08 |
+| Max | $100 | 1,300 | $0.08 |
+
+### Generation Cost
+
+Each generation costs: **Base (5 credits) + Input tokens × 0.001 + Output tokens × 0.005**
+
+Typical generation (~2k input, ~8k output): **~47 credits ($4.70)**
+
+### Stripe Setup
+
+1. Create products/prices in your [Stripe Dashboard](https://dashboard.stripe.com/products):
+   - Create 4 one-time payment products for each credit pack
+   - Copy the Price IDs to your `.env.local`
+
+2. Set up a webhook endpoint:
+   - Go to **Developers → Webhooks**
+   - Add endpoint: `https://your-domain.com/api/billing/webhook`
+   - Select event: `checkout.session.completed`
+   - Copy the signing secret to `STRIPE_WEBHOOK_SECRET`
+
+3. Run the billing schema migration:
+   ```sql
+   -- Run supabase-billing-schema.sql in your Supabase SQL editor
+   ```
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/credits/balance` | GET | Get current credit balance |
+| `/api/billing/checkout` | POST | Create Stripe checkout session |
+| `/api/billing/webhook` | POST | Handle Stripe webhooks |
+
 ## 🗺️ Roadmap
 
 ### Not yet implemented
 
 - [ ] **Cloudflare Pages deployment** — One-click publish to a live URL
-- [ ] **Stripe billing** — Pay-per-generation credit system
+- [x] **Stripe billing** — Pay-per-generation credit system
 - [ ] **Image upload** — Custom images instead of Unsplash
 - [ ] **Click-to-edit** — Edit text directly in the preview
 - [ ] **Custom domains** — Connect your own domain to published sites
