@@ -6,9 +6,26 @@ import {
 } from "@mariozechner/pi-agent-core";
 import { getModel } from "@mariozechner/pi-ai";
 import { Type } from "@sinclair/typebox";
+import {
+  type AgentFactory,
+  type AgentLike,
+  type GenerationDeps,
+  type GenerationState,
+  type PageDetails,
+  validateHtml,
+} from "./agent-interface";
 import { COMPONENT_EXAMPLES } from "./components";
 import { DESIGN_SYSTEM_PROMPT } from "./prompts";
 import type { PageSpec, SiteSpec } from "./types";
+
+export type {
+  AgentFactory,
+  AgentLike,
+  GenerationDeps,
+  GenerationState,
+  PageDetails,
+} from "./agent-interface";
+export { validateHtml } from "./agent-interface";
 
 const ColorPaletteSchema = Type.Object({
   primary: Type.String({ description: "Primary brand color (hex)" }),
@@ -57,7 +74,10 @@ const PlanSiteParams = Type.Object({
       Type.Literal("blog"),
       Type.Literal("ecommerce"),
     ],
-    { description: "Site type" },
+    {
+      description:
+        "Site type. Must be exactly one of: landing, portfolio, business, saas, restaurant, agency, blog, ecommerce",
+    },
   ),
   industry: Type.String({ description: "Specific industry" }),
   audience: Type.String({ description: "Target audience description" }),
@@ -69,21 +89,26 @@ const PlanSiteParams = Type.Object({
       Type.Literal("luxurious"),
       Type.Literal("minimal"),
     ],
-    { description: "Tone and style" },
+    {
+      description:
+        "Tone and style. Must be exactly one of: professional, casual, playful, luxurious, minimal",
+    },
   ),
   colorPalette: ColorPaletteSchema,
   typography: Type.Object({
-    headingStyle: Type.Union([
-      Type.Literal("bold"),
-      Type.Literal("elegant"),
-      Type.Literal("modern"),
-      Type.Literal("classic"),
-    ]),
-    bodyFont: Type.Union([
-      Type.Literal("sans"),
-      Type.Literal("serif"),
-      Type.Literal("mono"),
-    ]),
+    headingStyle: Type.Union(
+      [
+        Type.Literal("bold"),
+        Type.Literal("elegant"),
+        Type.Literal("modern"),
+        Type.Literal("classic"),
+      ],
+      { description: "Must be exactly one of: bold, elegant, modern, classic" },
+    ),
+    bodyFont: Type.Union(
+      [Type.Literal("sans"), Type.Literal("serif"), Type.Literal("mono")],
+      { description: "Must be exactly one of: sans, serif, mono" },
+    ),
   }),
   pages: Type.Array(PageSchema, { description: "Pages to generate" }),
   features: Type.Array(Type.String(), {
@@ -121,45 +146,7 @@ const ValidateSiteParams = Type.Object({
   summary: Type.String({ description: "Overall assessment" }),
 });
 
-interface GenerationState {
-  spec: SiteSpec | null;
-  pages: Record<string, string>;
-  validationPassed: boolean;
-}
-
-function validateHtml(html: string): { valid: boolean; issues: string[] } {
-  const issues: string[] = [];
-
-  if (!html.includes("<!DOCTYPE html>") && !html.includes("<!doctype html>")) {
-    issues.push("Missing DOCTYPE declaration");
-  }
-  if (!html.includes("<html")) {
-    issues.push("Missing <html> tag");
-  }
-  if (!html.includes("<head>") && !html.includes("<head ")) {
-    issues.push("Missing <head> section");
-  }
-  if (!html.includes("<body>") && !html.includes("<body ")) {
-    issues.push("Missing <body> section");
-  }
-  if (!html.includes("tailwindcss")) {
-    issues.push("Missing Tailwind CSS CDN");
-  }
-  if (!html.includes("alpinejs")) {
-    issues.push("Missing Alpine.js CDN");
-  }
-
-  return { valid: issues.length === 0, issues };
-}
-
-interface PageDetails {
-  filename: string;
-  html: string;
-  valid?: boolean;
-  issues?: string[];
-}
-
-function createTools(state: GenerationState): AgentTool[] {
+export function createTools(state: GenerationState): AgentTool[] {
   const planSiteTool: AgentTool<typeof PlanSiteParams, { spec: SiteSpec }> = {
     name: "plan_site",
     label: "Plan Website",
@@ -362,7 +349,7 @@ Please fix these issues using fix_page.`,
   ];
 }
 
-const AGENT_SYSTEM_PROMPT = `You are an expert website builder agent. Your job is to create stunning, production-ready websites.
+export const AGENT_SYSTEM_PROMPT = `You are an expert website builder agent. Your job is to create stunning, production-ready websites.
 
 ## YOUR WORKFLOW
 1. FIRST: Call plan_site to create a detailed site plan with colors, pages, and sections
@@ -386,18 +373,31 @@ ${COMPONENT_EXAMPLES}
 
 IMPORTANT: Use these component examples as inspiration. Adapt colors, content, and structure to match the specific project. Don't copy verbatim—create unique variations.`;
 
+export interface TokenUsage {
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+}
+
 export type GenerationEvent =
   | { type: "status"; message: string }
   | { type: "spec"; spec: SiteSpec }
   | { type: "page"; filename: string; html: string }
   | { type: "thinking"; content: string }
-  | { type: "complete"; pages: Record<string, string>; spec: SiteSpec }
-  | { type: "error"; error: string };
+  | { type: "usage"; usage: TokenUsage }
+  | {
+      type: "complete";
+      pages: Record<string, string>;
+      spec: SiteSpec;
+      usage: TokenUsage;
+    }
+  | { type: "error"; error: string; usage?: TokenUsage };
 
 export async function* generateWebsite(
   userRequest: string,
   existingSpec?: SiteSpec,
   existingPages?: Record<string, string>,
+  deps?: GenerationDeps,
 ): AsyncGenerator<GenerationEvent> {
   const state: GenerationState = {
     spec: existingSpec || null,
@@ -407,26 +407,34 @@ export async function* generateWebsite(
 
   const hasAnthropicKey = !!process.env.ANTHROPIC_API_KEY;
 
-  const model = hasAnthropicKey
-    ? getModel("anthropic", "claude-sonnet-4-20250514")
-    : getModel("openai", "gpt-4o");
+  const model =
+    deps?.model ??
+    (hasAnthropicKey
+      ? getModel("anthropic", "claude-sonnet-4-20250514")
+      : getModel("openai", "gpt-4o"));
 
-  const apiKey = hasAnthropicKey
-    ? process.env.ANTHROPIC_API_KEY
-    : process.env.OPENAI_API_KEY;
+  const apiKey =
+    deps?.apiKey ??
+    (hasAnthropicKey
+      ? process.env.ANTHROPIC_API_KEY
+      : process.env.OPENAI_API_KEY);
 
   const tools = createTools(state);
 
-  const agent = new Agent({
-    initialState: {
+  const agentFactory: AgentFactory =
+    deps?.agentFactory ??
+    ((config, getApiKey) => new Agent({ initialState: config, getApiKey }));
+
+  const agent: AgentLike = agentFactory(
+    {
       systemPrompt: AGENT_SYSTEM_PROMPT,
       model,
       tools,
       thinkingLevel: "low",
       messages: [],
     },
-    getApiKey: () => apiKey,
-  });
+    () => apiKey,
+  );
 
   yield { type: "status", message: "Starting website generation..." };
 
@@ -455,6 +463,14 @@ Apply the requested changes. You may need to call generate_page or fix_page to u
   const eventQueue: GenerationEvent[] = [];
   let resolveWait: (() => void) | null = null;
   let agentDone = false;
+  let runError: unknown = null;
+
+  // Track token usage across all messages
+  const tokenUsage: TokenUsage = {
+    inputTokens: 0,
+    outputTokens: 0,
+    totalTokens: 0,
+  };
 
   const unsubscribe = agent.subscribe((event: AgentEvent) => {
     let newEvent: GenerationEvent | null = null;
@@ -500,6 +516,39 @@ Apply the requested changes. You may need to call generate_page or fix_page to u
         break;
       }
 
+      case "message_end": {
+        const msg = event.message;
+        if (msg && typeof msg === "object") {
+          // Accumulate token usage from each assistant message
+          if ("role" in msg && msg.role === "assistant") {
+            const usageAny =
+              "usage" in msg
+                ? (msg.usage as unknown as Record<string, unknown>)
+                : null;
+            if (usageAny && typeof usageAny === "object") {
+              const input = (usageAny.input ??
+                usageAny.prompt_tokens ??
+                usageAny.input_tokens ??
+                0) as number;
+              const output = (usageAny.output ??
+                usageAny.completion_tokens ??
+                usageAny.output_tokens ??
+                0) as number;
+              const total = (usageAny.totalTokens ??
+                usageAny.total_tokens ??
+                usageAny.total ??
+                input + output) as number;
+
+              tokenUsage.inputTokens += input;
+              tokenUsage.outputTokens += output;
+              tokenUsage.totalTokens += total;
+              newEvent = { type: "usage", usage: { ...tokenUsage } };
+            }
+          }
+        }
+        break;
+      }
+
       case "message_update": {
         const msg = event.message;
         if (msg && "content" in msg && Array.isArray(msg.content)) {
@@ -526,17 +575,23 @@ Apply the requested changes. You may need to call generate_page or fix_page to u
     }
   });
 
-  const runPromise = agent.prompt(prompt).catch((err) => {
-    eventQueue.push({
-      type: "error",
-      error: err instanceof Error ? err.message : "Unknown error",
+  const runPromise = agent
+    .prompt(prompt)
+    .catch((err) => {
+      runError = err;
+      eventQueue.push({
+        type: "error",
+        error: err instanceof Error ? err.message : "Unknown error",
+        usage: tokenUsage,
+      });
+    })
+    .finally(() => {
+      agentDone = true;
+      if (resolveWait) {
+        resolveWait();
+        resolveWait = null;
+      }
     });
-    agentDone = true;
-    if (resolveWait) {
-      resolveWait();
-      resolveWait = null;
-    }
-  });
 
   while (!agentDone || eventQueue.length > 0) {
     if (eventQueue.length > 0) {
@@ -553,8 +608,18 @@ Apply the requested changes. You may need to call generate_page or fix_page to u
   await runPromise;
   unsubscribe();
 
+  // If an error already occurred, don't emit another error
+  if (runError) {
+    return;
+  }
+
   if (Object.keys(state.pages).length > 0 && state.spec) {
-    yield { type: "complete", pages: state.pages, spec: state.spec };
+    yield {
+      type: "complete",
+      pages: state.pages,
+      spec: state.spec,
+      usage: tokenUsage,
+    };
   } else if (Object.keys(state.pages).length > 0) {
     const minimalSpec: SiteSpec = {
       name: "Website",
@@ -574,8 +639,17 @@ Apply the requested changes. You may need to call generate_page or fix_page to u
       pages: [],
       features: [],
     };
-    yield { type: "complete", pages: state.pages, spec: minimalSpec };
+    yield {
+      type: "complete",
+      pages: state.pages,
+      spec: minimalSpec,
+      usage: tokenUsage,
+    };
   } else {
-    yield { type: "error", error: "No pages were generated" };
+    yield {
+      type: "error",
+      error: "No pages were generated",
+      usage: tokenUsage,
+    };
   }
 }
