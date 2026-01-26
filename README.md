@@ -152,7 +152,7 @@ src/
 │   ├── auth/
 │   │   ├── callback/          # OAuth callback handler
 │   │   └── login/             # Sign in / Sign up page
-│   ├── builder/               # Main website builder UI
+│   ├── project/               # Project builder UI (new and [projectId])
 │   ├── projects/              # List of saved projects
 │   ├── layout.tsx             # Root layout
 │   └── page.tsx               # Landing page
@@ -169,10 +169,11 @@ src/
 
 ### Creating a website
 
-1. Go to `/builder`
+1. Go to `/project/new` or use the form on the landing page
 2. Describe your website: *"A 3-page website for a Brooklyn coffee shop with home, menu, and contact pages"*
-3. Watch it generate in real-time
+3. Watch it generate in real-time — your project is auto-saved with a unique URL
 4. Iterate with follow-up messages: *"Make the color scheme warmer"*, *"Add customer testimonials"*
+5. Refresh the page anytime without losing progress
 
 ### Multi-page navigation
 
@@ -252,11 +253,36 @@ Typical generation (~2k input, ~8k output): **~47 credits ($4.70)**
 | `/api/billing/checkout` | POST | Create Stripe checkout session |
 | `/api/billing/webhook` | POST | Handle Stripe webhooks |
 
+## ☁️ Cloudflare Pages Publishing
+
+Generated sites can be published directly to Cloudflare Pages with one click.
+See [docs/cloudflare-deployments.md](docs/cloudflare-deployments.md) for full deployment details.
+
+### Setup
+
+1. Get your Cloudflare Account ID from the dashboard URL or API section
+2. Create an API token with **Cloudflare Pages: Edit** permission
+3. Add to your environment variables:
+   ```env
+   CLOUDFLARE_ACCOUNT_ID=your-account-id
+   CLOUDFLARE_API_TOKEN=your-api-token
+   ```
+
+### How it works
+
+- Each project gets a unique Cloudflare Pages project (e.g., `my-coffee-shop-abc12345`)
+- Click "Publish to Web" to deploy the generated HTML to `projectname.pages.dev`
+- Re-publish anytime to update the live site
+
+### Database migration
+
+Run `supabase-deployment-schema.sql` to add the deployment columns to your projects table.
+
 ## 🗺️ Roadmap
 
 ### Not yet implemented
 
-- [ ] **Cloudflare Pages deployment** — One-click publish to a live URL
+- [x] **Cloudflare Pages deployment** — One-click publish to a live URL
 - [x] **Stripe billing** — Pay-per-generation credit system
 - [ ] **Image upload** — Custom images instead of Unsplash
 - [ ] **Click-to-edit** — Edit text directly in the preview

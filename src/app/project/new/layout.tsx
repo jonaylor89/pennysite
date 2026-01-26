@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-export default function BuilderLayout({
+export default function NewProjectLayout({
   children,
 }: {
   children: React.ReactNode;

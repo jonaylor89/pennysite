@@ -17,6 +17,9 @@ export interface Database {
           pages: Json;
           created_at: string;
           updated_at: string;
+          cf_project_name: string | null;
+          deployed_url: string | null;
+          last_deployed_at: string | null;
         };
         Insert: {
           id?: string;
@@ -25,6 +28,9 @@ export interface Database {
           pages?: Json;
           created_at?: string;
           updated_at?: string;
+          cf_project_name?: string | null;
+          deployed_url?: string | null;
+          last_deployed_at?: string | null;
         };
         Update: {
           id?: string;
@@ -33,6 +39,9 @@ export interface Database {
           pages?: Json;
           created_at?: string;
           updated_at?: string;
+          cf_project_name?: string | null;
+          deployed_url?: string | null;
+          last_deployed_at?: string | null;
         };
         Relationships: [];
       };

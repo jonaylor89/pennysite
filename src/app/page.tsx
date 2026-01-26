@@ -47,7 +47,7 @@ export default function Home() {
               </div>
             </div>
 
-            <form action="/builder" method="GET" className="mt-8 max-w-xl">
+            <form action="/project/new" method="GET" className="mt-8 max-w-xl">
               <label htmlFor="prompt" className="sr-only">
                 Describe your website
               </label>
@@ -74,19 +74,19 @@ export default function Home() {
 
             <div className="mt-6 flex flex-wrap gap-2 text-xs">
               <Link
-                href="/builder?prompt=A+portfolio+website+for+a+photographer+with+gallery+and+contact+page"
+                href="/project/new?prompt=A+portfolio+website+for+a+photographer+with+gallery+and+contact+page"
                 className="rounded-full border border-zinc-800 bg-zinc-900/40 px-3 py-1 text-zinc-300 hover:bg-zinc-900 hover:text-white"
               >
                 Photographer portfolio
               </Link>
               <Link
-                href="/builder?prompt=A+simple+landing+page+for+my+app+with+features+pricing+FAQ+and+testimonials"
+                href="/project/new?prompt=A+simple+landing+page+for+my+app+with+features+pricing+FAQ+and+testimonials"
                 className="rounded-full border border-zinc-800 bg-zinc-900/40 px-3 py-1 text-zinc-300 hover:bg-zinc-900 hover:text-white"
               >
                 App landing page
               </Link>
               <Link
-                href="/builder?prompt=A+website+for+my+gym+with+class+schedule+trainers+and+contact+info"
+                href="/project/new?prompt=A+website+for+my+gym+with+class+schedule+trainers+and+contact+info"
                 className="rounded-full border border-zinc-800 bg-zinc-900/40 px-3 py-1 text-zinc-300 hover:bg-zinc-900 hover:text-white"
               >
                 Local gym

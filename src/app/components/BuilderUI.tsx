@@ -2,8 +2,8 @@
 
 import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 type Message = {
@@ -33,6 +33,14 @@ type CreditBalance = {
     typical: number;
     max: number;
   };
+};
+
+type BuilderUIProps = {
+  projectId: string | null;
+  initialName?: string;
+  initialPages?: Pages;
+  initialPrompt?: string;
+  initialDeployedUrl?: string | null;
 };
 
 function injectNavigationScript(html: string): string {
@@ -164,7 +172,13 @@ function BuyCreditsModal({
   );
 }
 
-function BuilderContent() {
+export function BuilderUI({
+  projectId: initialProjectId,
+  initialName = "Untitled",
+  initialPages = {},
+  initialPrompt,
+  initialDeployedUrl,
+}: BuilderUIProps) {
   const [user, setUser] = useState<User | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [creditBalance, setCreditBalance] = useState<CreditBalance | null>(
@@ -175,16 +189,21 @@ function BuilderContent() {
     available: number;
     required: number;
   } | null>(null);
-  const [projectId, setProjectId] = useState<string | null>(null);
-  const [projectName, setProjectName] = useState("Untitled");
+  const [projectId, setProjectId] = useState<string | null>(initialProjectId);
+  const [projectName, setProjectName] = useState(initialName);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [pages, setPages] = useState<Pages>({});
+  const [pages, setPages] = useState<Pages>(initialPages);
   const [currentPage, setCurrentPage] = useState("index.html");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
+  const [publishStatus, setPublishStatus] = useState<string | null>(null);
+  const [deployedUrl, setDeployedUrl] = useState<string | null>(
+    initialDeployedUrl ?? null,
+  );
   const [siteSpec, setSiteSpec] = useState<SiteSpec | null>(null);
   const [generationPhase, setGenerationPhase] = useState<string>("");
   const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
@@ -196,14 +215,12 @@ function BuilderContent() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const didAutoSendRef = useRef(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
   const supabase = createClient();
 
   const pageNames = Object.keys(pages);
   const currentHtml = pages[currentPage] || "";
   const displayHtml = currentHtml ? injectNavigationScript(currentHtml) : "";
 
-  // Load user
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
@@ -211,7 +228,6 @@ function BuilderContent() {
     });
   }, [supabase.auth]);
 
-  // Fetch credit balance when user is loaded
   useEffect(() => {
     if (user) {
       fetch("/api/credits/balance")
@@ -224,22 +240,6 @@ function BuilderContent() {
         .catch(() => {});
     }
   }, [user]);
-
-  // Load project if ID in URL
-  useEffect(() => {
-    const id = searchParams.get("project");
-    if (id && user) {
-      setProjectId(id);
-      fetch(`/api/projects/${id}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.project) {
-            setProjectName(data.project.name);
-            setPages(data.project.pages as Pages);
-          }
-        });
-    }
-  }, [searchParams, user]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally scroll on new messages
   useEffect(() => {
@@ -262,35 +262,30 @@ function BuilderContent() {
     return () => window.removeEventListener("message", handleMessage);
   }, [pages]);
 
-  // Refresh balance after returning from Stripe
-  // biome-ignore lint/correctness/useExhaustiveDependencies: sendMessage is stable, we want to trigger on pendingPrompt change
-  useEffect(() => {
-    const success = searchParams.get("success");
-    if (success === "true" && user) {
-      fetch("/api/credits/balance")
-        .then((res) => res.json())
-        .then((data) => {
-          if (!data.error) {
-            setCreditBalance(data);
-            // If we had a pending prompt, try again
-            if (pendingPrompt) {
-              const prompt = pendingPrompt;
-              setPendingPrompt(null);
-              sendMessage(prompt);
-            }
-          }
-        });
-      // Clean URL
-      router.replace("/builder");
+  async function createProjectAndRedirect(
+    name: string,
+    generatedPages: Pages,
+  ): Promise<string | null> {
+    const res = await fetch("/api/projects", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, pages: generatedPages }),
+    });
+    const data = await res.json();
+    if (data.project) {
+      setProjectId(data.project.id);
+      router.replace(`/project/${data.project.id}`);
+      return data.project.id;
     }
-  }, [searchParams, user, router, pendingPrompt]);
+    return null;
+  }
 
   async function sendMessage(text: string) {
     if (!text.trim() || isGenerating) return;
 
     if (!user) {
       const returnUrl = encodeURIComponent(
-        `/builder?prompt=${encodeURIComponent(text.trim())}`,
+        `/project/new?prompt=${encodeURIComponent(text.trim())}`,
       );
       router.push(`/auth/login?redirect=${returnUrl}`);
       return;
@@ -318,7 +313,6 @@ function BuilderContent() {
         }),
       });
 
-      // Handle insufficient credits
       if (response.status === 402) {
         const data = await response.json();
         if (data.error === "INSUFFICIENT_CREDITS") {
@@ -328,7 +322,6 @@ function BuilderContent() {
           });
           setPendingPrompt(text.trim());
           setShowBuyCredits(true);
-          // Remove the user message since we didn't actually generate
           setMessages(messages);
           setIsGenerating(false);
           setGenerationPhase("");
@@ -345,6 +338,9 @@ function BuilderContent() {
 
       const decoder = new TextDecoder();
       let buffer = "";
+      let finalPages: Pages = { ...pages };
+      let finalSpec: SiteSpec | null = siteSpec;
+      let finalName = projectName;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -372,8 +368,10 @@ function BuilderContent() {
 
               case "spec":
                 setSiteSpec(event.spec);
+                finalSpec = event.spec;
                 if (event.spec.name && event.spec.name !== "Website") {
                   setProjectName(event.spec.name);
+                  finalName = event.spec.name;
                 }
                 break;
 
@@ -383,10 +381,11 @@ function BuilderContent() {
                   typeof event.html === "string" &&
                   event.html.toLowerCase().includes("<!doctype")
                 ) {
-                  setPages((prev) => ({
-                    ...prev,
-                    [event.filename]: event.html,
-                  }));
+                  setPages((prev) => {
+                    const updated = { ...prev, [event.filename]: event.html };
+                    finalPages = updated;
+                    return updated;
+                  });
                   if (event.filename === "index.html") {
                     setCurrentPage("index.html");
                   }
@@ -394,7 +393,6 @@ function BuilderContent() {
                 break;
 
               case "usage":
-                // Real-time token usage update
                 if (event.usage) {
                   const base = 5;
                   const inputCost = event.usage.inputTokens * 0.001;
@@ -421,15 +419,17 @@ function BuilderContent() {
                   }
                   if (Object.keys(validPages).length > 0) {
                     setPages(validPages);
+                    finalPages = validPages;
                   }
                 }
                 if (event.spec) {
                   setSiteSpec(event.spec);
+                  finalSpec = event.spec;
                   if (event.spec.name && event.spec.name !== "Website") {
                     setProjectName(event.spec.name);
+                    finalName = event.spec.name;
                   }
                 }
-                // Clear live usage and refresh actual balance
                 setLiveUsage(null);
                 fetch("/api/credits/balance")
                   .then((res) => res.json())
@@ -454,6 +454,18 @@ function BuilderContent() {
         { role: "assistant", content: "Updated the website." },
       ]);
       setGenerationPhase("");
+
+      // If this is a new project (no projectId), create it now
+      if (!projectId && Object.keys(finalPages).length > 0) {
+        await createProjectAndRedirect(finalName, finalPages);
+      } else if (projectId) {
+        // Auto-save existing project
+        await fetch(`/api/projects/${projectId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: finalName, pages: finalPages }),
+        });
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       setError(message);
@@ -479,7 +491,6 @@ function BuilderContent() {
 
     try {
       if (projectId) {
-        // Update existing
         await fetch(`/api/projects/${projectId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -487,24 +498,45 @@ function BuilderContent() {
         });
         setSaveStatus("Saved!");
       } else {
-        // Create new
-        const res = await fetch("/api/projects", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: projectName, pages }),
-        });
-        const data = await res.json();
-        if (data.project) {
-          setProjectId(data.project.id);
-          router.push(`/builder?project=${data.project.id}`);
-          setSaveStatus("Saved!");
-        }
+        await createProjectAndRedirect(projectName, pages);
+        setSaveStatus("Saved!");
       }
     } catch {
       setSaveStatus("Save failed");
     } finally {
       setIsSaving(false);
       setTimeout(() => setSaveStatus(null), 2000);
+    }
+  }
+
+  async function handlePublish() {
+    if (!user) {
+      router.push("/auth/login");
+      return;
+    }
+
+    if (!projectId || Object.keys(pages).length === 0) return;
+
+    setIsPublishing(true);
+    setPublishStatus(null);
+
+    try {
+      const res = await fetch(`/api/projects/${projectId}/publish`, {
+        method: "POST",
+      });
+      const data = await res.json();
+
+      if (res.ok && data.deployedUrl) {
+        setDeployedUrl(data.deployedUrl);
+        setPublishStatus("Published!");
+      } else {
+        setPublishStatus(data.error || "Publish failed");
+      }
+    } catch {
+      setPublishStatus("Publish failed");
+    } finally {
+      setIsPublishing(false);
+      setTimeout(() => setPublishStatus(null), 3000);
     }
   }
 
@@ -522,35 +554,18 @@ function BuilderContent() {
     }
   }
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: only run once to bootstrap from URL prompt after auth check
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only run once to bootstrap from initial prompt
   useEffect(() => {
     if (didAutoSendRef.current) return;
     if (!authChecked) return;
-
-    const project = searchParams.get("project");
-    if (project) {
-      didAutoSendRef.current = true;
-      return;
-    }
-
-    // Don't auto-send if returning from Stripe
-    const success = searchParams.get("success");
-    const canceled = searchParams.get("canceled");
-    if (success || canceled) {
-      didAutoSendRef.current = true;
-      return;
-    }
-
-    const prompt = searchParams.get("prompt")?.trim();
-    if (!prompt) {
+    if (!initialPrompt) {
       didAutoSendRef.current = true;
       return;
     }
 
     didAutoSendRef.current = true;
-    router.replace("/builder");
-    sendMessage(prompt);
-  }, [searchParams, router, authChecked]);
+    sendMessage(initialPrompt);
+  }, [authChecked, initialPrompt]);
 
   function downloadAll() {
     for (const [filename, content] of Object.entries(pages)) {
@@ -765,22 +780,47 @@ function BuilderContent() {
         {/* Actions */}
         {pageNames.length > 0 && (
           <div className="border-t border-zinc-800 p-4">
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={isSaving}
-                className="flex-1 rounded-lg bg-white px-3 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:opacity-50"
-              >
-                {isSaving ? "Saving..." : saveStatus || "Save Project"}
-              </button>
-              <button
-                type="button"
-                onClick={downloadAll}
-                className="flex-1 rounded-lg border border-zinc-700 px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-800"
-              >
-                Download
-              </button>
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className="flex-1 rounded-lg bg-white px-3 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:opacity-50"
+                >
+                  {isSaving ? "Saving..." : saveStatus || "Save Project"}
+                </button>
+                <button
+                  type="button"
+                  onClick={downloadAll}
+                  className="flex-1 rounded-lg border border-zinc-700 px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-800"
+                >
+                  Download
+                </button>
+              </div>
+              {projectId && (
+                <button
+                  type="button"
+                  onClick={handlePublish}
+                  disabled={isPublishing}
+                  className="w-full rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
+                >
+                  {isPublishing
+                    ? "Publishing..."
+                    : publishStatus || "Publish to Web"}
+                </button>
+              )}
+              {deployedUrl && (
+                <a
+                  href={deployedUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-1 rounded-lg border border-emerald-700 bg-emerald-900/30 px-3 py-2 text-sm text-emerald-300 transition-colors hover:bg-emerald-900/50"
+                >
+                  <span>🌐</span>
+                  <span className="truncate">{deployedUrl}</span>
+                </a>
+              )}
             </div>
           </div>
         )}
@@ -839,19 +879,5 @@ function BuilderContent() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function Builder() {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex h-screen items-center justify-center bg-zinc-950 text-zinc-400">
-          Loading...
-        </div>
-      }
-    >
-      <BuilderContent />
-    </Suspense>
   );
 }
