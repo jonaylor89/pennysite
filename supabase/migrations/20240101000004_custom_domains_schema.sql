@@ -1,5 +1,4 @@
 -- Custom domains for user projects
--- Run this in your Supabase SQL editor after supabase-deployment-schema.sql
 
 -- Add custom domain columns to projects table
 alter table public.projects

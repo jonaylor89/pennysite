@@ -1,5 +1,4 @@
--- Pennysite database schema
--- Run this in your Supabase SQL editor
+-- Initial schema: Projects table with RLS
 
 -- Projects table
 create table public.projects (
@@ -31,6 +30,6 @@ create policy "Users can delete own projects"
   on public.projects for delete
   using (auth.uid() = user_id);
 
--- Index for faster queries
+-- Indexes for faster queries
 create index projects_user_id_idx on public.projects(user_id);
 create index projects_updated_at_idx on public.projects(updated_at desc);

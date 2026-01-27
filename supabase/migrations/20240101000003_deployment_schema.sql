@@ -1,5 +1,4 @@
 -- Deployment fields for Cloudflare Pages publishing
--- Run this in your Supabase SQL editor after supabase-schema.sql
 
 -- Add deployment columns to projects table
 alter table public.projects

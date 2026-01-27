@@ -122,16 +122,24 @@ OPENAI_API_KEY=sk-your-api-key
 
 ### 3. Set up the database
 
-1. Go to your [Supabase Dashboard](https://supabase.com/dashboard)
-2. Open the SQL Editor
-3. Run the contents of `supabase-schema.sql`:
+1. Install the [Supabase CLI](https://supabase.com/docs/guides/cli):
+   ```bash
+   brew install supabase/tap/supabase
+   ```
 
-```sql
--- Creates the projects table with RLS policies
--- See supabase-schema.sql for full schema
-```
+2. Link to your Supabase project:
+   ```bash
+   supabase link --project-ref <your-project-ref>
+   ```
+
+3. Run migrations:
+   ```bash
+   pnpm db:migrate
+   ```
 
 4. Enable Email auth in **Authentication → Providers → Email**
+
+> 📖 See [docs/migrations.md](docs/migrations.md) for full migration documentation.
 
 ### 4. Run the development server
 
@@ -240,9 +248,9 @@ Typical generation (~2k input, ~8k output): **~47 credits ($4.70)**
    - Select event: `checkout.session.completed`
    - Copy the signing secret to `STRIPE_WEBHOOK_SECRET`
 
-3. Run the billing schema migration:
-   ```sql
-   -- Run supabase-billing-schema.sql in your Supabase SQL editor
+3. Run migrations if you haven't already:
+   ```bash
+   pnpm db:migrate
    ```
 
 ### API Endpoints
@@ -274,9 +282,9 @@ See [docs/cloudflare-deployments.md](docs/cloudflare-deployments.md) for full de
 - Click "Publish to Web" to deploy the generated HTML to `projectname.pages.dev`
 - Re-publish anytime to update the live site
 
-### Database migration
+### Database
 
-Run `supabase-deployment-schema.sql` to add the deployment columns to your projects table.
+Deployment columns are included in the migrations—run `pnpm db:migrate` if you haven't already.
 
 ## 🔗 Custom Domains
 
@@ -298,9 +306,9 @@ Users can connect their own domains to published sites. After publishing, the "A
 | Subdomain | `blog.example.com` | CNAME record pointing to `projectname.pages.dev` |
 | Apex domain | `example.com` | Domain must be on Cloudflare DNS |
 
-### Database migration
+### Database
 
-Run `supabase-custom-domains-schema.sql` to add custom domain columns to your projects table.
+Custom domain columns are included in the migrations—run `pnpm db:migrate` if you haven't already.
 
 ## 🗺️ Roadmap
 

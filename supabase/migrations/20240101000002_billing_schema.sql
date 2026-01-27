@@ -1,5 +1,4 @@
--- Pennysite billing schema
--- Run this in your Supabase SQL editor AFTER supabase-schema.sql
+-- Billing schema: Stripe integration, credits, and generations
 
 -- 1) Stripe customer mapping
 create table public.stripe_customers (
