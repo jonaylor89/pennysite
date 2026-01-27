@@ -111,7 +111,7 @@ Edit `.env.local`:
 ```env
 # Supabase (get these from your project's API settings)
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_SUPABASE_SECRET_KEY=your-secret-key
 
 # AI Provider (at least one required, Anthropic preferred)
 ANTHROPIC_API_KEY=sk-ant-your-api-key

@@ -1,14 +1,14 @@
-import {
-  Agent,
-  type AgentEvent,
-  type AgentTool,
-  type AgentToolResult,
+import type {
+  AgentEvent,
+  AgentTool,
+  AgentToolResult,
 } from "@mariozechner/pi-agent-core";
 import { getModel } from "@mariozechner/pi-ai";
 import { Type } from "@sinclair/typebox";
 import {
   type AgentFactory,
   type AgentLike,
+  createDefaultAgentFactory,
   type GenerationDeps,
   type GenerationState,
   type PageDetails,
@@ -422,8 +422,7 @@ export async function* generateWebsite(
   const tools = createTools(state);
 
   const agentFactory: AgentFactory =
-    deps?.agentFactory ??
-    ((config, getApiKey) => new Agent({ initialState: config, getApiKey }));
+    deps?.agentFactory ?? createDefaultAgentFactory();
 
   const agent: AgentLike = agentFactory(
     {

@@ -1,4 +1,13 @@
-export const dynamic = "force-dynamic";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Edit Project",
+  description: "Edit and refine your AI-generated website.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function ProjectLayout({
   children,

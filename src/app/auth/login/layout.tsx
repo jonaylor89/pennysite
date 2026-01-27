@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Your Projects",
-  description: "View and manage your saved website projects.",
+  title: "Sign In",
+  description:
+    "Sign in to Pennysite to save your projects and access premium features.",
   robots: {
     index: false,
-    follow: false,
+    follow: true,
   },
 };
 
-export default function ProjectsLayout({
+export default function LoginLayout({
   children,
 }: {
   children: React.ReactNode;
