@@ -9,6 +9,9 @@ type Props = {
   initialName: string;
   initialPages: Pages;
   initialDeployedUrl?: string | null;
+  initialCfProjectName?: string | null;
+  initialCustomDomain?: string | null;
+  initialCustomDomainStatus?: "pending" | "active" | "error" | null;
 };
 
 export function ProjectEditor({
@@ -16,6 +19,9 @@ export function ProjectEditor({
   initialName,
   initialPages,
   initialDeployedUrl,
+  initialCfProjectName,
+  initialCustomDomain,
+  initialCustomDomainStatus,
 }: Props) {
   return (
     <BuilderUI
@@ -23,6 +29,9 @@ export function ProjectEditor({
       initialName={initialName}
       initialPages={initialPages}
       initialDeployedUrl={initialDeployedUrl}
+      initialCfProjectName={initialCfProjectName}
+      initialCustomDomain={initialCustomDomain}
+      initialCustomDomainStatus={initialCustomDomainStatus}
     />
   );
 }

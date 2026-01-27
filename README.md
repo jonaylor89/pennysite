@@ -278,6 +278,30 @@ See [docs/cloudflare-deployments.md](docs/cloudflare-deployments.md) for full de
 
 Run `supabase-deployment-schema.sql` to add the deployment columns to your projects table.
 
+## 🔗 Custom Domains
+
+Users can connect their own domains to published sites. After publishing, the "Add Custom Domain" button becomes available.
+
+### How it works
+
+1. User publishes their site to Cloudflare Pages
+2. User clicks "Add Custom Domain" and enters their domain (e.g., `blog.example.com`)
+3. Pennysite registers the domain with Cloudflare Pages
+4. User receives DNS configuration instructions (CNAME record)
+5. Once DNS propagates, Cloudflare issues SSL automatically
+6. Site is accessible at the custom domain
+
+### Domain types
+
+| Type | Example | Requirements |
+|------|---------|--------------|
+| Subdomain | `blog.example.com` | CNAME record pointing to `projectname.pages.dev` |
+| Apex domain | `example.com` | Domain must be on Cloudflare DNS |
+
+### Database migration
+
+Run `supabase-custom-domains-schema.sql` to add custom domain columns to your projects table.
+
 ## 🗺️ Roadmap
 
 ### Not yet implemented
@@ -286,7 +310,7 @@ Run `supabase-deployment-schema.sql` to add the deployment columns to your proje
 - [x] **Stripe billing** — Pay-per-generation credit system
 - [ ] **Image upload** — Custom images instead of Unsplash
 - [ ] **Click-to-edit** — Edit text directly in the preview
-- [ ] **Custom domains** — Connect your own domain to published sites
+- [x] **Custom domains** — Connect your own domain to published sites
 - [ ] **Version history** — Undo/redo and view previous versions
 
 ### Future ideas

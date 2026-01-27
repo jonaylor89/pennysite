@@ -20,6 +20,9 @@ export interface Database {
           cf_project_name: string | null;
           deployed_url: string | null;
           last_deployed_at: string | null;
+          custom_domain: string | null;
+          custom_domain_status: "pending" | "active" | "error" | null;
+          custom_domain_added_at: string | null;
         };
         Insert: {
           id?: string;
@@ -31,6 +34,9 @@ export interface Database {
           cf_project_name?: string | null;
           deployed_url?: string | null;
           last_deployed_at?: string | null;
+          custom_domain?: string | null;
+          custom_domain_status?: "pending" | "active" | "error" | null;
+          custom_domain_added_at?: string | null;
         };
         Update: {
           id?: string;
@@ -42,6 +48,9 @@ export interface Database {
           cf_project_name?: string | null;
           deployed_url?: string | null;
           last_deployed_at?: string | null;
+          custom_domain?: string | null;
+          custom_domain_status?: "pending" | "active" | "error" | null;
+          custom_domain_added_at?: string | null;
         };
         Relationships: [];
       };

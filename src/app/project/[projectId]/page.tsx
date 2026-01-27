@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { ProjectEditor } from "./ProjectEditor";
 import type { Database } from "@/lib/supabase/types";
+import { ProjectEditor } from "./ProjectEditor";
 
 type Pages = Record<string, string>;
 type Project = Database["public"]["Tables"]["projects"]["Row"];
@@ -41,6 +41,9 @@ export default async function ProjectPage({ params }: Props) {
       initialName={project.name}
       initialPages={project.pages as Pages}
       initialDeployedUrl={project.deployed_url}
+      initialCfProjectName={project.cf_project_name}
+      initialCustomDomain={project.custom_domain}
+      initialCustomDomainStatus={project.custom_domain_status}
     />
   );
 }

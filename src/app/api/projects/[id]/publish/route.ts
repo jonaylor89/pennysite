@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
 import { publishToCloudflare } from "@/lib/cloudflare/pages";
+import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/types";
 
 type Project = Database["public"]["Tables"]["projects"]["Row"];

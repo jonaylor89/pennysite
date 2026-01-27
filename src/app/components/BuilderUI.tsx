@@ -35,12 +35,27 @@ type CreditBalance = {
   };
 };
 
+type CustomDomainInfo = {
+  customDomain: string | null;
+  status: "pending" | "active" | "error" | null;
+  instructions: {
+    type: string;
+    host: string;
+    target: string;
+    instructions: string;
+  } | null;
+  customDomainUrl: string | null;
+};
+
 type BuilderUIProps = {
   projectId: string | null;
   initialName?: string;
   initialPages?: Pages;
   initialPrompt?: string;
   initialDeployedUrl?: string | null;
+  initialCfProjectName?: string | null;
+  initialCustomDomain?: string | null;
+  initialCustomDomainStatus?: "pending" | "active" | "error" | null;
 };
 
 function injectNavigationScript(html: string): string {
@@ -172,12 +187,272 @@ function BuyCreditsModal({
   );
 }
 
+function CustomDomainModal({
+  projectId,
+  cfProjectName,
+  existingDomain,
+  onClose,
+  onSuccess,
+}: {
+  projectId: string;
+  cfProjectName: string;
+  existingDomain: CustomDomainInfo | null;
+  onClose: () => void;
+  onSuccess: (info: CustomDomainInfo) => void;
+}) {
+  const [domain, setDomain] = useState(existingDomain?.customDomain || "");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [domainInfo, setDomainInfo] = useState<CustomDomainInfo | null>(
+    existingDomain,
+  );
+
+  async function handleAddDomain() {
+    if (!domain.trim()) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/projects/${projectId}/domain`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain: domain.trim() }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Failed to add domain");
+        return;
+      }
+
+      const info: CustomDomainInfo = {
+        customDomain: data.customDomain,
+        status: data.status,
+        instructions: data.instructions,
+        customDomainUrl: data.customDomainUrl,
+      };
+      setDomainInfo(info);
+      onSuccess(info);
+    } catch {
+      setError("Failed to add domain");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleRemoveDomain() {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/projects/${projectId}/domain`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "Failed to remove domain");
+        return;
+      }
+
+      setDomainInfo(null);
+      setDomain("");
+      onSuccess({
+        customDomain: null,
+        status: null,
+        instructions: null,
+        customDomainUrl: null,
+      });
+    } catch {
+      setError("Failed to remove domain");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleCheckStatus() {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/domain`);
+      const data = await res.json();
+      if (data.customDomain) {
+        const info: CustomDomainInfo = {
+          customDomain: data.customDomain,
+          status: data.status,
+          instructions: data.instructions,
+          customDomainUrl: data.customDomainUrl,
+        };
+        setDomainInfo(info);
+        onSuccess(info);
+      }
+    } catch {
+      setError("Failed to check status");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="w-full max-w-md rounded-xl bg-zinc-900 p-6 shadow-2xl">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-white">Custom Domain</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-zinc-400 hover:text-white"
+          >
+            ✕
+          </button>
+        </div>
+
+        {domainInfo?.customDomain ? (
+          <div className="space-y-4">
+            <div className="rounded-lg border border-zinc-700 bg-zinc-800 p-4">
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-white">
+                  {domainInfo.customDomain}
+                </span>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs ${
+                    domainInfo.status === "active"
+                      ? "bg-emerald-500/20 text-emerald-400"
+                      : "bg-amber-500/20 text-amber-400"
+                  }`}
+                >
+                  {domainInfo.status === "active" ? "Active" : "Pending"}
+                </span>
+              </div>
+
+              {domainInfo.status === "active" && domainInfo.customDomainUrl && (
+                <a
+                  href={domainInfo.customDomainUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 block text-sm text-emerald-400 hover:underline"
+                >
+                  {domainInfo.customDomainUrl}
+                </a>
+              )}
+            </div>
+
+            {domainInfo.status === "pending" && domainInfo.instructions && (
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
+                <p className="mb-2 text-sm font-medium text-amber-200">
+                  Configure your DNS:
+                </p>
+                <div className="space-y-2 text-sm text-zinc-300">
+                  <div className="flex items-center gap-2">
+                    <span className="text-zinc-500">Type:</span>
+                    <code className="rounded bg-zinc-800 px-2 py-0.5 text-amber-300">
+                      {domainInfo.instructions.type}
+                    </code>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-zinc-500">Name:</span>
+                    <code className="rounded bg-zinc-800 px-2 py-0.5 text-amber-300">
+                      {domainInfo.instructions.host}
+                    </code>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-zinc-500">Target:</span>
+                    <code className="rounded bg-zinc-800 px-2 py-0.5 text-amber-300">
+                      {domainInfo.instructions.target}
+                    </code>
+                  </div>
+                </div>
+                <p className="mt-3 text-xs text-zinc-400">
+                  {domainInfo.instructions.instructions}
+                </p>
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              {domainInfo.status === "pending" && (
+                <button
+                  type="button"
+                  onClick={handleCheckStatus}
+                  disabled={isLoading}
+                  className="flex-1 rounded-lg bg-zinc-700 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-600 disabled:opacity-50"
+                >
+                  {isLoading ? "Checking..." : "Check Status"}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleRemoveDomain}
+                disabled={isLoading}
+                className="rounded-lg border border-red-500/30 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 disabled:opacity-50"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="domain"
+                className="mb-1 block text-sm text-zinc-400"
+              >
+                Enter your domain
+              </label>
+              <input
+                id="domain"
+                type="text"
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+                placeholder="blog.example.com"
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white placeholder-zinc-500 focus:border-zinc-500 focus:outline-none"
+              />
+              <p className="mt-1 text-xs text-zinc-500">
+                Your project will be accessible at https://
+                {domain || "your-domain.com"}
+              </p>
+            </div>
+
+            {error && <p className="text-sm text-red-400">{error}</p>}
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleAddDomain}
+                disabled={isLoading || !domain.trim()}
+                className="flex-1 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50"
+              >
+                {isLoading ? "Adding..." : "Add Domain"}
+              </button>
+            </div>
+
+            <p className="text-xs text-zinc-500">
+              After adding, you&apos;ll need to configure a CNAME record with
+              your DNS provider pointing to{" "}
+              <code className="text-zinc-400">{cfProjectName}.pages.dev</code>
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function BuilderUI({
   projectId: initialProjectId,
   initialName = "Untitled",
   initialPages = {},
   initialPrompt,
   initialDeployedUrl,
+  initialCfProjectName,
+  initialCustomDomain,
+  initialCustomDomainStatus,
 }: BuilderUIProps) {
   const [user, setUser] = useState<User | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
@@ -204,6 +479,21 @@ export function BuilderUI({
   const [deployedUrl, setDeployedUrl] = useState<string | null>(
     initialDeployedUrl ?? null,
   );
+  const [cfProjectName, setCfProjectName] = useState<string | null>(
+    initialCfProjectName ?? null,
+  );
+  const [showDomainModal, setShowDomainModal] = useState(false);
+  const [customDomainInfo, setCustomDomainInfo] =
+    useState<CustomDomainInfo | null>(
+      initialCustomDomain
+        ? {
+            customDomain: initialCustomDomain,
+            status: initialCustomDomainStatus ?? null,
+            instructions: null,
+            customDomainUrl: `https://${initialCustomDomain}`,
+          }
+        : null,
+    );
   const [siteSpec, setSiteSpec] = useState<SiteSpec | null>(null);
   const [generationPhase, setGenerationPhase] = useState<string>("");
   const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
@@ -528,6 +818,9 @@ export function BuilderUI({
 
       if (res.ok && data.deployedUrl) {
         setDeployedUrl(data.deployedUrl);
+        if (data.cfProjectName) {
+          setCfProjectName(data.cfProjectName);
+        }
         setPublishStatus("Published!");
       } else {
         setPublishStatus(data.error || "Publish failed");
@@ -590,6 +883,19 @@ export function BuilderUI({
           }}
           availableCredits={insufficientCreditsInfo.available}
           requiredCredits={insufficientCreditsInfo.required}
+        />
+      )}
+
+      {/* Custom Domain Modal */}
+      {showDomainModal && projectId && cfProjectName && (
+        <CustomDomainModal
+          projectId={projectId}
+          cfProjectName={cfProjectName}
+          existingDomain={customDomainInfo}
+          onClose={() => setShowDomainModal(false)}
+          onSuccess={(info) => {
+            setCustomDomainInfo(info);
+          }}
         />
       )}
 
@@ -820,6 +1126,30 @@ export function BuilderUI({
                   <span>🌐</span>
                   <span className="truncate">{deployedUrl}</span>
                 </a>
+              )}
+              {/* Custom Domain */}
+              {deployedUrl && cfProjectName && (
+                <button
+                  type="button"
+                  onClick={() => setShowDomainModal(true)}
+                  className={`flex items-center justify-center gap-1 rounded-lg border px-3 py-2 text-sm transition-colors ${
+                    customDomainInfo?.status === "active"
+                      ? "border-purple-700 bg-purple-900/30 text-purple-300 hover:bg-purple-900/50"
+                      : customDomainInfo?.customDomain
+                        ? "border-amber-700 bg-amber-900/30 text-amber-300 hover:bg-amber-900/50"
+                        : "border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                  }`}
+                >
+                  <span>🔗</span>
+                  {customDomainInfo?.customDomain ? (
+                    <span className="truncate">
+                      {customDomainInfo.customDomain}
+                      {customDomainInfo.status === "pending" && " (pending)"}
+                    </span>
+                  ) : (
+                    <span>Add Custom Domain</span>
+                  )}
+                </button>
               )}
             </div>
           </div>
