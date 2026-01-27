@@ -31,7 +31,7 @@ export async function POST(req: Request) {
 
   const customerId = await getOrCreateStripeCustomer(user.id, user.email || "");
 
-  const origin = req.headers.get("origin") || "http://localhost:3000";
+  const origin = req.headers.get("origin") || "https://pennysite.vercel.app";
 
   const stripe = getStripe();
   const session = await stripe.checkout.sessions.create({
