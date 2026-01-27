@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getOrCreateStripeCustomer } from "@/lib/billing/credits";
+import { trackServerEvent } from "@/lib/posthog/server";
 import { getPackById } from "@/lib/stripe/packs";
 import { getStripe } from "@/lib/stripe/stripe";
 import { createClient } from "@/lib/supabase/server";
@@ -50,6 +51,12 @@ export async function POST(req: Request) {
     },
     success_url: `${origin}/billing?success=true`,
     cancel_url: `${origin}/billing?canceled=true`,
+  });
+
+  trackServerEvent(user.id, "checkout_started", {
+    pack_id: pack.id,
+    credits: pack.credits,
+    price_usd: pack.priceUsd,
   });
 
   return NextResponse.json({ url: session.url });

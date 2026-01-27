@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import posthog from "posthog-js";
 import { Suspense, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -24,7 +25,7 @@ function LoginContent() {
     setMessage(null);
 
     if (isSignUp) {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -34,16 +35,24 @@ function LoginContent() {
       if (error) {
         setError(error.message);
       } else {
+        if (data.user) {
+          posthog.identify(data.user.id, { email: data.user.email });
+          posthog.capture("signup_started");
+        }
         setMessage("Check your email for a confirmation link!");
       }
     } else {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (error) {
         setError(error.message);
       } else {
+        if (data.user) {
+          posthog.identify(data.user.id, { email: data.user.email });
+          posthog.capture("login_completed");
+        }
         router.push(redirectTo);
         router.refresh();
       }

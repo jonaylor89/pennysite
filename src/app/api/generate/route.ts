@@ -9,6 +9,7 @@ import {
 } from "@/lib/billing/credits";
 import { generateWebsite, type TokenUsage } from "@/lib/generation/agent";
 import type { SiteSpec } from "@/lib/generation/types";
+import { trackServerEvent } from "@/lib/posthog/server";
 import { createClient } from "@/lib/supabase/server";
 
 type Message = {
@@ -84,6 +85,11 @@ export async function POST(req: Request) {
   let generationSuccess = false;
   let generationError: string | undefined;
 
+  trackServerEvent(user.id, "generation_started", {
+    project_id: projectId,
+    has_existing_pages: !!currentPages,
+  });
+
   const stream = new ReadableStream({
     async start(controller) {
       try {
@@ -134,6 +140,19 @@ export async function POST(req: Request) {
           );
         } catch (finalizeErr) {
           console.error("Failed to finalize credits:", finalizeErr);
+        }
+
+        if (generationSuccess) {
+          trackServerEvent(user.id, "generation_completed", {
+            project_id: projectId,
+            input_tokens: finalUsage?.inputTokens,
+            output_tokens: finalUsage?.outputTokens,
+          });
+        } else {
+          trackServerEvent(user.id, "generation_failed", {
+            project_id: projectId,
+            error: generationError,
+          });
         }
 
         controller.enqueue(encoder.encode("data: [DONE]\n\n"));

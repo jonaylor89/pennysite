@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { addCreditsFromPurchase } from "@/lib/billing/credits";
+import { trackServerEvent } from "@/lib/posthog/server";
 import { getStripe } from "@/lib/stripe/stripe";
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -67,6 +68,11 @@ export async function POST(req: Request) {
 
       if (added) {
         console.log(`Added ${credits} credits for user ${userId}`);
+        trackServerEvent(userId, "credits_purchased", {
+          credits,
+          pack_id: session.metadata?.pack_id,
+          amount_cents: session.amount_total,
+        });
       } else {
         console.log(`Event ${event.id} already processed`);
       }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { publishToCloudflare } from "@/lib/cloudflare/pages";
+import { trackServerEvent } from "@/lib/posthog/server";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/types";
 
@@ -57,6 +58,12 @@ export async function POST(
     if (updateError) {
       console.error("Failed to update project:", updateError);
     }
+
+    trackServerEvent(user.id, "project_published", {
+      project_id: id,
+      page_count: Object.keys(pages).length,
+      deployed_url: deployedUrl,
+    });
 
     return NextResponse.json({
       success: true,

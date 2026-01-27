@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { trackServerEvent } from "@/lib/posthog/server";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET() {
@@ -48,9 +49,18 @@ export async function POST(req: Request) {
     .select()
     .single();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error || !project) {
+    return NextResponse.json(
+      { error: error?.message || "Failed to create project" },
+      { status: 500 },
+    );
   }
+
+  const projectData = project as { id: string };
+  trackServerEvent(user.id, "project_created", {
+    project_id: projectData.id,
+    page_count: Object.keys(pages || {}).length,
+  });
 
   return NextResponse.json({ project });
 }
