@@ -108,7 +108,7 @@ function BillingContent() {
           Pennysite
         </Link>
         <nav className="flex items-center gap-4 text-sm text-zinc-300">
-          <Link href="/builder" className="hover:text-white">
+          <Link href="/project/new" className="hover:text-white">
             Builder
           </Link>
           <Link href="/projects" className="hover:text-white">

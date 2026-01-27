@@ -31,7 +31,7 @@ export function HeaderNav() {
         <span className="h-8 w-16" />
       ) : user ? (
         <Link
-          href="/builder"
+          href="/project/new"
           className="rounded-full border border-zinc-800 bg-zinc-900/40 px-3 py-1.5 text-white hover:bg-zinc-900"
         >
           Builder

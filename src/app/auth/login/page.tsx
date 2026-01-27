@@ -16,7 +16,7 @@ function LoginContent() {
   const searchParams = useSearchParams();
   const supabase = createClient();
 
-  const redirectTo = searchParams.get("redirect") || "/builder";
+  const redirectTo = searchParams.get("redirect") || "/projects";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
