@@ -10,7 +10,10 @@ describe("Cloudflare Pages custom domains", () => {
 
   describe("getDomainInstructions", () => {
     it("should return CNAME instructions for subdomain", () => {
-      const result = getDomainInstructions("my-project-abc123", "blog.example.com");
+      const result = getDomainInstructions(
+        "my-project-abc123",
+        "blog.example.com",
+      );
 
       expect(result.type).toBe("CNAME");
       expect(result.host).toBe("blog");

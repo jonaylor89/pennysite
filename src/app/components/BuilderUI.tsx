@@ -496,7 +496,7 @@ export function BuilderUI({
     );
   const [siteSpec, setSiteSpec] = useState<SiteSpec | null>(null);
   const [generationPhase, setGenerationPhase] = useState<string>("");
-  const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
+  const [_pendingPrompt, setPendingPrompt] = useState<string | null>(null);
   const [liveUsage, setLiveUsage] = useState<{
     inputTokens: number;
     outputTokens: number;
@@ -629,7 +629,7 @@ export function BuilderUI({
       const decoder = new TextDecoder();
       let buffer = "";
       let finalPages: Pages = { ...pages };
-      let finalSpec: SiteSpec | null = siteSpec;
+      let _finalSpec: SiteSpec | null = siteSpec;
       let finalName = projectName;
 
       while (true) {
@@ -658,7 +658,7 @@ export function BuilderUI({
 
               case "spec":
                 setSiteSpec(event.spec);
-                finalSpec = event.spec;
+                _finalSpec = event.spec;
                 if (event.spec.name && event.spec.name !== "Website") {
                   setProjectName(event.spec.name);
                   finalName = event.spec.name;
@@ -714,7 +714,7 @@ export function BuilderUI({
                 }
                 if (event.spec) {
                   setSiteSpec(event.spec);
-                  finalSpec = event.spec;
+                  _finalSpec = event.spec;
                   if (event.spec.name && event.spec.name !== "Website") {
                     setProjectName(event.spec.name);
                     finalName = event.spec.name;
