@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Script from "next/script";
 import { HeaderNav } from "./components/HeaderNav";
 
 export const dynamic = "force-dynamic";
@@ -31,9 +32,11 @@ const jsonLd = {
 export default function Home() {
   return (
     <>
-      <script
+      <Script
+        id="json-ld"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        strategy="afterInteractive"
       />
       <div className="relative min-h-screen overflow-hidden bg-zinc-950 text-white">
         <div
