@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { name, pages } = await req.json();
+  const { name, pages, conversation } = await req.json();
 
   const { data: project, error } = await supabase
     .from("projects")
@@ -45,6 +45,7 @@ export async function POST(req: Request) {
       user_id: user.id,
       name: name || "Untitled",
       pages,
+      conversation: conversation || [],
     })
     .select()
     .single();

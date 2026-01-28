@@ -53,6 +53,7 @@ type BuilderUIProps = {
   projectId: string | null;
   initialName?: string;
   initialPages?: Pages;
+  initialConversation?: Message[];
   initialPrompt?: string;
   initialDeployedUrl?: string | null;
   initialCfProjectName?: string | null;
@@ -450,6 +451,7 @@ export function BuilderUI({
   projectId: initialProjectId,
   initialName = "Untitled",
   initialPages = {},
+  initialConversation = [],
   initialPrompt,
   initialDeployedUrl,
   initialCfProjectName,
@@ -468,7 +470,7 @@ export function BuilderUI({
   } | null>(null);
   const [projectId, setProjectId] = useState<string | null>(initialProjectId);
   const [projectName, setProjectName] = useState(initialName);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(initialConversation);
   const [input, setInput] = useState("");
   const [pages, setPages] = useState<Pages>(initialPages);
   const [currentPage, setCurrentPage] = useState("index.html");
@@ -566,12 +568,13 @@ export function BuilderUI({
   async function createProjectAndRedirect(
     name: string,
     generatedPages: Pages,
+    conversation: Message[],
     generationId?: string | null,
   ): Promise<string | null> {
     const res = await fetch("/api/projects", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, pages: generatedPages }),
+      body: JSON.stringify({ name, pages: generatedPages, conversation }),
     });
     const data = await res.json();
     if (data.project) {
@@ -798,21 +801,22 @@ export function BuilderUI({
         }
       }
 
-      setMessages([
+      const finalMessages = [
         ...newMessages,
-        { role: "assistant", content: "Updated the website." },
-      ]);
+        { role: "assistant" as const, content: "Updated the website." },
+      ];
+      setMessages(finalMessages);
       setGenerationPhase("");
 
       // If this is a new project (no projectId), create it now
       if (!projectId && Object.keys(finalPages).length > 0) {
-        await createProjectAndRedirect(finalName, finalPages, currentGenerationId);
+        await createProjectAndRedirect(finalName, finalPages, finalMessages, currentGenerationId);
       } else if (projectId) {
         // Auto-save existing project
         await fetch(`/api/projects/${projectId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: finalName, pages: finalPages }),
+          body: JSON.stringify({ name: finalName, pages: finalPages, conversation: finalMessages }),
         });
       }
     } catch (err) {
@@ -843,11 +847,11 @@ export function BuilderUI({
         await fetch(`/api/projects/${projectId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: projectName, pages }),
+          body: JSON.stringify({ name: projectName, pages, conversation: messages }),
         });
         setSaveStatus("Saved!");
       } else {
-        await createProjectAndRedirect(projectName, pages);
+        await createProjectAndRedirect(projectName, pages, messages);
         setSaveStatus("Saved!");
       }
 

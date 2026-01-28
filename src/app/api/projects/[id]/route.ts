@@ -48,15 +48,20 @@ export async function PUT(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { name, pages } = await req.json();
+  const { name, pages, conversation } = await req.json();
+
+  const updateData: Record<string, unknown> = {
+    name,
+    pages,
+    updated_at: new Date().toISOString(),
+  };
+  if (conversation !== undefined) {
+    updateData.conversation = conversation;
+  }
 
   const { data: project, error } = await supabase
     .from("projects")
-    .update({
-      name,
-      pages,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updateData)
     .eq("id", id)
     .eq("user_id", user.id)
     .select()

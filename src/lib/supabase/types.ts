@@ -15,6 +15,7 @@ export interface Database {
           user_id: string;
           name: string;
           pages: Json;
+          conversation: Json;
           created_at: string;
           updated_at: string;
           cf_project_name: string | null;
@@ -29,6 +30,7 @@ export interface Database {
           user_id: string;
           name?: string;
           pages?: Json;
+          conversation?: Json;
           created_at?: string;
           updated_at?: string;
           cf_project_name?: string | null;
@@ -43,6 +45,7 @@ export interface Database {
           user_id?: string;
           name?: string;
           pages?: Json;
+          conversation?: Json;
           created_at?: string;
           updated_at?: string;
           cf_project_name?: string | null;

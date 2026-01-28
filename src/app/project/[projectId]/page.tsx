@@ -35,11 +35,15 @@ export default async function ProjectPage({ params }: Props) {
 
   const project = data as Project;
 
+  type Message = { role: "user" | "assistant"; content: string };
+  const conversation = (project.conversation ?? []) as Message[];
+
   return (
     <ProjectEditor
       projectId={project.id}
       initialName={project.name}
       initialPages={project.pages as Pages}
+      initialConversation={conversation}
       initialDeployedUrl={project.deployed_url}
       initialCfProjectName={project.cf_project_name}
       initialCustomDomain={project.custom_domain}
