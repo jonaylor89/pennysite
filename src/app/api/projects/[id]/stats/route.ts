@@ -1,26 +1,11 @@
-import { notFound, redirect } from "next/navigation";
+import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import type { Database } from "@/lib/supabase/types";
-import { ProjectSettings } from "./ProjectSettings";
 
-type Project = Database["public"]["Tables"]["projects"]["Row"];
-
-export type ProjectStats = {
-  totalGenerations: number;
-  completedGenerations: number;
-  failedGenerations: number;
-  totalCreditsUsed: number;
-  totalInputTokens: number;
-  totalOutputTokens: number;
-  lastGenerationAt: string | null;
-};
-
-type Props = {
-  params: Promise<{ projectId: string }>;
-};
-
-export default async function ProjectSettingsPage({ params }: Props) {
-  const { projectId } = await params;
+export async function GET(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
   const supabase = await createClient();
 
   const {
@@ -28,30 +13,32 @@ export default async function ProjectSettingsPage({ params }: Props) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/auth/login");
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data, error } = await supabase
+  const { data: project, error: projectError } = await supabase
     .from("projects")
-    .select("*")
-    .eq("id", projectId)
+    .select("id, user_id")
+    .eq("id", id)
     .eq("user_id", user.id)
     .single();
 
-  if (error || !data) {
-    notFound();
+  if (projectError || !project) {
+    return NextResponse.json({ error: "Project not found" }, { status: 404 });
   }
 
-  const project = data as Project;
-
-  const { data: generations } = await supabase
+  const { data: generations, error: genError } = await supabase
     .from("generations")
     .select("actual_credits, input_tokens, output_tokens, status, created_at")
-    .eq("project_id", projectId)
+    .eq("project_id", id)
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
-  const stats: ProjectStats = {
+  if (genError) {
+    return NextResponse.json({ error: genError.message }, { status: 500 });
+  }
+
+  const stats = {
     totalGenerations: generations?.length ?? 0,
     completedGenerations:
       generations?.filter((g) => g.status === "completed").length ?? 0,
@@ -66,5 +53,5 @@ export default async function ProjectSettingsPage({ params }: Props) {
     lastGenerationAt: generations?.[0]?.created_at ?? null,
   };
 
-  return <ProjectSettings project={project} stats={stats} />;
+  return NextResponse.json(stats);
 }

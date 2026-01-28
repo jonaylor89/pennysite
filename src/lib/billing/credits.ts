@@ -114,6 +114,22 @@ export async function addCreditsFromPurchase(
   return data as boolean;
 }
 
+export async function updateGenerationProjectId(
+  generationId: string,
+  projectId: string,
+): Promise<void> {
+  const supabase = getServiceClient();
+
+  const { error } = await supabase
+    .from("generations")
+    .update({ project_id: projectId })
+    .eq("id", generationId);
+
+  if (error) {
+    console.error("Failed to update generation project_id:", error);
+  }
+}
+
 export async function getOrCreateStripeCustomer(
   userId: string,
   email: string,

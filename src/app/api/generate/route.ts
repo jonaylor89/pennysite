@@ -102,6 +102,13 @@ export async function POST(req: Request) {
   const stream = new ReadableStream({
     async start(controller) {
       try {
+        // Send generation ID first so client can link it to project later
+        controller.enqueue(
+          encoder.encode(
+            `data: ${JSON.stringify({ type: "generation_id", generationId })}\n\n`,
+          ),
+        );
+
         for await (const event of generateWebsite(
           userRequest,
           existingSpec,

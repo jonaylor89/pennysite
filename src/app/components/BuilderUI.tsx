@@ -566,6 +566,7 @@ export function BuilderUI({
   async function createProjectAndRedirect(
     name: string,
     generatedPages: Pages,
+    generationId?: string | null,
   ): Promise<string | null> {
     const res = await fetch("/api/projects", {
       method: "POST",
@@ -576,6 +577,16 @@ export function BuilderUI({
     if (data.project) {
       setProjectId(data.project.id);
       router.replace(`/project/${data.project.id}`);
+
+      // Link the generation to the newly created project
+      if (generationId) {
+        fetch(`/api/generations/${generationId}/link-project`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ projectId: data.project.id }),
+        }).catch(console.error);
+      }
+
       return data.project.id;
     }
     return null;
@@ -611,6 +622,7 @@ export function BuilderUI({
           currentPages: Object.keys(pages).length > 0 ? pages : undefined,
           existingSpec: siteSpec,
           idempotencyKey: crypto.randomUUID(),
+          projectId: projectId ?? undefined,
         }),
       });
 
@@ -642,6 +654,7 @@ export function BuilderUI({
       let finalPages: Pages = { ...pages };
       let _finalSpec: SiteSpec | null = siteSpec;
       let finalName = projectName;
+      let currentGenerationId: string | null = null;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -663,6 +676,10 @@ export function BuilderUI({
             const event = JSON.parse(data);
 
             switch (event.type) {
+              case "generation_id":
+                currentGenerationId = event.generationId;
+                break;
+
               case "status":
                 setGenerationPhase(event.message);
                 break;
@@ -789,7 +806,7 @@ export function BuilderUI({
 
       // If this is a new project (no projectId), create it now
       if (!projectId && Object.keys(finalPages).length > 0) {
-        await createProjectAndRedirect(finalName, finalPages);
+        await createProjectAndRedirect(finalName, finalPages, currentGenerationId);
       } else if (projectId) {
         // Auto-save existing project
         await fetch(`/api/projects/${projectId}`, {

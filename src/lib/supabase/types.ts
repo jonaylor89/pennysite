@@ -54,6 +54,54 @@ export interface Database {
         };
         Relationships: [];
       };
+      generations: {
+        Row: {
+          id: string;
+          user_id: string;
+          project_id: string | null;
+          reserved_credits: number;
+          actual_credits: number | null;
+          input_tokens: number | null;
+          output_tokens: number | null;
+          total_tokens: number | null;
+          status: "reserved" | "completed" | "failed";
+          idempotency_key: string;
+          error: string | null;
+          created_at: string;
+          completed_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          project_id?: string | null;
+          reserved_credits: number;
+          actual_credits?: number | null;
+          input_tokens?: number | null;
+          output_tokens?: number | null;
+          total_tokens?: number | null;
+          status?: "reserved" | "completed" | "failed";
+          idempotency_key: string;
+          error?: string | null;
+          created_at?: string;
+          completed_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          project_id?: string | null;
+          reserved_credits?: number;
+          actual_credits?: number | null;
+          input_tokens?: number | null;
+          output_tokens?: number | null;
+          total_tokens?: number | null;
+          status?: "reserved" | "completed" | "failed";
+          idempotency_key?: string;
+          error?: string | null;
+          created_at?: string;
+          completed_at?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
