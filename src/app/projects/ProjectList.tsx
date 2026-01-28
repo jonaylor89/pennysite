@@ -10,6 +10,7 @@ type Project = {
   created_at: string;
   updated_at: string;
   deployed_url: string | null;
+  previewHtml: string | null;
 };
 
 const dateFmt = new Intl.DateTimeFormat("en-US", {
@@ -112,7 +113,78 @@ const ProjectMenu = memo(function ProjectMenu({
   );
 });
 
-const ProjectRow = memo(function ProjectRow({
+/** Viewport we render the page at before scaling down */
+const VIEWPORT_W = 1440;
+const VIEWPORT_H = 900;
+
+function PreviewFrame({ html }: { html: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setScale(entry.contentRect.width / VIEWPORT_W);
+      }
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      className="pointer-events-none relative overflow-hidden bg-zinc-950"
+      style={{ aspectRatio: `${VIEWPORT_W}/${VIEWPORT_H}` }}
+    >
+      <iframe
+        srcDoc={html}
+        sandbox="allow-scripts allow-same-origin"
+        title="Preview"
+        className="absolute left-0 top-0 origin-top-left border-0"
+        style={{
+          width: VIEWPORT_W,
+          height: VIEWPORT_H,
+          transform: `scale(${scale})`,
+          opacity: scale === 0 ? 0 : 1,
+        }}
+        tabIndex={-1}
+        loading="lazy"
+      />
+    </div>
+  );
+}
+
+function PreviewPlaceholder() {
+  return (
+    <div
+      className="flex w-full items-center justify-center bg-zinc-900"
+      style={{ aspectRatio: `${VIEWPORT_W}/${VIEWPORT_H}` }}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="32"
+        height="32"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="text-zinc-700"
+        aria-hidden="true"
+      >
+        <rect width="18" height="18" x="3" y="3" rx="2" />
+        <path d="m9 8 6 4-6 4Z" />
+      </svg>
+    </div>
+  );
+}
+
+const ProjectCard = memo(function ProjectCard({
   project,
   onDelete,
 }: {
@@ -120,17 +192,28 @@ const ProjectRow = memo(function ProjectRow({
   onDelete: (id: string) => void;
 }) {
   return (
-    <div className="relative rounded-lg border border-zinc-800 bg-zinc-900 transition-colors hover:border-zinc-700">
-      <Link href={`/project/${project.id}`} className="block p-4 pr-12">
-        <h2 className="font-medium text-white">{project.name}</h2>
-        <p className="mt-1 text-sm text-zinc-500">
-          Updated {dateFmt.format(new Date(project.updated_at))}
-          {project.deployed_url && (
-            <span className="ml-2 text-emerald-500">• Published</span>
+    <div className="overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900 transition-colors hover:border-zinc-700">
+      <Link href={`/project/${project.id}`} className="block">
+        <div className="border-b border-zinc-800">
+          {project.previewHtml ? (
+            <PreviewFrame html={project.previewHtml} />
+          ) : (
+            <PreviewPlaceholder />
           )}
-        </p>
+        </div>
       </Link>
-      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+      <div className="flex items-center gap-2 px-3 py-2.5">
+        <Link href={`/project/${project.id}`} className="min-w-0 flex-1">
+          <h2 className="truncate text-sm font-medium text-white">
+            {project.name}
+          </h2>
+          <p className="mt-0.5 truncate text-xs text-zinc-500">
+            {dateFmt.format(new Date(project.updated_at))}
+            {project.deployed_url && (
+              <span className="ml-1.5 text-emerald-500">• Live</span>
+            )}
+          </p>
+        </Link>
         <ProjectMenu project={project} onDelete={onDelete} />
       </div>
     </div>
@@ -169,9 +252,9 @@ export function ProjectList({ projects }: { projects: Project[] }) {
 
   return (
     <>
-      <div className="space-y-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {projects.map((project) => (
-          <ProjectRow
+          <ProjectCard
             key={project.id}
             project={project}
             onDelete={handleRequestDelete}

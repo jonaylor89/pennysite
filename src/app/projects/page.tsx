@@ -28,20 +28,32 @@ export default async function ProjectsPage({
     redirect("/auth/login");
   }
 
-  const { data: projects, count } = await supabase
+  const { data: rawProjects, count } = await supabase
     .from("projects")
-    .select("id, name, created_at, updated_at, deployed_url", {
+    .select("id, name, created_at, updated_at, deployed_url, pages", {
       count: "exact",
     })
     .eq("user_id", user.id)
     .order("updated_at", { ascending: false })
     .range(from, to);
 
+  const projects = rawProjects?.map(({ pages, ...rest }) => ({
+    ...rest,
+    previewHtml:
+      pages &&
+      typeof pages === "object" &&
+      !Array.isArray(pages) &&
+      "index.html" in pages &&
+      typeof (pages as Record<string, unknown>)["index.html"] === "string"
+        ? ((pages as Record<string, string>)["index.html"] as string)
+        : null,
+  }));
+
   const totalPages = Math.ceil((count || 0) / PAGE_SIZE);
 
   return (
     <div className="min-h-screen bg-zinc-950 px-4 py-12">
-      <div className="mx-auto max-w-2xl">
+      <div className="mx-auto max-w-6xl">
         <div className="mb-8 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-white">Your Projects</h1>
           <div className="flex items-center gap-3">

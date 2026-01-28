@@ -11,6 +11,5 @@
 - [ ] **Version history** — Undo/redo and view previous versions
 - [ ] Form handling (contact forms, newsletter signups)
 - [ ] AI-powered SEO optimization
-- [ ] Content locking — “lock this section” to prevent AI from changing it on regen.
 - [ ] Analytics integration
 - [ ] Accessibility + performance checks — automated audit with fixes for contrast, heading order, missing alt text.
