@@ -23,9 +23,14 @@ export function HeaderNav() {
         Pricing
       </Link>
       {user && (
-        <Link href="/projects" className="hover:text-white">
-          Projects
-        </Link>
+        <>
+          <Link href="/projects" className="hover:text-white">
+            Projects
+          </Link>
+          <Link href="/account" className="hover:text-white">
+            Account
+          </Link>
+        </>
       )}
       {loading ? (
         <span className="h-8 w-16" />

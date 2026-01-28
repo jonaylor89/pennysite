@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { ProjectList } from "./ProjectList";
 
 export default async function ProjectsPage() {
   const supabase = await createClient();
@@ -15,7 +16,7 @@ export default async function ProjectsPage() {
 
   const { data: projects } = await supabase
     .from("projects")
-    .select("id, name, created_at, updated_at")
+    .select("id, name, created_at, updated_at, deployed_url")
     .eq("user_id", user.id)
     .order("updated_at", { ascending: false });
 
@@ -33,25 +34,7 @@ export default async function ProjectsPage() {
         </div>
 
         {projects && projects.length > 0 ? (
-          <div className="space-y-3">
-            {projects.map((project) => (
-              <Link
-                key={project.id}
-                href={`/project/${project.id}`}
-                className="block rounded-lg border border-zinc-800 bg-zinc-900 p-4 transition-colors hover:border-zinc-700"
-              >
-                <h2 className="font-medium text-white">{project.name}</h2>
-                <p className="mt-1 text-sm text-zinc-500">
-                  Updated{" "}
-                  {new Date(project.updated_at).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </p>
-              </Link>
-            ))}
-          </div>
+          <ProjectList projects={projects} />
         ) : (
           <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-8 text-center">
             <p className="text-zinc-400">No projects yet</p>

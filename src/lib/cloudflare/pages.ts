@@ -304,3 +304,18 @@ export async function publishToCloudflare(
     deployedUrl: url,
   };
 }
+
+export async function deleteProject(cfProjectName: string): Promise<void> {
+  const { accountId } = getCredentials();
+
+  const response = await cfFetch<unknown>(
+    `/accounts/${accountId}/pages/projects/${cfProjectName}`,
+    {
+      method: "DELETE",
+    },
+  );
+
+  if (!response.success) {
+    throw new Error(`Failed to delete project: ${formatError(response)}`);
+  }
+}
