@@ -1,0 +1,15 @@
+
+## 🗺️ Roadmap
+
+- [x] **Cloudflare Pages deployment** — One-click publish to a live URL
+- [x] **Stripe billing** — Pay-per-generation credit system
+- [x] **Custom domains** — Connect your own domain to published sites
+- [ ] Template library for common site types
+- [ ] **Click-to-edit** — Edit text directly in the preview
+- [ ] **Image upload** — Custom images instead of Unsplash
+- [ ] **Version history** — Undo/redo and view previous versions
+- [ ] Form handling (contact forms, newsletter signups)
+- [ ] AI-powered SEO optimization
+- [ ] Content locking — “lock this section” to prevent AI from changing it on regen.
+- [ ] Analytics integration
+- [ ] Accessibility + performance checks — automated audit with fixes for contrast, heading order, missing alt text.

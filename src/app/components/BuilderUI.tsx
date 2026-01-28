@@ -3,8 +3,10 @@
 import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { captureEvent } from "@/lib/posthog/client";
 import { createClient } from "@/lib/supabase/client";
+import { RatingModal } from "./RatingModal";
 
 type Message = {
   role: "user" | "assistant";
@@ -502,6 +504,15 @@ export function BuilderUI({
     outputTokens: number;
     estimatedCredits: number;
   } | null>(null);
+
+  // Analytics state
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [hasRatedFirstGen, setHasRatedFirstGen] = useState(false);
+  const [regenerationCount, setRegenerationCount] = useState(0);
+  const sessionStartTimeRef = useRef<number>(Date.now());
+  const firstGenTimeRef = useRef<number | null>(null);
+  const hasTrackedFirstGenRef = useRef(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const didAutoSendRef = useRef(false);
   const router = useRouter();
@@ -726,6 +737,37 @@ export function BuilderUI({
                   .then((data) => {
                     if (!data.error) setCreditBalance(data);
                   });
+
+                // Track first generation complete and show rating modal
+                if (!hasTrackedFirstGenRef.current) {
+                  hasTrackedFirstGenRef.current = true;
+                  firstGenTimeRef.current = Date.now();
+                  const timeToFirstGen =
+                    Date.now() - sessionStartTimeRef.current;
+                  captureEvent("first_generation_complete", {
+                    project_id: projectId,
+                    time_to_first_gen_ms: timeToFirstGen,
+                    total_pages: Object.keys(finalPages).length,
+                  });
+                  // Show rating modal after first generation
+                  if (!hasRatedFirstGen) {
+                    setTimeout(() => setShowRatingModal(true), 1500);
+                  }
+                } else {
+                  // Track regeneration
+                  setRegenerationCount((prev) => {
+                    const newCount = prev + 1;
+                    const secondsSinceFirst = firstGenTimeRef.current
+                      ? (Date.now() - firstGenTimeRef.current) / 1000
+                      : 0;
+                    captureEvent("regeneration_requested", {
+                      project_id: projectId,
+                      regeneration_count: newCount,
+                      seconds_since_first_gen: secondsSinceFirst,
+                    });
+                    return newCount;
+                  });
+                }
                 break;
 
               case "error":
@@ -791,6 +833,18 @@ export function BuilderUI({
         await createProjectAndRedirect(projectName, pages);
         setSaveStatus("Saved!");
       }
+
+      // Track save event
+      const isFirstGen = regenerationCount === 0;
+      const secondsSinceFirst = firstGenTimeRef.current
+        ? (Date.now() - firstGenTimeRef.current) / 1000
+        : 0;
+      captureEvent("project_saved", {
+        project_id: projectId,
+        is_first_gen: isFirstGen,
+        seconds_since_first_gen: secondsSinceFirst,
+        total_pages: Object.keys(pages).length,
+      });
     } catch {
       setSaveStatus("Save failed");
     } finally {
@@ -822,6 +876,15 @@ export function BuilderUI({
           setCfProjectName(data.cfProjectName);
         }
         setPublishStatus("Published!");
+
+        // Track time to publish
+        const timeToPublish = Date.now() - sessionStartTimeRef.current;
+        captureEvent("time_to_publish", {
+          project_id: projectId,
+          time_to_publish_ms: timeToPublish,
+          regeneration_count: regenerationCount,
+          total_pages: Object.keys(pages).length,
+        });
       } else {
         setPublishStatus(data.error || "Publish failed");
       }
@@ -872,6 +935,23 @@ export function BuilderUI({
     }
   }
 
+  const handleRatingSubmit = useCallback(
+    (rating: number) => {
+      setHasRatedFirstGen(true);
+      const isFirstGen = regenerationCount === 0;
+      const secondsSinceFirst = firstGenTimeRef.current
+        ? (Date.now() - firstGenTimeRef.current) / 1000
+        : 0;
+      captureEvent("draft_rated", {
+        project_id: projectId,
+        rating,
+        is_first_gen: isFirstGen,
+        seconds_since_first_gen: secondsSinceFirst,
+      });
+    },
+    [projectId, regenerationCount],
+  );
+
   return (
     <div className="flex h-screen bg-zinc-950">
       {/* Buy Credits Modal */}
@@ -896,6 +976,15 @@ export function BuilderUI({
           onSuccess={(info) => {
             setCustomDomainInfo(info);
           }}
+        />
+      )}
+
+      {/* Rating Modal */}
+      {showRatingModal && (
+        <RatingModal
+          projectId={projectId}
+          onClose={() => setShowRatingModal(false)}
+          onSubmit={handleRatingSubmit}
         />
       )}
 

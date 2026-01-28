@@ -379,6 +379,16 @@ export interface TokenUsage {
   totalTokens: number;
 }
 
+export interface ToolCallMetrics {
+  totalToolCalls: number;
+  generatePageCalls: number;
+  fixPageCalls: number;
+  validateSiteCalls: number;
+  pagesPassedValidation: number;
+  pagesFailedValidation: number;
+  fixAttemptsPerPage: Record<string, number>;
+}
+
 export type GenerationEvent =
   | { type: "status"; message: string }
   | { type: "spec"; spec: SiteSpec }
@@ -390,8 +400,14 @@ export type GenerationEvent =
       pages: Record<string, string>;
       spec: SiteSpec;
       usage: TokenUsage;
+      toolMetrics: ToolCallMetrics;
     }
-  | { type: "error"; error: string; usage?: TokenUsage };
+  | {
+      type: "error";
+      error: string;
+      usage?: TokenUsage;
+      toolMetrics?: ToolCallMetrics;
+    };
 
 export async function* generateWebsite(
   userRequest: string,
@@ -471,6 +487,17 @@ Apply the requested changes. You may need to call generate_page or fix_page to u
     totalTokens: 0,
   };
 
+  // Track tool call metrics for analytics
+  const toolMetrics: ToolCallMetrics = {
+    totalToolCalls: 0,
+    generatePageCalls: 0,
+    fixPageCalls: 0,
+    validateSiteCalls: 0,
+    pagesPassedValidation: 0,
+    pagesFailedValidation: 0,
+    fixAttemptsPerPage: {},
+  };
+
   const unsubscribe = agent.subscribe((event: AgentEvent) => {
     let newEvent: GenerationEvent | null = null;
 
@@ -497,9 +524,34 @@ Apply the requested changes. You may need to call generate_page or fix_page to u
         break;
 
       case "tool_execution_end": {
+        // Track tool call metrics
+        toolMetrics.totalToolCalls++;
+
+        const toolName = event.toolName;
         const details = event.result?.details as
           | Record<string, unknown>
           | undefined;
+
+        if (toolName === "generate_page") {
+          toolMetrics.generatePageCalls++;
+          if (details) {
+            if (details.valid === true) {
+              toolMetrics.pagesPassedValidation++;
+            } else if (details.valid === false) {
+              toolMetrics.pagesFailedValidation++;
+            }
+          }
+        } else if (toolName === "fix_page") {
+          toolMetrics.fixPageCalls++;
+          if (details) {
+            const filename = details.filename as string;
+            toolMetrics.fixAttemptsPerPage[filename] =
+              (toolMetrics.fixAttemptsPerPage[filename] || 0) + 1;
+          }
+        } else if (toolName === "validate_site") {
+          toolMetrics.validateSiteCalls++;
+        }
+
         if (details) {
           if (details.spec) {
             newEvent = { type: "spec", spec: details.spec as SiteSpec };
@@ -582,6 +634,7 @@ Apply the requested changes. You may need to call generate_page or fix_page to u
         type: "error",
         error: err instanceof Error ? err.message : "Unknown error",
         usage: tokenUsage,
+        toolMetrics,
       });
     })
     .finally(() => {
@@ -618,6 +671,7 @@ Apply the requested changes. You may need to call generate_page or fix_page to u
       pages: state.pages,
       spec: state.spec,
       usage: tokenUsage,
+      toolMetrics,
     };
   } else if (Object.keys(state.pages).length > 0) {
     const minimalSpec: SiteSpec = {
@@ -643,12 +697,14 @@ Apply the requested changes. You may need to call generate_page or fix_page to u
       pages: state.pages,
       spec: minimalSpec,
       usage: tokenUsage,
+      toolMetrics,
     };
   } else {
     yield {
       type: "error",
       error: "No pages were generated",
       usage: tokenUsage,
+      toolMetrics,
     };
   }
 }

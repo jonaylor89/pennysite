@@ -309,21 +309,3 @@ Users can connect their own domains to published sites. After publishing, the "A
 ### Database
 
 Custom domain columns are included in the migrations—run `pnpm db:migrate` if you haven't already.
-
-## 🗺️ Roadmap
-
-### Not yet implemented
-
-- [x] **Cloudflare Pages deployment** — One-click publish to a live URL
-- [x] **Stripe billing** — Pay-per-generation credit system
-- [ ] **Image upload** — Custom images instead of Unsplash
-- [ ] **Click-to-edit** — Edit text directly in the preview
-- [x] **Custom domains** — Connect your own domain to published sites
-- [ ] **Version history** — Undo/redo and view previous versions
-
-### Future ideas
-
-- Template library for common site types
-- AI-powered SEO optimization
-- Form handling (contact forms, newsletter signups)
-- Analytics integration

@@ -1,3 +1,4 @@
+import { aggregateSiteQuality } from "@/lib/analytics/html-quality";
 import {
   calculateCreditsFromTokens,
   MAX_RESERVED_CREDITS,
@@ -7,7 +8,11 @@ import {
   getCreditBalance,
   reserveCreditsForGeneration,
 } from "@/lib/billing/credits";
-import { generateWebsite, type TokenUsage } from "@/lib/generation/agent";
+import {
+  generateWebsite,
+  type TokenUsage,
+  type ToolCallMetrics,
+} from "@/lib/generation/agent";
 import type { SiteSpec } from "@/lib/generation/types";
 import { trackServerEvent } from "@/lib/posthog/server";
 import { createClient } from "@/lib/supabase/server";
@@ -82,12 +87,16 @@ export async function POST(req: Request) {
 
   // Track usage for finalization
   let finalUsage: TokenUsage | undefined;
+  let finalToolMetrics: ToolCallMetrics | undefined;
+  let finalPages: Record<string, string> | undefined;
+  let finalSpec: SiteSpec | undefined;
   let generationSuccess = false;
   let generationError: string | undefined;
 
   trackServerEvent(user.id, "generation_started", {
     project_id: projectId,
     has_existing_pages: !!currentPages,
+    existing_page_count: currentPages ? Object.keys(currentPages).length : 0,
   });
 
   const stream = new ReadableStream({
@@ -101,9 +110,13 @@ export async function POST(req: Request) {
           // Track final usage from complete or error events
           if (event.type === "complete") {
             finalUsage = event.usage;
+            finalToolMetrics = event.toolMetrics;
+            finalPages = event.pages;
+            finalSpec = event.spec;
             generationSuccess = true;
           } else if (event.type === "error") {
             finalUsage = event.usage;
+            finalToolMetrics = event.toolMetrics;
             generationError = event.error;
           }
 
@@ -142,16 +155,52 @@ export async function POST(req: Request) {
           console.error("Failed to finalize credits:", finalizeErr);
         }
 
+        // Calculate quality metrics for analytics
+        const qualityMetrics =
+          finalPages && finalSpec
+            ? aggregateSiteQuality(finalPages, finalSpec.colorPalette)
+            : null;
+
+        const totalPages = finalPages ? Object.keys(finalPages).length : 0;
+        const htmlValidityPercent =
+          finalToolMetrics && finalToolMetrics.generatePageCalls > 0
+            ? Math.round(
+                (finalToolMetrics.pagesPassedValidation /
+                  finalToolMetrics.generatePageCalls) *
+                  100,
+              )
+            : 0;
+
         if (generationSuccess) {
           trackServerEvent(user.id, "generation_completed", {
             project_id: projectId,
             input_tokens: finalUsage?.inputTokens,
             output_tokens: finalUsage?.outputTokens,
+            credits_used: finalUsage
+              ? calculateCreditsFromTokens(
+                  finalUsage.inputTokens,
+                  finalUsage.outputTokens,
+                )
+              : undefined,
+            total_pages: totalPages,
+            fix_page_calls: finalToolMetrics?.fixPageCalls ?? 0,
+            total_tool_calls: finalToolMetrics?.totalToolCalls ?? 0,
+            pages_passed_validation:
+              finalToolMetrics?.pagesPassedValidation ?? 0,
+            pages_failed_validation:
+              finalToolMetrics?.pagesFailedValidation ?? 0,
+            html_validity_percent: htmlValidityPercent,
+            avg_palette_consistency: qualityMetrics?.avgPaletteConsistency ?? 0,
+            structure_quality_percent:
+              qualityMetrics?.structureQualityPercent ?? 0,
+            cta_clarity_percent: qualityMetrics?.ctaClarityPercent ?? 0,
           });
         } else {
           trackServerEvent(user.id, "generation_failed", {
             project_id: projectId,
             error: generationError,
+            fix_page_calls: finalToolMetrics?.fixPageCalls ?? 0,
+            total_tool_calls: finalToolMetrics?.totalToolCalls ?? 0,
           });
         }
 
