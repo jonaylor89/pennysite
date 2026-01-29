@@ -394,7 +394,7 @@ You REFUSE to create generic, template-looking websites. If you catch yourself m
 ## CRITICAL RULES
 - For NEW sites: Always plan before generating
 - For MODIFICATIONS: Skip planning, go straight to fix_page
-- Generate ONE page at a time  
+- Generate ONE page at a time
 - Each page must be complete, self-contained HTML
 - Use the EXACT colors from your plan consistently
 - Include both Tailwind CSS and Alpine.js CDNs
@@ -508,7 +508,7 @@ export async function* generateWebsite(
   // === AGENT DEBUG LOGGING ===
   const isModification =
     existingSpec && existingPages && Object.keys(existingPages).length > 0;
-  console.log("\n" + "=".repeat(80));
+  console.log(`\n${"=".repeat(80)}`);
   console.log("[AGENT] Generation started");
   console.log("[AGENT] Mode:", isModification ? "MODIFICATION" : "NEW SITE");
   console.log("[AGENT] User request:", userRequest);
@@ -519,7 +519,7 @@ export async function* generateWebsite(
     );
     console.log("[AGENT] Existing spec name:", existingSpec?.name);
   }
-  console.log("=".repeat(80) + "\n");
+  console.log(`${"=".repeat(80)}\n`);
 
   let prompt: string;
 
@@ -540,15 +540,12 @@ ${userRequest}
 
 IMPORTANT: You are MODIFYING an existing website. You MUST:
 1. DO NOT call plan_site — the site already exists
-2. DO NOT ask clarifying questions — interpret the request and apply changes immediately  
+2. DO NOT ask clarifying questions — interpret the request and apply changes immediately
 3. Call fix_page RIGHT NOW with the complete updated HTML for each page that needs changes
 4. Text responses without tool calls will NOT apply any changes
 5. After all fixes, call validate_site
 
 START by calling fix_page for index.html with the updated HTML.`;
-
-    console.log("[AGENT] Full modification prompt:\n", prompt);
-    console.log("\n" + "-".repeat(80) + "\n");
   } else {
     prompt = userRequest;
   }
@@ -594,7 +591,7 @@ START by calling fix_page for index.html with the updated HTML.`;
         console.log("[AGENT] Tool execution START:", event.toolName);
         console.log(
           "[AGENT] Tool args:",
-          JSON.stringify(event.args, null, 2).slice(0, 500) + "...",
+          `${JSON.stringify(event.args, null, 2).slice(0, 500)}...`,
         );
         if (event.toolName === "plan_site") {
           newEvent = { type: "status", message: "Creating site plan..." };

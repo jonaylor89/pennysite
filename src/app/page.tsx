@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Script from "next/script";
+import { AutoExpandTextarea } from "./components/AutoExpandTextarea";
 import { HeaderNav } from "./components/HeaderNav";
 
 export const dynamic = "force-dynamic";
@@ -94,17 +95,17 @@ export default function Home() {
                   Describe your website
                 </label>
                 <div className="group relative">
-                  <input
+                  <AutoExpandTextarea
                     id="prompt"
                     name="prompt"
-                    type="text"
                     required
+                    rows={2}
                     placeholder='e.g. "A website for my coffee shop with menu, hours, and contact"'
-                    className="w-full rounded-2xl border border-zinc-800 bg-zinc-900/60 px-5 py-4 pr-24 text-base text-white placeholder:text-zinc-500 shadow-[0_0_0_1px_rgba(255,255,255,0.02)] outline-none transition focus:border-zinc-600 focus:bg-zinc-900"
+                    className="w-full resize-none rounded-2xl border border-zinc-800 bg-zinc-900/60 px-5 py-4 pb-10 text-base text-white placeholder:text-zinc-500 shadow-[0_0_0_1px_rgba(255,255,255,0.02)] outline-none transition focus:border-zinc-600 focus:bg-zinc-900"
                   />
                   <div
                     aria-hidden="true"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-xl border border-zinc-800 bg-white/5 px-3 py-1.5 text-xs text-zinc-300"
+                    className="absolute bottom-3 right-3 rounded-xl border border-zinc-800 bg-white/5 px-3 py-1.5 text-xs text-zinc-300"
                   >
                     Press Enter
                   </div>

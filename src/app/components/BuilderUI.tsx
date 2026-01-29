@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { captureEvent } from "@/lib/posthog/client";
 import { createClient } from "@/lib/supabase/client";
+import { AutoExpandTextarea } from "./AutoExpandTextarea";
 import { RatingModal } from "./RatingModal";
 
 type Message = {
@@ -810,13 +811,22 @@ export function BuilderUI({
 
       // If this is a new project (no projectId), create it now
       if (!projectId && Object.keys(finalPages).length > 0) {
-        await createProjectAndRedirect(finalName, finalPages, finalMessages, currentGenerationId);
+        await createProjectAndRedirect(
+          finalName,
+          finalPages,
+          finalMessages,
+          currentGenerationId,
+        );
       } else if (projectId) {
         // Auto-save existing project
         await fetch(`/api/projects/${projectId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: finalName, pages: finalPages, conversation: finalMessages }),
+          body: JSON.stringify({
+            name: finalName,
+            pages: finalPages,
+            conversation: finalMessages,
+          }),
         });
       }
     } catch (err) {
@@ -847,7 +857,11 @@ export function BuilderUI({
         await fetch(`/api/projects/${projectId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: projectName, pages, conversation: messages }),
+          body: JSON.stringify({
+            name: projectName,
+            pages,
+            conversation: messages,
+          }),
         });
         setSaveStatus("Saved!");
       } else {
@@ -1193,9 +1207,8 @@ export function BuilderUI({
         {/* Input */}
         <div className="border-t border-zinc-800 p-4">
           {error && <div className="mb-2 text-xs text-red-400">{error}</div>}
-          <div className="flex gap-2">
-            <input
-              type="text"
+          <div className="flex flex-col gap-2">
+            <AutoExpandTextarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -1204,14 +1217,16 @@ export function BuilderUI({
                   ? "Describe your website..."
                   : "Ask for changes..."
               }
-              className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-zinc-600 focus:outline-none"
+              rows={1}
+              maxHeight={160}
+              className="max-h-40 min-h-[38px] w-full resize-none rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-zinc-600 focus:outline-none"
               disabled={isGenerating}
             />
             <button
               type="button"
               onClick={handleSend}
               disabled={isGenerating || !input.trim()}
-              className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Send
             </button>
