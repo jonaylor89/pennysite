@@ -9,6 +9,8 @@ import { createClient } from "@/lib/supabase/client";
 import { AutoExpandTextarea } from "./AutoExpandTextarea";
 import { RatingModal } from "./RatingModal";
 
+type MobileView = "chat" | "preview";
+
 type Message = {
   role: "user" | "assistant";
   content: string;
@@ -516,6 +518,9 @@ export function BuilderUI({
   const firstGenTimeRef = useRef<number | null>(null);
   const hasTrackedFirstGenRef = useRef(false);
 
+  // Mobile responsive state
+  const [mobileView, setMobileView] = useState<MobileView>("chat");
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const didAutoSendRef = useRef(false);
   const router = useRouter();
@@ -988,7 +993,7 @@ export function BuilderUI({
   );
 
   return (
-    <div className="flex h-screen bg-zinc-950">
+    <div className="flex h-screen flex-col bg-zinc-950 lg:flex-row">
       {/* Buy Credits Modal */}
       {showBuyCredits && insufficientCreditsInfo && (
         <BuyCreditsModal
@@ -1023,16 +1028,87 @@ export function BuilderUI({
         />
       )}
 
+      {/* Mobile View Toggle */}
+      <div className="flex shrink-0 border-b border-zinc-800 bg-zinc-900 lg:hidden">
+        <button
+          type="button"
+          onClick={() => setMobileView("chat")}
+          className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+            mobileView === "chat"
+              ? "border-b-2 border-white text-white"
+              : "text-zinc-400 hover:text-zinc-200"
+          }`}
+        >
+          <span className="flex items-center justify-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z" />
+            </svg>
+            Chat
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileView("preview")}
+          className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+            mobileView === "preview"
+              ? "border-b-2 border-white text-white"
+              : "text-zinc-400 hover:text-zinc-200"
+          }`}
+        >
+          <span className="flex items-center justify-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <rect width="18" height="18" x="3" y="3" rx="2" />
+              <path d="M3 9h18" />
+            </svg>
+            Preview
+            {isGenerating && (
+              <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
+            )}
+          </span>
+        </button>
+      </div>
+
       {/* Left Panel - Chat */}
-      <div className="flex w-96 flex-col border-r border-zinc-800 bg-zinc-900">
-        <div className="flex items-center justify-between border-b border-zinc-800 p-4">
-          <div>
-            <Link href="/" className="text-lg font-semibold text-white">
+      <div
+        className={`flex min-h-0 flex-1 flex-col border-r border-zinc-800 bg-zinc-900 lg:w-96 lg:flex-none ${
+          mobileView === "chat" ? "flex" : "hidden lg:flex"
+        }`}
+      >
+        <div className="flex items-center justify-between border-b border-zinc-800 p-3 sm:p-4">
+          <div className="min-w-0 flex-1">
+            <Link
+              href="/"
+              className="text-base font-semibold text-white sm:text-lg"
+            >
               Pennysite
             </Link>
-            <p className="text-sm text-zinc-400">Chat with your website</p>
+            <p className="hidden text-sm text-zinc-400 sm:block">
+              Chat with your website
+            </p>
           </div>
-          <div className="text-right">
+          <div className="shrink-0 text-right">
             {user ? (
               <div className="flex flex-col items-end gap-1">
                 {creditBalance && (
@@ -1042,7 +1118,12 @@ export function BuilderUI({
                       className="flex items-center gap-1 rounded-full border border-zinc-700 bg-zinc-800 px-2 py-1 text-xs text-zinc-300 hover:border-zinc-600"
                     >
                       <span className="text-emerald-400">⚡</span>
-                      {creditBalance.availableCredits} credits
+                      <span className="hidden xs:inline">
+                        {creditBalance.availableCredits} credits
+                      </span>
+                      <span className="xs:hidden">
+                        {creditBalance.availableCredits}
+                      </span>
                     </Link>
                     {isGenerating && liveUsage && (
                       <span className="text-xs text-amber-400">
@@ -1072,19 +1153,19 @@ export function BuilderUI({
 
         {/* Project name & spec */}
         {pageNames.length > 0 && (
-          <div className="border-b border-zinc-800 px-4 py-3">
+          <div className="border-b border-zinc-800 px-3 py-2 sm:px-4 sm:py-3">
             <div className="flex items-center gap-2">
               <input
                 type="text"
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
-                className="flex-1 bg-transparent text-sm font-medium text-zinc-200 focus:outline-none"
+                className="min-w-0 flex-1 bg-transparent text-sm font-medium text-zinc-200 focus:outline-none"
                 placeholder="Project name..."
               />
               {projectId && (
                 <Link
                   href={`/project/${projectId}/settings`}
-                  className="rounded p-1 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
+                  className="shrink-0 rounded p-1 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
                   title="Project settings"
                 >
                   <svg
@@ -1106,11 +1187,11 @@ export function BuilderUI({
               )}
             </div>
             {siteSpec && (
-              <div className="mt-2 flex items-center gap-2">
+              <div className="mt-2 flex flex-wrap items-center gap-2">
                 <span className="rounded bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">
                   {siteSpec.type}
                 </span>
-                <span className="text-xs text-zinc-500">
+                <span className="hidden text-xs text-zinc-500 sm:inline">
                   {siteSpec.industry}
                 </span>
                 <div className="ml-auto flex gap-1">
@@ -1136,16 +1217,18 @@ export function BuilderUI({
         )}
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4">
           {messages.length === 0 ? (
             <div className="text-sm text-zinc-500">
-              <p className="mb-3">Describe the website you want to create:</p>
+              <p className="mb-3 text-xs sm:text-sm">
+                Describe the website you want to create:
+              </p>
               <div className="space-y-2 text-xs">
                 <p className="rounded bg-zinc-800 p-2">
                   "A landing page for a developer tools startup with features,
                   pricing, and documentation"
                 </p>
-                <p className="rounded bg-zinc-800 p-2">
+                <p className="hidden rounded bg-zinc-800 p-2 sm:block">
                   "Personal site for an executive coach with about, services,
                   and booking page"
                 </p>
@@ -1179,21 +1262,21 @@ export function BuilderUI({
                 )}
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {messages.map((msg, i) => (
                 <div
                   key={`${msg.role}-${i}`}
-                  className={`text-sm ${
+                  className={`text-xs sm:text-sm ${
                     msg.role === "user"
-                      ? "ml-4 rounded-lg bg-zinc-700 p-3 text-white"
-                      : "mr-4 rounded-lg bg-zinc-800 p-3 text-zinc-300"
+                      ? "ml-2 rounded-lg bg-zinc-700 p-2 text-white sm:ml-4 sm:p-3"
+                      : "mr-2 rounded-lg bg-zinc-800 p-2 text-zinc-300 sm:mr-4 sm:p-3"
                   }`}
                 >
                   {msg.content}
                 </div>
               ))}
               {isGenerating && (
-                <div className="mr-4 rounded-lg bg-zinc-800 p-3 text-sm text-zinc-400">
+                <div className="mr-2 rounded-lg bg-zinc-800 p-2 text-xs text-zinc-400 sm:mr-4 sm:p-3 sm:text-sm">
                   <span className="inline-flex items-center gap-2">
                     <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
                     {generationPhase || "Generating..."}
@@ -1206,7 +1289,7 @@ export function BuilderUI({
         </div>
 
         {/* Input */}
-        <div className="border-t border-zinc-800 p-4">
+        <div className="border-t border-zinc-800 p-3 sm:p-4">
           {error && <div className="mb-2 text-xs text-red-400">{error}</div>}
           <div className="flex flex-col gap-2">
             <AutoExpandTextarea
@@ -1219,8 +1302,8 @@ export function BuilderUI({
                   : "Ask for changes..."
               }
               rows={1}
-              maxHeight={160}
-              className="max-h-40 min-h-[38px] w-full resize-none rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-zinc-600 focus:outline-none"
+              maxHeight={120}
+              className="max-h-30 min-h-[38px] w-full resize-none rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-zinc-600 focus:outline-none sm:max-h-40"
               disabled={isGenerating}
             />
             <button
@@ -1229,28 +1312,28 @@ export function BuilderUI({
               disabled={isGenerating || !input.trim()}
               className="w-full rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Send
+              {isGenerating ? "Generating..." : "Send"}
             </button>
           </div>
         </div>
 
         {/* Actions */}
         {pageNames.length > 0 && (
-          <div className="border-t border-zinc-800 p-4">
+          <div className="border-t border-zinc-800 p-3 sm:p-4">
             <div className="flex flex-col gap-2">
-              <div className="flex gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="flex-1 rounded-lg bg-white px-3 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:opacity-50"
+                  className="rounded-lg bg-white px-2 py-2 text-xs font-medium text-black transition-colors hover:bg-zinc-200 disabled:opacity-50 sm:px-3 sm:text-sm"
                 >
-                  {isSaving ? "Saving..." : saveStatus || "Save Project"}
+                  {isSaving ? "Saving..." : saveStatus || "Save"}
                 </button>
                 <button
                   type="button"
                   onClick={downloadAll}
-                  className="flex-1 rounded-lg border border-zinc-700 px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-800"
+                  className="rounded-lg border border-zinc-700 px-2 py-2 text-xs text-zinc-300 transition-colors hover:bg-zinc-800 sm:px-3 sm:text-sm"
                 >
                   Download
                 </button>
@@ -1260,7 +1343,7 @@ export function BuilderUI({
                   type="button"
                   onClick={handlePublish}
                   disabled={isPublishing}
-                  className="w-full rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
+                  className="w-full rounded-lg bg-emerald-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-emerald-500 disabled:opacity-50 sm:text-sm"
                 >
                   {isPublishing
                     ? "Publishing..."
@@ -1272,10 +1355,12 @@ export function BuilderUI({
                   href={deployedUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-1 rounded-lg border border-emerald-700 bg-emerald-900/30 px-3 py-2 text-sm text-emerald-300 transition-colors hover:bg-emerald-900/50"
+                  className="flex items-center justify-center gap-1 rounded-lg border border-emerald-700 bg-emerald-900/30 px-2 py-2 text-xs text-emerald-300 transition-colors hover:bg-emerald-900/50 sm:px-3 sm:text-sm"
                 >
                   <span>🌐</span>
-                  <span className="truncate">{deployedUrl}</span>
+                  <span className="max-w-[180px] truncate sm:max-w-none">
+                    {deployedUrl}
+                  </span>
                 </a>
               )}
               {/* Custom Domain */}
@@ -1283,7 +1368,7 @@ export function BuilderUI({
                 <button
                   type="button"
                   onClick={() => setShowDomainModal(true)}
-                  className={`flex items-center justify-center gap-1 rounded-lg border px-3 py-2 text-sm transition-colors ${
+                  className={`flex items-center justify-center gap-1 rounded-lg border px-2 py-2 text-xs transition-colors sm:px-3 sm:text-sm ${
                     customDomainInfo?.status === "active"
                       ? "border-purple-700 bg-purple-900/30 text-purple-300 hover:bg-purple-900/50"
                       : customDomainInfo?.customDomain
@@ -1293,12 +1378,12 @@ export function BuilderUI({
                 >
                   <span>🔗</span>
                   {customDomainInfo?.customDomain ? (
-                    <span className="truncate">
+                    <span className="max-w-[150px] truncate sm:max-w-none">
                       {customDomainInfo.customDomain}
                       {customDomainInfo.status === "pending" && " (pending)"}
                     </span>
                   ) : (
-                    <span>Add Custom Domain</span>
+                    <span>Custom Domain</span>
                   )}
                 </button>
               )}
@@ -1308,16 +1393,20 @@ export function BuilderUI({
       </div>
 
       {/* Right Panel - Preview */}
-      <div className="flex min-h-0 flex-1 flex-col">
+      <div
+        className={`flex min-h-0 flex-1 flex-col ${
+          mobileView === "preview" ? "flex" : "hidden lg:flex"
+        }`}
+      >
         {/* Page tabs */}
         {pageNames.length > 1 && (
-          <div className="flex shrink-0 gap-1 border-b border-zinc-800 bg-zinc-900 px-4 py-2">
+          <div className="flex shrink-0 gap-1 overflow-x-auto border-b border-zinc-800 bg-zinc-900 px-3 py-2 sm:px-4">
             {pageNames.map((name) => (
               <button
                 key={name}
                 type="button"
                 onClick={() => setCurrentPage(name)}
-                className={`rounded px-3 py-1 text-sm transition-colors ${
+                className={`shrink-0 rounded px-2 py-1 text-xs transition-colors sm:px-3 sm:text-sm ${
                   currentPage === name
                     ? "bg-zinc-700 text-white"
                     : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
@@ -1329,12 +1418,12 @@ export function BuilderUI({
           </div>
         )}
 
-        <div className="flex shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4 py-3">
-          <span className="text-sm text-zinc-400">
+        <div className="flex shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-900 px-3 py-2 sm:px-4 sm:py-3">
+          <span className="text-xs text-zinc-400 sm:text-sm">
             Preview{currentPage ? `: ${currentPage}` : ""}
           </span>
           {isGenerating && (
-            <span className="flex items-center gap-2 text-sm text-zinc-500">
+            <span className="flex items-center gap-2 text-xs text-zinc-500 sm:text-sm">
               <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
               Streaming...
             </span>
@@ -1350,10 +1439,15 @@ export function BuilderUI({
               srcDoc={displayHtml}
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-zinc-400">
+            <div className="flex h-full items-center justify-center bg-zinc-950 p-4 text-zinc-400">
               <div className="text-center">
                 <div className="mb-2 text-4xl">🏗️</div>
-                <p>Your website will appear here</p>
+                <p className="text-sm sm:text-base">
+                  Your website will appear here
+                </p>
+                <p className="mt-2 hidden text-xs text-zinc-500 sm:block">
+                  Describe your website in the chat to get started
+                </p>
               </div>
             </div>
           )}
