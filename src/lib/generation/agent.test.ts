@@ -9,6 +9,11 @@ import {
   generateWebsite,
   validateHtml,
 } from "./agent";
+import {
+  extractImageUrls,
+  isApprovedImageSource,
+  validateImageUrls,
+} from "./agent-interface";
 
 class FakeAgent implements AgentLike {
   private subscribers: ((e: AgentEvent) => void)[] = [];
@@ -152,6 +157,130 @@ describe("validateHtml", () => {
     const result = validateHtml(html);
     expect(result.valid).toBe(false);
     expect(result.issues).toContain("Missing Alpine.js CDN");
+  });
+
+  it("should fail HTML with Unsplash images", () => {
+    const html = `<!DOCTYPE html><html><head>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    </head><body>
+      <img src="https://images.unsplash.com/photo-123" alt="test">
+    </body></html>`;
+    const result = validateHtml(html);
+    expect(result.valid).toBe(false);
+    expect(
+      result.issues.some((i) => i.includes("Unapproved image source")),
+    ).toBe(true);
+  });
+
+  it("should pass HTML with Popsy SVG illustrations", () => {
+    const html = `<!DOCTYPE html><html><head>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    </head><body>
+      <img src="https://illustrations.popsy.co/amber/success.svg" alt="Success">
+    </body></html>`;
+    const result = validateHtml(html);
+    expect(result.valid).toBe(true);
+  });
+
+  it("should fail HTML with background-image Unsplash URL", () => {
+    const html = `<!DOCTYPE html><html><head>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    </head><body>
+      <div style="background-image: url('https://images.unsplash.com/photo-456')"></div>
+    </body></html>`;
+    const result = validateHtml(html);
+    expect(result.valid).toBe(false);
+    expect(
+      result.issues.some((i) => i.includes("Unapproved image source")),
+    ).toBe(true);
+  });
+});
+
+describe("extractImageUrls", () => {
+  it("should extract img src URLs", () => {
+    const html = `<img src="https://example.com/image.jpg" alt="test">`;
+    const urls = extractImageUrls(html);
+    expect(urls).toContain("https://example.com/image.jpg");
+  });
+
+  it("should extract background-image URLs", () => {
+    const html = `<div style="background-image: url('https://example.com/bg.png')"></div>`;
+    const urls = extractImageUrls(html);
+    expect(urls).toContain("https://example.com/bg.png");
+  });
+
+  it("should extract multiple URLs", () => {
+    const html = `
+      <img src="https://a.com/1.jpg">
+      <img src="https://b.com/2.jpg">
+      <div style="background-image: url(https://c.com/3.png)"></div>
+    `;
+    const urls = extractImageUrls(html);
+    expect(urls).toHaveLength(3);
+  });
+});
+
+describe("isApprovedImageSource", () => {
+  it("should approve Popsy illustrations", () => {
+    expect(
+      isApprovedImageSource("https://illustrations.popsy.co/amber/success.svg"),
+    ).toBe(true);
+  });
+
+  it("should approve data URIs", () => {
+    expect(isApprovedImageSource("data:image/svg+xml;base64,PHN2Zz4=")).toBe(
+      true,
+    );
+  });
+
+  it("should reject Unsplash", () => {
+    expect(isApprovedImageSource("https://images.unsplash.com/photo-123")).toBe(
+      false,
+    );
+  });
+
+  it("should reject Pexels", () => {
+    expect(isApprovedImageSource("https://images.pexels.com/photos/123")).toBe(
+      false,
+    );
+  });
+
+  it("should reject placeholder services", () => {
+    expect(isApprovedImageSource("https://via.placeholder.com/300")).toBe(
+      false,
+    );
+    expect(isApprovedImageSource("https://picsum.photos/200/300")).toBe(false);
+  });
+});
+
+describe("validateImageUrls", () => {
+  it("should pass with no images", () => {
+    const result = validateImageUrls("<div>No images here</div>");
+    expect(result.valid).toBe(true);
+  });
+
+  it("should pass with only Popsy images", () => {
+    const html = `<img src="https://illustrations.popsy.co/blue/home-office.svg">`;
+    const result = validateImageUrls(html);
+    expect(result.valid).toBe(true);
+  });
+
+  it("should fail with Unsplash and list the URL", () => {
+    const html = `<img src="https://images.unsplash.com/photo-123">`;
+    const result = validateImageUrls(html);
+    expect(result.valid).toBe(false);
+    expect(result.unapprovedUrls).toContain(
+      "https://images.unsplash.com/photo-123",
+    );
+  });
+
+  it("should allow relative paths", () => {
+    const html = `<img src="/images/local.jpg">`;
+    const result = validateImageUrls(html);
+    expect(result.valid).toBe(true);
   });
 });
 

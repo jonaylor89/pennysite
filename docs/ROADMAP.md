@@ -6,7 +6,8 @@
 - [x] **Custom domains** — Connect your own domain to published sites
 - [ ] Template library for common site types
 - [ ] **Click-to-edit** — Edit text directly in the preview
-- [ ] **Image upload** — Custom images instead of Unsplash
+- [x] **Image validation** — Agent validates image sources (SVG-only approach, no broken Unsplash links)
+- [ ] **Image upload** — Custom images for user-provided photography
 - [ ] **Version history** — Undo/redo and view previous versions
 - [ ] Form handling (contact forms, newsletter signups)
 - [ ] AI-powered SEO optimization

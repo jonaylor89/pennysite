@@ -76,21 +76,26 @@ Every website should be UNMISTAKABLY unique. Before generating any code, ask you
 3. Use Alpine.js for interactivity: <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 4. Each page must be completely self-contained
 
-## TEXT-FORWARD DESIGN (Important!)
+## TEXT-FORWARD DESIGN (Critical!)
 
-Since photography is limited, lean into:
+⚠️ **NO EXTERNAL IMAGES** — Do NOT use Unsplash, Pexels, placeholder.com, picsum, or any other external image URLs. They break and make sites look bad.
+
+Instead, create visual interest with:
 - **Bold typography as the hero** — Large, confident headlines that command attention
-- **SVG illustrations** — Use illustration libraries (Popsy, Undraw-style) for visual interest
-- **Abstract patterns** — Geometric shapes, gradients, grain textures
+- **SVG illustrations from Popsy** — The ONLY approved external image source
+- **Inline SVG icons** — Draw simple icons directly in the HTML
+- **Abstract patterns** — Geometric shapes, gradients, grain textures via Tailwind
 - **Whitespace** — Let the text breathe; don't fill every gap
-- **Icon systems** — Lucide/Heroicons for features and UI elements
 - **Color blocks** — Use background colors to create visual sections
 
-### SVG Illustration Sources (use these URLs)
-- Popsy illustrations: https://illustrations.popsy.co/{color}/{name}.svg
-  Colors: amber, blue, gray, green, pink, purple, red, yellow
-  Names: app-launch, working-remotely, designer, developer-activity, success, freelancer, meditation, skateboard, surfer, taking-selfie, trophy, home-office, business-deal
-- Abstract shapes: Create with Tailwind's built-in gradients and shapes
+### Approved Image Sources (ONLY these work)
+1. **Popsy illustrations**: https://illustrations.popsy.co/{color}/{name}.svg
+   - Colors: amber, blue, gray, green, pink, purple, red, yellow
+   - Names: app-launch, working-remotely, designer, developer-activity, success, freelancer, meditation, skateboard, surfer, taking-selfie, trophy, home-office, business-deal, remote-work, productive-work, product-launch, work-from-home, student, teaching, creative-work, cup-of-tea, coffee-break
+2. **Inline SVGs**: Draw icons and shapes directly in HTML
+3. **Tailwind gradients and shapes**: bg-gradient-to-r, rounded shapes, etc.
+
+❌ NEVER use: unsplash.com, pexels.com, placeholder.com, picsum.photos, via.placeholder.com, placehold.co, or any stock photo service
 
 ## PATTERNS TO AVOID (These make sites feel generic)
 

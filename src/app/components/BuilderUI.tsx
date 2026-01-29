@@ -1142,15 +1142,16 @@ export function BuilderUI({
               <p className="mb-3">Describe the website you want to create:</p>
               <div className="space-y-2 text-xs">
                 <p className="rounded bg-zinc-800 p-2">
-                  "A 3-page website for a Brooklyn coffee shop: home, menu, and
-                  contact"
+                  "A landing page for a developer tools startup with features,
+                  pricing, and documentation"
                 </p>
                 <p className="rounded bg-zinc-800 p-2">
-                  "Portfolio site for a photographer with home, gallery, and
-                  about pages"
+                  "Personal site for an executive coach with about, services,
+                  and booking page"
                 </p>
                 <p className="rounded bg-zinc-800 p-2">
-                  "Simple landing page for a SaaS product"
+                  "A consulting agency website with case studies and contact
+                  form"
                 </p>
               </div>
               {user &&

@@ -117,22 +117,22 @@ export default function Home() {
 
               <div className="mt-6 flex flex-wrap gap-2 text-xs">
                 <Link
-                  href="/project/new?prompt=A+portfolio+website+for+a+photographer+with+gallery+and+contact+page"
+                  href="/project/new?prompt=A+landing+page+for+a+developer+tools+startup+with+features+pricing+and+docs+link"
                   className="rounded-full border border-zinc-800 bg-zinc-900/40 px-3 py-1 text-zinc-300 hover:bg-zinc-900 hover:text-white"
                 >
-                  Photographer portfolio
+                  Dev tools startup
                 </Link>
                 <Link
-                  href="/project/new?prompt=A+simple+landing+page+for+my+app+with+features+pricing+FAQ+and+testimonials"
+                  href="/project/new?prompt=A+personal+site+for+an+executive+coach+with+about+services+and+booking+page"
                   className="rounded-full border border-zinc-800 bg-zinc-900/40 px-3 py-1 text-zinc-300 hover:bg-zinc-900 hover:text-white"
                 >
-                  App landing page
+                  Coaching practice
                 </Link>
                 <Link
-                  href="/project/new?prompt=A+website+for+my+gym+with+class+schedule+trainers+and+contact+info"
+                  href="/project/new?prompt=A+simple+landing+page+for+my+SaaS+app+with+features+pricing+FAQ+and+testimonials"
                   className="rounded-full border border-zinc-800 bg-zinc-900/40 px-3 py-1 text-zinc-300 hover:bg-zinc-900 hover:text-white"
                 >
-                  Local gym
+                  SaaS landing page
                 </Link>
               </div>
             </section>
