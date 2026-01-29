@@ -72,9 +72,16 @@ function injectNavigationScript(html: string): string {
     const link = e.target.closest('a');
     if (link && link.getAttribute('href')) {
       const href = link.getAttribute('href');
+      // Always prevent default to stop any navigation in iframe
+      e.preventDefault();
+      // Handle internal page links
       if (href && !href.startsWith('http') && !href.startsWith('#') && !href.startsWith('mailto:') && !href.startsWith('tel:')) {
-        e.preventDefault();
         window.parent.postMessage({ type: 'navigate', href: href }, '*');
+      }
+      // For hash links, handle scroll within iframe
+      if (href && href.startsWith('#')) {
+        const target = document.querySelector(href);
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
       }
     }
   });
