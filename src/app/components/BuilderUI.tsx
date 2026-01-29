@@ -64,10 +64,41 @@ type BuilderUIProps = {
   initialCustomDomainStatus?: "pending" | "active" | "error" | null;
 };
 
+type EditingElement = {
+  selector: string;
+  tagName: string;
+  text: string;
+  href?: string;
+};
+
 function injectNavigationScript(html: string): string {
   const script = `
 <script>
 (function() {
+  // Generate a unique selector path for an element
+  function getSelector(el) {
+    if (el.id) return '#' + el.id;
+    const parts = [];
+    while (el && el.nodeType === 1) {
+      let selector = el.tagName.toLowerCase();
+      if (el.id) {
+        parts.unshift('#' + el.id);
+        break;
+      }
+      const siblings = el.parentNode ? Array.from(el.parentNode.children).filter(function(c) { return c.tagName === el.tagName; }) : [];
+      if (siblings.length > 1) {
+        const idx = siblings.indexOf(el) + 1;
+        selector += ':nth-of-type(' + idx + ')';
+      }
+      parts.unshift(selector);
+      el = el.parentNode;
+    }
+    return parts.join(' > ');
+  }
+
+  // Editable text elements
+  const editableTags = ['H1','H2','H3','H4','H5','H6','P','SPAN','A','LI','BUTTON','LABEL'];
+
   document.addEventListener('click', function(e) {
     const link = e.target.closest('a');
     if (link && link.getAttribute('href')) {
@@ -84,6 +115,23 @@ function injectNavigationScript(html: string): string {
         if (target) target.scrollIntoView({ behavior: 'smooth' });
       }
     }
+  });
+
+  // Double-click to edit text/links
+  document.addEventListener('dblclick', function(e) {
+    const el = e.target;
+    if (!el || !editableTags.includes(el.tagName)) return;
+    e.preventDefault();
+    const data = {
+      type: 'edit-element',
+      selector: getSelector(el),
+      tagName: el.tagName,
+      text: el.innerText || el.textContent || ''
+    };
+    if (el.tagName === 'A') {
+      data.href = el.getAttribute('href') || '';
+    }
+    window.parent.postMessage(data, '*');
   });
 })();
 </script>`;
@@ -528,6 +576,13 @@ export function BuilderUI({
   // Mobile responsive state
   const [mobileView, setMobileView] = useState<MobileView>("chat");
 
+  // Click-to-edit state
+  const [editingElement, setEditingElement] = useState<EditingElement | null>(
+    null,
+  );
+  const [editText, setEditText] = useState("");
+  const [editHref, setEditHref] = useState("");
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const didAutoSendRef = useRef(false);
   const router = useRouter();
@@ -573,10 +628,45 @@ export function BuilderUI({
           setCurrentPage(href);
         }
       }
+      if (e.data?.type === "edit-element" && e.data.selector) {
+        setEditingElement({
+          selector: e.data.selector,
+          tagName: e.data.tagName,
+          text: e.data.text,
+          href: e.data.href,
+        });
+        setEditText(e.data.text);
+        setEditHref(e.data.href || "");
+      }
     }
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
   }, [pages]);
+
+  function applyElementEdit() {
+    if (!editingElement) return;
+    const html = pages[currentPage];
+    if (!html) return;
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+    const el = doc.querySelector(editingElement.selector);
+    if (!el) {
+      setEditingElement(null);
+      return;
+    }
+
+    el.textContent = editText;
+    if (editingElement.tagName === "A" && editHref) {
+      el.setAttribute("href", editHref);
+    }
+
+    const serializer = new XMLSerializer();
+    const newHtml =
+      "<!DOCTYPE html>\n" + serializer.serializeToString(doc.documentElement);
+    setPages((prev) => ({ ...prev, [currentPage]: newHtml }));
+    setEditingElement(null);
+  }
 
   async function createProjectAndRedirect(
     name: string,
@@ -1035,6 +1125,53 @@ export function BuilderUI({
         />
       )}
 
+      {/* Click-to-Edit Modal */}
+      {editingElement && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md rounded-lg border border-zinc-700 bg-zinc-900 p-6">
+            <h3 className="mb-4 text-lg font-semibold text-white">
+              Edit {editingElement.tagName.toLowerCase()}
+            </h3>
+            <label className="mb-1 block text-sm text-zinc-400">Text</label>
+            <textarea
+              className="mb-4 w-full rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
+              rows={3}
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+            />
+            {editingElement.tagName === "A" && (
+              <>
+                <label className="mb-1 block text-sm text-zinc-400">
+                  Link URL
+                </label>
+                <input
+                  type="text"
+                  className="mb-4 w-full rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
+                  value={editHref}
+                  onChange={(e) => setEditHref(e.target.value)}
+                />
+              </>
+            )}
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setEditingElement(null)}
+                className="rounded bg-zinc-700 px-4 py-2 text-sm text-white hover:bg-zinc-600"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={applyElementEdit}
+                className="rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-500"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mobile View Toggle */}
       <div className="flex shrink-0 border-b border-zinc-800 bg-zinc-900 lg:hidden">
         <button
@@ -1426,9 +1563,16 @@ export function BuilderUI({
         )}
 
         <div className="flex shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-900 px-3 py-2 sm:px-4 sm:py-3">
-          <span className="text-xs text-zinc-400 sm:text-sm">
-            Preview{currentPage ? `: ${currentPage}` : ""}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-zinc-400 sm:text-sm">
+              Preview{currentPage ? `: ${currentPage}` : ""}
+            </span>
+            {displayHtml && (
+              <span className="hidden text-xs text-zinc-500 sm:inline">
+                (double-click text to edit)
+              </span>
+            )}
+          </div>
           {isGenerating && (
             <span className="flex items-center gap-2 text-xs text-zinc-500 sm:text-sm">
               <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
