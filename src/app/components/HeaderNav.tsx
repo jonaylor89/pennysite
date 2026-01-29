@@ -19,7 +19,7 @@ export function HeaderNav() {
 
   return (
     <nav className="flex items-center gap-4 text-sm text-zinc-300">
-      <Link href="/billing" className="hover:text-white">
+      <Link href={user ? "/billing" : "/pricing"} className="hover:text-white">
         Pricing
       </Link>
       {user && (
