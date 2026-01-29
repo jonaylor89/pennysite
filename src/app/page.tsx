@@ -11,7 +11,7 @@ const jsonLd = {
   name: "Pennysite",
   description:
     "AI-powered website builder. Describe your website in plain English, see it instantly, and publish for free.",
-  url: process.env.NEXT_PUBLIC_SITE_URL || "https://pennysite.vercel.app",
+  url: process.env.NEXT_PUBLIC_SITE_URL || "https://pennysite.app",
   applicationCategory: "WebApplication",
   operatingSystem: "Any",
   offers: {
