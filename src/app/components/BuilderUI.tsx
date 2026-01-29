@@ -582,6 +582,7 @@ export function BuilderUI({
   );
   const [editText, setEditText] = useState("");
   const [editHref, setEditHref] = useState("");
+  const [editAsLink, setEditAsLink] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const didAutoSendRef = useRef(false);
@@ -629,6 +630,7 @@ export function BuilderUI({
         }
       }
       if (e.data?.type === "edit-element" && e.data.selector) {
+        const isLink = e.data.tagName === "A";
         setEditingElement({
           selector: e.data.selector,
           tagName: e.data.tagName,
@@ -637,6 +639,7 @@ export function BuilderUI({
         });
         setEditText(e.data.text);
         setEditHref(e.data.href || "");
+        setEditAsLink(isLink);
       }
     }
     window.addEventListener("message", handleMessage);
@@ -656,9 +659,30 @@ export function BuilderUI({
       return;
     }
 
-    el.textContent = editText;
-    if (editingElement.tagName === "A" && editHref) {
-      el.setAttribute("href", editHref);
+    const wasLink = editingElement.tagName === "A";
+    const wantsLink = editAsLink;
+
+    if (wasLink && !wantsLink) {
+      // Convert link to span (preserve inline nature)
+      const span = doc.createElement("span");
+      span.textContent = editText;
+      // Copy classes if any
+      if (el.className) span.className = el.className;
+      el.replaceWith(span);
+    } else if (!wasLink && wantsLink) {
+      // Convert element to link
+      const link = doc.createElement("a");
+      link.textContent = editText;
+      link.setAttribute("href", editHref || "#");
+      // Copy classes if any
+      if (el.className) link.className = el.className;
+      el.replaceWith(link);
+    } else {
+      // Same type - just update content
+      el.textContent = editText;
+      if (wasLink && editHref) {
+        el.setAttribute("href", editHref);
+      }
     }
 
     const serializer = new XMLSerializer();
@@ -1139,7 +1163,21 @@ export function BuilderUI({
               value={editText}
               onChange={(e) => setEditText(e.target.value)}
             />
-            {editingElement.tagName === "A" && (
+            <label className="mb-3 flex cursor-pointer items-center gap-2">
+              <input
+                type="checkbox"
+                checked={editAsLink}
+                onChange={(e) => {
+                  setEditAsLink(e.target.checked);
+                  if (e.target.checked && !editHref) {
+                    setEditHref("#");
+                  }
+                }}
+                className="h-4 w-4 rounded border-zinc-600 bg-zinc-800 text-blue-500 focus:ring-blue-500"
+              />
+              <span className="text-sm text-zinc-300">Make this a link</span>
+            </label>
+            {editAsLink && (
               <>
                 <label className="mb-1 block text-sm text-zinc-400">
                   Link URL
@@ -1149,6 +1187,7 @@ export function BuilderUI({
                   className="mb-4 w-full rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
                   value={editHref}
                   onChange={(e) => setEditHref(e.target.value)}
+                  placeholder="https://example.com or #section"
                 />
               </>
             )}
