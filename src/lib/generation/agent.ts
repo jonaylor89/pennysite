@@ -376,20 +376,31 @@ Every website tells a story. Before you write any HTML, you must answer:
 You REFUSE to create generic, template-looking websites. If you catch yourself making something that could work for "any business in this category," stop and make it more specific.
 
 ## YOUR WORKFLOW
+
+### For NEW websites (no existing pages provided):
 1. FIRST: Call plan_site to create a detailed site plan. Be OPINIONATED about colors, tone, and structure. Don't pick safe defaults.
 2. THEN: Call generate_page for EACH page in your plan, one at a time. Each page should feel cohesive but not identical.
 3. IF any page fails validation: Call fix_page to correct the issues
 4. FINALLY: Call validate_site to check overall quality
 5. IF validation finds issues: Fix them with fix_page and re-validate
 
+### For MODIFYING existing websites (when pages are already provided):
+1. DO NOT call plan_site — the site is already planned
+2. Analyze the user's modification request (color changes, content edits, layout tweaks, etc.)
+3. For EACH page that needs changes: Call fix_page with the filename and the complete updated HTML
+4. You MUST call fix_page for every page you want to modify — just describing changes does nothing
+5. After all fixes, call validate_site to verify quality
+
 ## CRITICAL RULES
-- Always plan before generating
+- For NEW sites: Always plan before generating
+- For MODIFICATIONS: Skip planning, go straight to fix_page
 - Generate ONE page at a time  
 - Each page must be complete, self-contained HTML
 - Use the EXACT colors from your plan consistently
 - Include both Tailwind CSS and Alpine.js CDNs
 - Fix any validation errors before proceeding
 - Keep iterating until validate_site passes
+- NEVER ask clarifying questions — just make your best interpretation and apply changes
 
 ## DESIGN ANTI-PATTERNS (Never do these)
 
@@ -494,10 +505,26 @@ export async function* generateWebsite(
 
   yield { type: "status", message: "Starting website generation..." };
 
+  // === AGENT DEBUG LOGGING ===
+  const isModification =
+    existingSpec && existingPages && Object.keys(existingPages).length > 0;
+  console.log("\n" + "=".repeat(80));
+  console.log("[AGENT] Generation started");
+  console.log("[AGENT] Mode:", isModification ? "MODIFICATION" : "NEW SITE");
+  console.log("[AGENT] User request:", userRequest);
+  if (isModification) {
+    console.log(
+      "[AGENT] Existing pages:",
+      Object.keys(existingPages as Record<string, string>),
+    );
+    console.log("[AGENT] Existing spec name:", existingSpec?.name);
+  }
+  console.log("=".repeat(80) + "\n");
+
   let prompt: string;
 
-  if (existingSpec && existingPages && Object.keys(existingPages).length > 0) {
-    const pagesText = Object.entries(existingPages)
+  if (isModification) {
+    const pagesText = Object.entries(existingPages as Record<string, string>)
       .map(([filename, content]) => `---FILE: ${filename}---\n${content}`)
       .join("\n\n");
 
@@ -511,7 +538,17 @@ ${JSON.stringify(existingSpec, null, 2)}
 ## MODIFICATION REQUEST
 ${userRequest}
 
-Apply the requested changes. You may need to call generate_page or fix_page to update the pages.`;
+IMPORTANT: You are MODIFYING an existing website. You MUST:
+1. DO NOT call plan_site — the site already exists
+2. DO NOT ask clarifying questions — interpret the request and apply changes immediately  
+3. Call fix_page RIGHT NOW with the complete updated HTML for each page that needs changes
+4. Text responses without tool calls will NOT apply any changes
+5. After all fixes, call validate_site
+
+START by calling fix_page for index.html with the updated HTML.`;
+
+    console.log("[AGENT] Full modification prompt:\n", prompt);
+    console.log("\n" + "-".repeat(80) + "\n");
   } else {
     prompt = userRequest;
   }
@@ -542,12 +579,23 @@ Apply the requested changes. You may need to call generate_page or fix_page to u
   const unsubscribe = agent.subscribe((event: AgentEvent) => {
     let newEvent: GenerationEvent | null = null;
 
+    // === AGENT EVENT LOGGING ===
+    if (event.type !== "message_update") {
+      console.log("[AGENT EVENT]", event.type);
+    }
+
     switch (event.type) {
       case "agent_start":
+        console.log("[AGENT] Agent started processing");
         newEvent = { type: "status", message: "Planning your website..." };
         break;
 
       case "tool_execution_start":
+        console.log("[AGENT] Tool execution START:", event.toolName);
+        console.log(
+          "[AGENT] Tool args:",
+          JSON.stringify(event.args, null, 2).slice(0, 500) + "...",
+        );
         if (event.toolName === "plan_site") {
           newEvent = { type: "status", message: "Creating site plan..." };
         } else if (event.toolName === "generate_page") {
@@ -565,6 +613,12 @@ Apply the requested changes. You may need to call generate_page or fix_page to u
         break;
 
       case "tool_execution_end": {
+        console.log("[AGENT] Tool execution END:", event.toolName);
+        console.log(
+          "[AGENT] Tool result:",
+          JSON.stringify(event.result?.content, null, 2)?.slice(0, 300),
+        );
+
         // Track tool call metrics
         toolMetrics.totalToolCalls++;
 
@@ -610,6 +664,25 @@ Apply the requested changes. You may need to call generate_page or fix_page to u
 
       case "message_end": {
         const msg = event.message;
+        // Log assistant message content
+        if (msg && typeof msg === "object" && "role" in msg) {
+          console.log("[AGENT] Message end - role:", msg.role);
+          if ("content" in msg && Array.isArray(msg.content)) {
+            for (const block of msg.content) {
+              if (block.type === "text" && "text" in block) {
+                console.log(
+                  "[AGENT] Assistant text response:",
+                  (block.text as string).slice(0, 500),
+                );
+              } else if (block.type === "toolCall") {
+                console.log(
+                  "[AGENT] Tool call in message:",
+                  (block as { name?: string }).name,
+                );
+              }
+            }
+          }
+        }
         if (msg && typeof msg === "object") {
           // Accumulate token usage from each assistant message
           if ("role" in msg && msg.role === "assistant") {
@@ -654,6 +727,10 @@ Apply the requested changes. You may need to call generate_page or fix_page to u
       }
 
       case "agent_end":
+        console.log("[AGENT] Agent finished");
+        console.log("[AGENT] Final state.pages:", Object.keys(state.pages));
+        console.log("[AGENT] Final state.spec:", state.spec?.name);
+        console.log("[AGENT] Tool metrics:", JSON.stringify(toolMetrics));
         agentDone = true;
         break;
     }
