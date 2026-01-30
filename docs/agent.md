@@ -14,6 +14,14 @@ The agent streams progress events to the client via Server-Sent Events (SSE), en
 
 The agent follows a structured workflow using specialized tools:
 
+### Progress feedback (`report_status`)
+
+The model calls `report_status` to send user-facing progress messages to the client. It is the **single source** of status text shown during generation (e.g. in the chat UI with the typing indicator).
+
+- **When:** Before calling any other tool; the model may call it multiple times during long steps (e.g. several times while working on one page to show steady feedback).
+- **Parameter:** `message` — short, action-oriented text (e.g. "Designing site structure", "Building index.html", "Writing page content", "Fixing issues", "Validating site").
+- **Purpose:** Keeps the user informed of progress so the same message doesn’t sit for a long time during multi-page or heavy generation.
+
 ### 1. Plan (`plan_site`)
 
 Creates a detailed `SiteSpec` containing:
@@ -72,7 +80,7 @@ Events emitted during generation:
 
 | Event Type | Description |
 |------------|-------------|
-| `status` | Progress messages ("Creating site plan...", "Generating index.html...") |
+| `status` | Progress messages from `report_status` |
 | `spec` | The `SiteSpec` object when planning completes |
 | `page` | Each page's HTML when generated (includes filename and html) |
 | `thinking` | Agent reasoning content (when thinking is enabled) |
