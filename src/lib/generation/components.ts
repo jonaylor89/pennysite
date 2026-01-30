@@ -474,4 +474,441 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
   </div>
 </section>
 \`\`\`
+
+---
+
+### STATS: Metrics Grid
+\`\`\`html
+<section class="bg-white py-16">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="grid grid-cols-2 gap-8 lg:grid-cols-4">
+      <div class="text-center">
+        <p class="text-4xl font-bold text-gray-900 lg:text-5xl">10K+</p>
+        <p class="mt-2 text-gray-600">Active Users</p>
+      </div>
+      <div class="text-center">
+        <p class="text-4xl font-bold text-gray-900 lg:text-5xl">99.9%</p>
+        <p class="mt-2 text-gray-600">Uptime</p>
+      </div>
+      <div class="text-center">
+        <p class="text-4xl font-bold text-gray-900 lg:text-5xl">150+</p>
+        <p class="mt-2 text-gray-600">Countries</p>
+      </div>
+      <div class="text-center">
+        <p class="text-4xl font-bold text-gray-900 lg:text-5xl">4.9★</p>
+        <p class="mt-2 text-gray-600">Average Rating</p>
+      </div>
+    </div>
+  </div>
+</section>
+\`\`\`
+
+---
+
+### LOGOS: Trust Bar
+\`\`\`html
+<section class="bg-gray-50 py-12">
+  <div class="mx-auto max-w-7xl px-6">
+    <p class="text-center text-sm font-medium uppercase tracking-widest text-gray-500">Trusted by innovative teams</p>
+    <div class="mt-8 flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
+      <div class="flex h-8 w-24 items-center justify-center rounded bg-gray-300 text-xs font-bold text-gray-600">LOGO</div>
+      <div class="flex h-8 w-24 items-center justify-center rounded bg-gray-300 text-xs font-bold text-gray-600">LOGO</div>
+      <div class="flex h-8 w-24 items-center justify-center rounded bg-gray-300 text-xs font-bold text-gray-600">LOGO</div>
+      <div class="flex h-8 w-24 items-center justify-center rounded bg-gray-300 text-xs font-bold text-gray-600">LOGO</div>
+      <div class="flex h-8 w-24 items-center justify-center rounded bg-gray-300 text-xs font-bold text-gray-600">LOGO</div>
+    </div>
+  </div>
+</section>
+\`\`\`
+
+---
+
+### FAQ: Accordion
+\`\`\`html
+<section class="bg-white py-24">
+  <div class="mx-auto max-w-3xl px-6">
+    <h2 class="text-center text-3xl font-bold text-gray-900">Frequently Asked Questions</h2>
+    <div class="mt-12 space-y-4" x-data="{ open: null }">
+      <div class="rounded-lg border border-gray-200">
+        <button @click="open = open === 1 ? null : 1" class="flex w-full items-center justify-between px-6 py-4 text-left">
+          <span class="font-medium text-gray-900">How do I get started?</span>
+          <svg class="h-5 w-5 text-gray-500 transition-transform" :class="{ 'rotate-180': open === 1 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <div x-show="open === 1" x-collapse class="px-6 pb-4 text-gray-600">
+          Getting started is easy. Simply sign up for a free account and follow our quick setup wizard. You'll be up and running in under 5 minutes.
+        </div>
+      </div>
+      <div class="rounded-lg border border-gray-200">
+        <button @click="open = open === 2 ? null : 2" class="flex w-full items-center justify-between px-6 py-4 text-left">
+          <span class="font-medium text-gray-900">What payment methods do you accept?</span>
+          <svg class="h-5 w-5 text-gray-500 transition-transform" :class="{ 'rotate-180': open === 2 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <div x-show="open === 2" x-collapse class="px-6 pb-4 text-gray-600">
+          We accept all major credit cards, PayPal, and bank transfers for annual plans. All payments are processed securely.
+        </div>
+      </div>
+      <div class="rounded-lg border border-gray-200">
+        <button @click="open = open === 3 ? null : 3" class="flex w-full items-center justify-between px-6 py-4 text-left">
+          <span class="font-medium text-gray-900">Can I cancel anytime?</span>
+          <svg class="h-5 w-5 text-gray-500 transition-transform" :class="{ 'rotate-180': open === 3 }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <div x-show="open === 3" x-collapse class="px-6 pb-4 text-gray-600">
+          Yes, you can cancel your subscription at any time. No questions asked, no hidden fees.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+\`\`\`
+
+---
+
+### TEAM: Grid with Cards
+\`\`\`html
+<section class="bg-gray-50 py-24">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="text-center">
+      <h2 class="text-3xl font-bold text-gray-900">Meet the Team</h2>
+      <p class="mt-4 text-lg text-gray-600">The people behind the product</p>
+    </div>
+    <div class="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="text-center">
+        <div class="mx-auto flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-3xl font-bold text-white">JD</div>
+        <h3 class="mt-6 text-lg font-semibold text-gray-900">Jane Doe</h3>
+        <p class="text-gray-600">CEO & Founder</p>
+      </div>
+      <div class="text-center">
+        <div class="mx-auto flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-3xl font-bold text-white">MS</div>
+        <h3 class="mt-6 text-lg font-semibold text-gray-900">Mike Smith</h3>
+        <p class="text-gray-600">CTO</p>
+      </div>
+      <div class="text-center">
+        <div class="mx-auto flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-600 text-3xl font-bold text-white">AJ</div>
+        <h3 class="mt-6 text-lg font-semibold text-gray-900">Alex Johnson</h3>
+        <p class="text-gray-600">Head of Design</p>
+      </div>
+      <div class="text-center">
+        <div class="mx-auto flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 to-rose-600 text-3xl font-bold text-white">SW</div>
+        <h3 class="mt-6 text-lg font-semibold text-gray-900">Sarah Williams</h3>
+        <p class="text-gray-600">Lead Engineer</p>
+      </div>
+    </div>
+  </div>
+</section>
+\`\`\`
+
+---
+
+### PROCESS: Timeline Steps
+\`\`\`html
+<section class="bg-white py-24">
+  <div class="mx-auto max-w-4xl px-6">
+    <div class="text-center">
+      <h2 class="text-3xl font-bold text-gray-900">How It Works</h2>
+      <p class="mt-4 text-lg text-gray-600">Three simple steps to get started</p>
+    </div>
+    <div class="mt-16 space-y-12">
+      <div class="flex gap-6">
+        <div class="flex flex-col items-center">
+          <div class="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-600 text-xl font-bold text-white">1</div>
+          <div class="mt-4 h-full w-0.5 bg-indigo-200"></div>
+        </div>
+        <div class="pb-12">
+          <h3 class="text-xl font-semibold text-gray-900">Sign Up</h3>
+          <p class="mt-2 text-gray-600">Create your free account in seconds. No credit card required.</p>
+        </div>
+      </div>
+      <div class="flex gap-6">
+        <div class="flex flex-col items-center">
+          <div class="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-600 text-xl font-bold text-white">2</div>
+          <div class="mt-4 h-full w-0.5 bg-indigo-200"></div>
+        </div>
+        <div class="pb-12">
+          <h3 class="text-xl font-semibold text-gray-900">Configure</h3>
+          <p class="mt-2 text-gray-600">Set up your preferences and connect your existing tools.</p>
+        </div>
+      </div>
+      <div class="flex gap-6">
+        <div class="flex flex-col items-center">
+          <div class="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-600 text-xl font-bold text-white">3</div>
+        </div>
+        <div>
+          <h3 class="text-xl font-semibold text-gray-900">Launch</h3>
+          <p class="mt-2 text-gray-600">Go live and start seeing results immediately.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+\`\`\`
+
+---
+
+### BENTO: Asymmetric Grid
+\`\`\`html
+<section class="bg-gray-50 py-24">
+  <div class="mx-auto max-w-7xl px-6">
+    <h2 class="text-3xl font-bold text-gray-900">Everything in one place</h2>
+    <div class="mt-12 grid gap-4 lg:grid-cols-3 lg:grid-rows-2">
+      <div class="rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 p-8 text-white lg:row-span-2">
+        <h3 class="text-2xl font-bold">Analytics</h3>
+        <p class="mt-4 text-indigo-100">Deep insights into your performance with real-time dashboards and custom reports.</p>
+        <img src="https://illustrations.popsy.co/white/developer-activity.svg" alt="Analytics" class="mt-8 w-full">
+      </div>
+      <div class="rounded-2xl bg-white p-8 shadow-sm lg:col-span-2">
+        <h3 class="text-xl font-bold text-gray-900">Collaboration</h3>
+        <p class="mt-2 text-gray-600">Work together seamlessly with your team. Real-time editing, comments, and version history.</p>
+      </div>
+      <div class="rounded-2xl bg-gray-900 p-8 text-white">
+        <h3 class="text-xl font-bold">Security</h3>
+        <p class="mt-2 text-gray-400">Enterprise-grade encryption and compliance built-in.</p>
+      </div>
+      <div class="rounded-2xl bg-amber-100 p-8">
+        <h3 class="text-xl font-bold text-amber-900">Integrations</h3>
+        <p class="mt-2 text-amber-800">Connect with 100+ tools you already use.</p>
+      </div>
+    </div>
+  </div>
+</section>
+\`\`\`
+
+---
+
+### HERO: Gradient Mesh Background
+\`\`\`html
+<section class="relative min-h-screen overflow-hidden bg-slate-950">
+  <div class="absolute inset-0 overflow-hidden">
+    <div class="absolute -left-1/4 -top-1/4 h-96 w-96 rounded-full bg-purple-500/30 blur-3xl"></div>
+    <div class="absolute -right-1/4 top-1/4 h-96 w-96 rounded-full bg-blue-500/30 blur-3xl"></div>
+    <div class="absolute bottom-0 left-1/3 h-96 w-96 rounded-full bg-emerald-500/20 blur-3xl"></div>
+  </div>
+  <div class="relative mx-auto flex min-h-screen max-w-5xl flex-col items-center justify-center px-6 text-center">
+    <h1 class="text-5xl font-bold tracking-tight text-white md:text-7xl">
+      Build the future,<br><span class="bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">one pixel at a time</span>
+    </h1>
+    <p class="mt-8 max-w-2xl text-xl text-slate-300">
+      The design platform that brings your wildest ideas to life. No compromises, no limits.
+    </p>
+    <div class="mt-12 flex flex-col gap-4 sm:flex-row">
+      <a href="#" class="rounded-full bg-white px-8 py-4 font-semibold text-slate-900 transition hover:bg-slate-100">Start Creating</a>
+      <a href="#" class="rounded-full border border-slate-600 px-8 py-4 font-semibold text-white transition hover:border-slate-400">Watch Demo</a>
+    </div>
+  </div>
+</section>
+\`\`\`
+
+---
+
+### HERO: Asymmetric Split with Shapes
+\`\`\`html
+<section class="bg-orange-50 py-24 lg:py-0 lg:min-h-screen">
+  <div class="mx-auto max-w-7xl lg:flex lg:items-center">
+    <div class="px-6 lg:w-1/2 lg:py-24">
+      <span class="inline-block rounded-full bg-orange-200 px-4 py-1 text-sm font-medium text-orange-800">New Release</span>
+      <h1 class="mt-6 text-4xl font-bold leading-tight text-gray-900 lg:text-5xl">
+        Design that speaks volumes
+      </h1>
+      <p class="mt-6 text-lg text-gray-600">
+        Create stunning visual experiences that captivate your audience and drive results.
+      </p>
+      <a href="#" class="mt-8 inline-flex items-center gap-2 rounded-lg bg-orange-600 px-6 py-3 font-semibold text-white transition hover:bg-orange-700">
+        Get Started
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+      </a>
+    </div>
+    <div class="relative mt-12 lg:mt-0 lg:w-1/2">
+      <div class="absolute right-0 top-0 h-64 w-64 rounded-full bg-orange-300/50"></div>
+      <div class="absolute bottom-12 right-24 h-32 w-32 rounded-2xl bg-orange-400/60 rotate-12"></div>
+      <div class="absolute right-12 top-1/2 h-48 w-48 rounded-3xl bg-orange-200/80 -rotate-6"></div>
+      <div class="absolute bottom-0 right-48 h-24 w-24 rounded-full bg-orange-500/40"></div>
+    </div>
+  </div>
+</section>
+\`\`\`
+
+---
+
+### GALLERY: Portfolio Grid
+\`\`\`html
+<section class="bg-white py-24">
+  <div class="mx-auto max-w-7xl px-6">
+    <h2 class="text-3xl font-bold text-gray-900">Our Work</h2>
+    <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="group relative aspect-square overflow-hidden rounded-2xl bg-gray-200">
+        <div class="absolute inset-0 bg-gradient-to-br from-blue-600 to-purple-700"></div>
+        <div class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 bg-black/60">
+          <div class="text-center text-white">
+            <p class="text-xl font-bold">Project Alpha</p>
+            <p class="mt-2 text-sm text-gray-300">Brand Identity</p>
+          </div>
+        </div>
+      </div>
+      <div class="group relative aspect-square overflow-hidden rounded-2xl bg-gray-200">
+        <div class="absolute inset-0 bg-gradient-to-br from-emerald-600 to-teal-700"></div>
+        <div class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 bg-black/60">
+          <div class="text-center text-white">
+            <p class="text-xl font-bold">EcoTech</p>
+            <p class="mt-2 text-sm text-gray-300">Web Design</p>
+          </div>
+        </div>
+      </div>
+      <div class="group relative aspect-square overflow-hidden rounded-2xl bg-gray-200">
+        <div class="absolute inset-0 bg-gradient-to-br from-amber-500 to-orange-600"></div>
+        <div class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 bg-black/60">
+          <div class="text-center text-white">
+            <p class="text-xl font-bold">Sunrise App</p>
+            <p class="mt-2 text-sm text-gray-300">Mobile App</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+\`\`\`
+
+---
+
+### CONTACT: Simple Info Display
+\`\`\`html
+<section class="bg-gray-50 py-24">
+  <div class="mx-auto max-w-4xl px-6">
+    <div class="text-center">
+      <h2 class="text-3xl font-bold text-gray-900">Get in Touch</h2>
+      <p class="mt-4 text-lg text-gray-600">We'd love to hear from you</p>
+    </div>
+    <div class="mt-12 grid gap-8 sm:grid-cols-3">
+      <div class="rounded-2xl bg-white p-8 text-center shadow-sm">
+        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        </div>
+        <h3 class="mt-4 font-semibold text-gray-900">Email</h3>
+        <p class="mt-2 text-gray-600">hello@example.com</p>
+      </div>
+      <div class="rounded-2xl bg-white p-8 text-center shadow-sm">
+        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+        </div>
+        <h3 class="mt-4 font-semibold text-gray-900">Phone</h3>
+        <p class="mt-2 text-gray-600">+1 (555) 123-4567</p>
+      </div>
+      <div class="rounded-2xl bg-white p-8 text-center shadow-sm">
+        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+        <h3 class="mt-4 font-semibold text-gray-900">Address</h3>
+        <p class="mt-2 text-gray-600">123 Main St, City</p>
+      </div>
+    </div>
+  </div>
+</section>
+\`\`\`
+
+---
+
+### CTA: With Stats
+\`\`\`html
+<section class="bg-gradient-to-r from-indigo-600 to-purple-700 py-24">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="lg:flex lg:items-center lg:justify-between">
+      <div>
+        <h2 class="text-3xl font-bold text-white md:text-4xl">Ready to transform your workflow?</h2>
+        <div class="mt-8 flex gap-12">
+          <div>
+            <p class="text-4xl font-bold text-white">50K+</p>
+            <p class="text-indigo-200">Happy customers</p>
+          </div>
+          <div>
+            <p class="text-4xl font-bold text-white">99%</p>
+            <p class="text-indigo-200">Satisfaction rate</p>
+          </div>
+          <div>
+            <p class="text-4xl font-bold text-white">24/7</p>
+            <p class="text-indigo-200">Support available</p>
+          </div>
+        </div>
+      </div>
+      <div class="mt-10 lg:mt-0">
+        <a href="#" class="inline-flex items-center gap-2 rounded-lg bg-white px-8 py-4 font-semibold text-indigo-600 transition hover:bg-indigo-50">
+          Start Free Trial
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+\`\`\`
+
+---
+
+### TESTIMONIALS: Large Quote
+\`\`\`html
+<section class="bg-white py-24">
+  <div class="mx-auto max-w-4xl px-6 text-center">
+    <svg class="mx-auto h-12 w-12 text-gray-300" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+    <blockquote class="mt-8 text-2xl font-medium leading-relaxed text-gray-900 md:text-3xl">
+      "This product completely transformed how we work. What used to take us weeks now takes hours. I can't imagine going back to the old way."
+    </blockquote>
+    <div class="mt-8">
+      <p class="font-semibold text-gray-900">Amanda Richardson</p>
+      <p class="text-gray-600">VP of Operations, TechCorp</p>
+    </div>
+  </div>
+</section>
+\`\`\`
+
+---
+
+### FOOTER: Multi-column
+\`\`\`html
+<footer class="bg-gray-900 py-16">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+      <div>
+        <p class="text-xl font-bold text-white">Brand</p>
+        <p class="mt-4 text-gray-400">Building the future of digital experiences, one pixel at a time.</p>
+      </div>
+      <div>
+        <p class="font-semibold text-white">Product</p>
+        <ul class="mt-4 space-y-2">
+          <li><a href="#" class="text-gray-400 transition hover:text-white">Features</a></li>
+          <li><a href="#" class="text-gray-400 transition hover:text-white">Pricing</a></li>
+          <li><a href="#" class="text-gray-400 transition hover:text-white">Integrations</a></li>
+          <li><a href="#" class="text-gray-400 transition hover:text-white">Changelog</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-semibold text-white">Company</p>
+        <ul class="mt-4 space-y-2">
+          <li><a href="#" class="text-gray-400 transition hover:text-white">About</a></li>
+          <li><a href="#" class="text-gray-400 transition hover:text-white">Blog</a></li>
+          <li><a href="#" class="text-gray-400 transition hover:text-white">Careers</a></li>
+          <li><a href="#" class="text-gray-400 transition hover:text-white">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-semibold text-white">Legal</p>
+        <ul class="mt-4 space-y-2">
+          <li><a href="#" class="text-gray-400 transition hover:text-white">Privacy</a></li>
+          <li><a href="#" class="text-gray-400 transition hover:text-white">Terms</a></li>
+          <li><a href="#" class="text-gray-400 transition hover:text-white">Security</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-12 flex flex-col items-center justify-between gap-4 border-t border-gray-800 pt-8 md:flex-row">
+      <p class="text-sm text-gray-400">© 2025 Brand. All rights reserved.</p>
+      <div class="flex gap-4">
+        <a href="#" class="text-gray-400 transition hover:text-white">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>
+        </a>
+        <a href="#" class="text-gray-400 transition hover:text-white">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+        </a>
+        <a href="#" class="text-gray-400 transition hover:text-white">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>
+\`\`\`
 `;
