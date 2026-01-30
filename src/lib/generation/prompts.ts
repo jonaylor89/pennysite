@@ -1,3 +1,44 @@
+export const FONT_PAIRINGS = {
+  "inter-playfair": {
+    import:
+      '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">',
+    headingClass: "font-['Playfair_Display']",
+    bodyClass: "font-['Inter']",
+  },
+  "dm-sans-fraunces": {
+    import:
+      '<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@400;500;600;700&display=swap" rel="stylesheet">',
+    headingClass: "font-['Fraunces']",
+    bodyClass: "font-['DM_Sans']",
+  },
+  "space-grotesk-mono": {
+    import:
+      '<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">',
+    headingClass: "font-['Space_Grotesk']",
+    bodyClass: "font-['Space_Mono']",
+  },
+  "poppins-lora": {
+    import:
+      '<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">',
+    headingClass: "font-['Lora']",
+    bodyClass: "font-['Poppins']",
+  },
+  "plus-jakarta": {
+    import:
+      '<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">',
+    headingClass: "font-['Plus_Jakarta_Sans']",
+    bodyClass: "font-['Plus_Jakarta_Sans']",
+  },
+  "source-serif-only": {
+    import:
+      '<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;500;600;700&display=swap" rel="stylesheet">',
+    headingClass: "font-['Source_Serif_4']",
+    bodyClass: "font-['Source_Serif_4']",
+  },
+} as const;
+
+export type FontPairingName = keyof typeof FONT_PAIRINGS;
+
 export const PRODUCT_INTERPRETER_PROMPT = `You are a product design expert. Your job is to interpret a user's website request and output a detailed, structured specification.
 
 Analyze the request and extract:
@@ -7,6 +48,9 @@ Analyze the request and extract:
 4. A specific, harmonious color palette (provide actual hex codes)
 5. What pages are needed
 6. What sections each page should have
+7. What makes this offering UNIQUE compared to competitors
+8. The visual mood/aesthetic direction
+9. Specific content details (features, testimonials, stats)
 
 Be SPECIFIC and OPINIONATED. Don't be generic. Make real design decisions.
 
@@ -22,6 +66,24 @@ For sections, think about:
 - What social proof or trust signals are needed
 - What calls-to-action are appropriate
 
+For visual mood, choose 2-4 keywords that capture the aesthetic:
+- "brutalist" - raw, bold, unconventional layouts
+- "organic" - soft curves, natural textures, earthy
+- "tech-forward" - sleek, futuristic, sharp edges
+- "warm" - inviting, cozy, friendly colors
+- "minimal" - lots of whitespace, restrained palette
+- "bold" - strong colors, impactful typography
+- "editorial" - magazine-like, sophisticated layout
+- "playful" - fun, colorful, energetic
+
+For font pairing, choose ONE that matches the brand:
+- "inter-playfair" - modern sans + elegant serif (luxury, editorial)
+- "dm-sans-fraunces" - friendly sans + editorial serif (creative, warm)
+- "space-grotesk-mono" - tech sans + mono accents (dev tools, tech)
+- "poppins-lora" - rounded sans + classic serif (professional, approachable)
+- "plus-jakarta" - modern geometric sans only (startups, clean SaaS)
+- "source-serif-only" - editorial/blog feel (content-focused, literary)
+
 Output valid JSON matching this schema:
 {
   "name": "Business/Project Name",
@@ -30,6 +92,8 @@ Output valid JSON matching this schema:
   "industry": "specific industry",
   "audience": "specific target audience description",
   "tone": "professional|casual|playful|luxurious|minimal",
+  "uniqueValueProposition": "1-2 sentences explaining what makes this different from competitors",
+  "visualMood": ["keyword1", "keyword2"],
   "colorPalette": {
     "primary": "#hex",
     "secondary": "#hex", 
@@ -39,7 +103,16 @@ Output valid JSON matching this schema:
   },
   "typography": {
     "headingStyle": "bold|elegant|modern|classic",
-    "bodyFont": "sans|serif|mono"
+    "bodyFont": "sans|serif|mono",
+    "fontPairing": "inter-playfair|dm-sans-fraunces|space-grotesk-mono|poppins-lora|plus-jakarta|source-serif-only"
+  },
+  "contentDetails": {
+    "featureNames": ["Actual Feature Name 1", "Specific Feature 2", "Branded Feature 3"],
+    "testimonialIdeas": [
+      "Quote idea from [persona]: what they'd say about [specific benefit]",
+      "Quote idea from [persona]: what they'd say about [specific benefit]"
+    ],
+    "statsToShow": ["500+ customers", "99.9% uptime", "Founded 2019"]
   },
   "pages": [
     {
@@ -197,6 +270,8 @@ export function buildGenerationPrompt(
     industry: string;
     audience: string;
     tone: string;
+    uniqueValueProposition?: string;
+    visualMood?: string[];
     colorPalette: {
       primary: string;
       secondary: string;
@@ -207,6 +282,12 @@ export function buildGenerationPrompt(
     typography: {
       headingStyle: string;
       bodyFont: string;
+      fontPairing?: string;
+    };
+    contentDetails?: {
+      featureNames?: string[];
+      testimonialIdeas?: string[];
+      statsToShow?: string[];
     };
     pages: Array<{
       filename: string;
@@ -225,6 +306,10 @@ export function buildGenerationPrompt(
   },
   userRequest: string,
 ): string {
+  const fontPairing =
+    spec.typography.fontPairing &&
+    FONT_PAIRINGS[spec.typography.fontPairing as FontPairingName];
+
   return `## PROJECT SPECIFICATION
 
 **Name:** ${spec.name}
@@ -233,6 +318,8 @@ export function buildGenerationPrompt(
 **Industry:** ${spec.industry}
 **Target Audience:** ${spec.audience}
 **Tone:** ${spec.tone}
+${spec.uniqueValueProposition ? `**Unique Value Proposition:** ${spec.uniqueValueProposition}` : ""}
+${spec.visualMood?.length ? `**Visual Mood:** ${spec.visualMood.join(", ")}` : ""}
 
 ## COLOR PALETTE (use these exact colors)
 - Primary: ${spec.colorPalette.primary}
@@ -244,6 +331,26 @@ export function buildGenerationPrompt(
 ## TYPOGRAPHY
 - Heading Style: ${spec.typography.headingStyle}
 - Body Font: ${spec.typography.bodyFont === "sans" ? "font-sans" : spec.typography.bodyFont === "serif" ? "font-serif" : "font-mono"}
+${
+  fontPairing
+    ? `- Font Pairing: ${spec.typography.fontPairing}
+  - Add this to <head>: ${fontPairing.import}
+  - Use ${fontPairing.headingClass} for headings
+  - Use ${fontPairing.bodyClass} for body text`
+    : ""
+}
+
+${
+  spec.contentDetails
+    ? `## CONTENT DETAILS
+${spec.contentDetails.featureNames?.length ? `### Feature Names (use these exact names)\n${spec.contentDetails.featureNames.map((f) => `- ${f}`).join("\n")}` : ""}
+
+${spec.contentDetails.testimonialIdeas?.length ? `### Testimonial Ideas (create realistic testimonials based on these)\n${spec.contentDetails.testimonialIdeas.map((t) => `- ${t}`).join("\n")}` : ""}
+
+${spec.contentDetails.statsToShow?.length ? `### Stats to Display\n${spec.contentDetails.statsToShow.map((s) => `- ${s}`).join("\n")}` : ""}
+`
+    : ""
+}
 
 ## KEY FEATURES TO HIGHLIGHT
 ${spec.features.map((f) => `- ${f}`).join("\n")}
