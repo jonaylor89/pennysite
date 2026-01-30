@@ -420,12 +420,118 @@ Only these image sources are allowed:
    - Names: app-launch, working-remotely, designer, developer-activity, success, freelancer, meditation, skateboard, surfer, taking-selfie, trophy, home-office, business-deal, remote-work, productive-work, product-launch, work-from-home, student, teaching, creative-work, cup-of-tea, coffee-break
 2. **Inline SVGs**: Draw icons and decorative elements directly in the HTML
 3. **CSS/Tailwind**: Gradients, shapes, and patterns via classes
+4. **Undraw-style SVGs**: Reference https://undraw.co/illustrations for style inspiration (download and inline the SVGs, don't hotlink)
+5. **CSS Shapes**: Blob shapes using clip-path or creative border-radius (e.g., \`border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%\`)
+6. **Gradient Orbs**: Positioned absolute blurred divs for ambient backgrounds:
+   \`\`\`html
+   <div class="absolute top-20 left-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+   \`\`\`
+7. **Pattern Backgrounds**: Subtle patterns using repeating-linear-gradient:
+   \`\`\`css
+   background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.03) 10px, rgba(0,0,0,0.03) 20px);
+   \`\`\`
 
 Instead of photos, create visual impact with:
 - BOLD typography as the visual centerpiece
 - Color blocks, gradients, and whitespace
 - Inline SVG icons for features and UI elements
 - Generous padding and margins
+
+## MICROINTERACTIONS & POLISH
+
+Elevate the user experience with thoughtful animations and micro-interactions:
+
+### Hover Animations on Cards
+\`\`\`html
+<div class="transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+  <!-- card content -->
+</div>
+\`\`\`
+
+### Scroll Fade-ins with Alpine.js
+Use intersection observer for elements that animate in on scroll:
+\`\`\`html
+<div x-data="{ shown: false }" x-intersect="shown = true" 
+     :class="shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'"
+     class="transition-all duration-700">
+  <!-- content fades in when scrolled into view -->
+</div>
+\`\`\`
+
+### Button Hover States
+\`\`\`html
+<button class="transition-all duration-200 hover:scale-105 hover:bg-opacity-90 active:scale-95">
+  Get Started
+</button>
+\`\`\`
+
+### Staggered Animations for Grid Items
+\`\`\`html
+<div class="grid grid-cols-3 gap-6">
+  <div class="transition-all duration-500 delay-0 ...">Item 1</div>
+  <div class="transition-all duration-500 delay-100 ...">Item 2</div>
+  <div class="transition-all duration-500 delay-200 ...">Item 3</div>
+</div>
+\`\`\`
+
+### Link Underline Animations
+\`\`\`html
+<a href="#" class="relative group">
+  Learn More
+  <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-current transition-all duration-300 group-hover:w-full"></span>
+</a>
+\`\`\`
+
+## ICON LIBRARIES
+
+All icons MUST be inline SVG — never use external icon fonts or image URLs.
+
+### Heroicons (Common Examples)
+Use these inline SVG patterns for common icons:
+
+**Arrow Right:**
+\`\`\`html
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+</svg>
+\`\`\`
+
+**Check:**
+\`\`\`html
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+</svg>
+\`\`\`
+
+**Star:**
+\`\`\`html
+<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-5 h-5">
+  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+</svg>
+\`\`\`
+
+**Menu (Hamburger):**
+\`\`\`html
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+</svg>
+\`\`\`
+
+**X (Close):**
+\`\`\`html
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+</svg>
+\`\`\`
+
+**Chevron Down:**
+\`\`\`html
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+</svg>
+\`\`\`
+
+For Lucide-style icons, follow the same inline SVG pattern with 24x24 viewBox and stroke-based paths. Always use \`currentColor\` for strokes/fills so icons inherit text color.
 
 ${DESIGN_SYSTEM_PROMPT}
 
