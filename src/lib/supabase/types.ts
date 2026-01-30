@@ -105,6 +105,36 @@ export interface Database {
         };
         Relationships: [];
       };
+      pending_generations: {
+        Row: {
+          id: string;
+          checkout_session_id: string;
+          user_id: string;
+          prompt_token: string;
+          created_at: string;
+          consumed_at: string | null;
+          expires_at: string;
+        };
+        Insert: {
+          id?: string;
+          checkout_session_id: string;
+          user_id: string;
+          prompt_token: string;
+          created_at?: string;
+          consumed_at?: string | null;
+          expires_at?: string;
+        };
+        Update: {
+          id?: string;
+          checkout_session_id?: string;
+          user_id?: string;
+          prompt_token?: string;
+          created_at?: string;
+          consumed_at?: string | null;
+          expires_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

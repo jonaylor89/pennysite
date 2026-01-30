@@ -11,14 +11,14 @@ export const CREDIT_PACKS: CreditPack[] = [
   {
     id: "starter",
     name: "Starter",
-    credits: 50,
+    credits: 100,
     priceUsd: 5,
     stripePriceId: process.env.STRIPE_PRICE_STARTER || "",
   },
   {
     id: "basic",
     name: "Basic",
-    credits: 220,
+    credits: 440,
     priceUsd: 20,
     stripePriceId: process.env.STRIPE_PRICE_BASIC || "",
     popular: true,
@@ -26,14 +26,14 @@ export const CREDIT_PACKS: CreditPack[] = [
   {
     id: "pro",
     name: "Pro",
-    credits: 600,
+    credits: 1200,
     priceUsd: 50,
     stripePriceId: process.env.STRIPE_PRICE_PRO || "",
   },
   {
     id: "max",
     name: "Max",
-    credits: 1300,
+    credits: 2600,
     priceUsd: 100,
     stripePriceId: process.env.STRIPE_PRICE_MAX || "",
   },

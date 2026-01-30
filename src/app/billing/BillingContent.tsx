@@ -14,10 +14,10 @@ type CreditBalance = {
 };
 
 const packs = [
-  { id: "starter", name: "Starter", credits: 50, price: 5 },
-  { id: "basic", name: "Basic", credits: 220, price: 20, popular: true },
-  { id: "pro", name: "Pro", credits: 600, price: 50 },
-  { id: "max", name: "Max", credits: 1300, price: 100 },
+  { id: "starter", name: "Starter", credits: 100, price: 5 },
+  { id: "basic", name: "Basic", credits: 440, price: 20, popular: true },
+  { id: "pro", name: "Pro", credits: 1200, price: 50 },
+  { id: "max", name: "Max", credits: 2600, price: 100 },
 ];
 
 type Props = {
@@ -166,8 +166,8 @@ function BillingContentInner({ initialBalance }: Props) {
           </div>
           <div className="border-t border-zinc-800 pt-3">
             <div className="flex justify-between">
-              <span>Typical generation</span>
-              <span className="text-emerald-400">~47 credits ($4.70)</span>
+              <span>Typical generation (3 pages)</span>
+              <span className="text-emerald-400">~100 credits ($5.00)</span>
             </div>
           </div>
         </div>

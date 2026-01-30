@@ -2,12 +2,14 @@
 
 import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { captureEvent } from "@/lib/posthog/client";
 import { createClient } from "@/lib/supabase/client";
 import { AutoExpandTextarea } from "./AutoExpandTextarea";
+import { GuestCheckoutModal } from "./GuestCheckoutModal";
 import { RatingModal } from "./RatingModal";
+import { SetPasswordModal } from "./SetPasswordModal";
 
 type MobileView = "chat" | "preview";
 
@@ -156,10 +158,10 @@ function BuyCreditsModal({
   const [isLoading, setIsLoading] = useState<string | null>(null);
 
   const packs = [
-    { id: "starter", name: "Starter", credits: 50, price: 5 },
-    { id: "basic", name: "Basic", credits: 220, price: 20, popular: true },
-    { id: "pro", name: "Pro", credits: 600, price: 50 },
-    { id: "max", name: "Max", credits: 1300, price: 100 },
+    { id: "starter", name: "Starter", credits: 100, price: 5 },
+    { id: "basic", name: "Basic", credits: 440, price: 20, popular: true },
+    { id: "pro", name: "Pro", credits: 1200, price: 50 },
+    { id: "max", name: "Max", credits: 2600, price: 100 },
   ];
 
   async function buyPack(packId: string) {
@@ -198,7 +200,7 @@ function BuyCreditsModal({
             <span className="font-medium text-white">{requiredCredits}</span>.
           </p>
           <p className="mt-1 text-xs text-zinc-500">
-            Typical generation costs ~47 credits. Unused credits are refunded.
+            Typical generation costs ~100 credits. Unused credits are refunded.
           </p>
         </div>
 
@@ -556,6 +558,8 @@ export function BuilderUI({
           }
         : null,
     );
+  const editTextId = useId();
+  const editLinkUrlId = useId();
   const [siteSpec, setSiteSpec] = useState<SiteSpec | null>(null);
   const [generationPhase, setGenerationPhase] = useState<string>("");
   const [_pendingPrompt, setPendingPrompt] = useState<string | null>(null);
@@ -564,6 +568,13 @@ export function BuilderUI({
     outputTokens: number;
     estimatedCredits: number;
   } | null>(null);
+
+  // Guest checkout state
+  const [showGuestCheckout, setShowGuestCheckout] = useState(false);
+  const [showSetPassword, setShowSetPassword] = useState(false);
+  const [pendingGuestPrompt, setPendingGuestPrompt] = useState<string | null>(
+    null,
+  );
 
   // Analytics state
   const [showRatingModal, setShowRatingModal] = useState(false);
@@ -587,6 +598,7 @@ export function BuilderUI({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const didAutoSendRef = useRef(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
 
   const pageNames = Object.keys(pages);
@@ -612,6 +624,94 @@ export function BuilderUI({
         .catch(() => {});
     }
   }, [user]);
+
+  // Handle return from Stripe guest checkout
+  useEffect(() => {
+    const sessionId = searchParams.get("session_id");
+    if (!sessionId) return;
+
+    // Clean up URL immediately
+    const url = new URL(window.location.href);
+    url.searchParams.delete("session_id");
+    window.history.replaceState({}, "", url.pathname + url.search);
+
+    async function handlePostCheckoutReturn() {
+      try {
+        const res = await fetch(
+          `/api/billing/session-status?session_id=${sessionId}`,
+        );
+        const data = await res.json();
+
+        if (data.error) {
+          setError("Session expired or already used. Please try again.");
+          return;
+        }
+
+        // Establish session via magic link token
+        if (data.authToken && data.email) {
+          const { error: verifyError } = await supabase.auth.verifyOtp({
+            token_hash: data.authToken,
+            type: "magiclink",
+          });
+
+          if (verifyError) {
+            console.error("Failed to verify magic link:", verifyError);
+            setError("Failed to sign in. Please try again.");
+            return;
+          }
+        }
+
+        // Refresh user state
+        const {
+          data: { user: newUser },
+        } = await supabase.auth.getUser();
+        setUser(newUser);
+        setAuthChecked(true);
+
+        // Refresh credit balance
+        const balanceRes = await fetch("/api/credits/balance");
+        const balanceData = await balanceRes.json();
+        if (!balanceData.error) {
+          setCreditBalance(balanceData);
+        }
+
+        // Set prompt and auto-trigger generation
+        if (data.prompt) {
+          setInput(data.prompt);
+          // Small delay to let state settle, then auto-send
+          setTimeout(() => {
+            const sendButton = document.querySelector(
+              '[data-testid="send-button"]',
+            ) as HTMLButtonElement;
+            if (sendButton) {
+              sendButton.click();
+            }
+          }, 100);
+        }
+      } catch (err) {
+        console.error("Post-checkout error:", err);
+        setError("Failed to restore session. Please try again.");
+      }
+    }
+
+    handlePostCheckoutReturn();
+  }, [searchParams, supabase.auth]);
+
+  // Show set password modal for passwordless users after first generation
+  useEffect(() => {
+    if (
+      user?.user_metadata?.needs_password &&
+      pageNames.length > 0 &&
+      !showSetPassword &&
+      !showRatingModal
+    ) {
+      // Delay showing to not overlap with other modals
+      const timer = setTimeout(() => {
+        setShowSetPassword(true);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [user, pageNames.length, showSetPassword, showRatingModal]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally scroll on new messages
   useEffect(() => {
@@ -686,8 +786,9 @@ export function BuilderUI({
     }
 
     const serializer = new XMLSerializer();
-    const newHtml =
-      "<!DOCTYPE html>\n" + serializer.serializeToString(doc.documentElement);
+    const newHtml = `<!DOCTYPE html>\n${serializer.serializeToString(
+      doc.documentElement,
+    )}`;
     setPages((prev) => ({ ...prev, [currentPage]: newHtml }));
     setEditingElement(null);
   }
@@ -726,10 +827,9 @@ export function BuilderUI({
     if (!text.trim() || isGenerating) return;
 
     if (!user) {
-      const returnUrl = encodeURIComponent(
-        `/project/new?prompt=${encodeURIComponent(text.trim())}`,
-      );
-      router.push(`/auth/login?redirect=${returnUrl}`);
+      // Show guest checkout modal instead of redirecting to login
+      setPendingGuestPrompt(text.trim());
+      setShowGuestCheckout(true);
       return;
     }
 
@@ -1149,6 +1249,31 @@ export function BuilderUI({
         />
       )}
 
+      {/* Guest Checkout Modal */}
+      {showGuestCheckout && pendingGuestPrompt && (
+        <GuestCheckoutModal
+          prompt={pendingGuestPrompt}
+          onClose={() => {
+            setShowGuestCheckout(false);
+            setPendingGuestPrompt(null);
+          }}
+        />
+      )}
+
+      {/* Set Password Modal */}
+      {showSetPassword && (
+        <SetPasswordModal
+          onComplete={() => {
+            setShowSetPassword(false);
+            // Refresh user to update metadata
+            supabase.auth.getUser().then(({ data: { user: updatedUser } }) => {
+              setUser(updatedUser);
+            });
+          }}
+          onSkip={() => setShowSetPassword(false)}
+        />
+      )}
+
       {/* Click-to-Edit Modal */}
       {editingElement && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
@@ -1156,8 +1281,14 @@ export function BuilderUI({
             <h3 className="mb-4 text-lg font-semibold text-white">
               Edit {editingElement.tagName.toLowerCase()}
             </h3>
-            <label className="mb-1 block text-sm text-zinc-400">Text</label>
+            <label
+              className="mb-1 block text-sm text-zinc-400"
+              htmlFor={editTextId}
+            >
+              Text
+            </label>
             <textarea
+              id={editTextId}
               className="mb-4 w-full rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
               rows={3}
               value={editText}
@@ -1179,11 +1310,15 @@ export function BuilderUI({
             </label>
             {editAsLink && (
               <>
-                <label className="mb-1 block text-sm text-zinc-400">
+                <label
+                  className="mb-1 block text-sm text-zinc-400"
+                  htmlFor={editLinkUrlId}
+                >
                   Link URL
                 </label>
                 <input
                   type="text"
+                  id={editLinkUrlId}
                   className="mb-4 w-full rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
                   value={editHref}
                   onChange={(e) => setEditHref(e.target.value)}
@@ -1493,6 +1628,7 @@ export function BuilderUI({
               type="button"
               onClick={handleSend}
               disabled={isGenerating || !input.trim()}
+              data-testid="send-button"
               className="w-full rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isGenerating ? "Generating..." : "Send"}

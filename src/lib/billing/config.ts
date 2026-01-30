@@ -43,8 +43,8 @@ export function estimateGenerationCredits(): {
   max: number;
 } {
   return {
-    min: BASE_CREDITS_PER_GENERATION + 10, // ~2k tokens total
-    typical: 47, // ~2k input + 8k output
+    min: BASE_CREDITS_PER_GENERATION + 25, // ~1 page simple site
+    typical: 100, // ~3 pages multi-page site
     max: MAX_RESERVED_CREDITS,
   };
 }

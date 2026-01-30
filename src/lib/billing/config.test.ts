@@ -56,7 +56,7 @@ describe("estimateGenerationCredits", () => {
     const estimates = estimateGenerationCredits();
 
     expect(estimates.min).toBeLessThan(50);
-    expect(estimates.typical).toBeLessThan(100);
+    expect(estimates.typical).toBeLessThanOrEqual(100);
     expect(estimates.max).toBeLessThanOrEqual(150);
   });
 });
