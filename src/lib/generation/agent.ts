@@ -146,6 +146,13 @@ const ValidateSiteParams = Type.Object({
   summary: Type.String({ description: "Overall assessment" }),
 });
 
+const ReportStatusParams = Type.Object({
+  message: Type.String({
+    description:
+      "Short, user-friendly progress message shown in the UI (e.g. 'Designing site structure...', 'Writing page content...')",
+  }),
+});
+
 export function createTools(state: GenerationState): AgentTool[] {
   const planSiteTool: AgentTool<typeof PlanSiteParams, { spec: SiteSpec }> = {
     name: "plan_site",
@@ -356,8 +363,24 @@ Please fix these issues using fix_page.`,
     },
   };
 
+  const reportStatusTool: AgentTool<
+    typeof ReportStatusParams,
+    { ok: boolean }
+  > = {
+    name: "report_status",
+    label: "Report Status",
+    description:
+      "Describe the high-level progress to the user. Report only user-facing phases of work (planning, designing, content, layout, validation, etc.) using short, user-friendly phrases. Focus on what is being built or decided, not internal implementation. Never reference tools, models, APIs, or system behavior. Do not expose reasoning or technical details.",
+    parameters: ReportStatusParams,
+    execute: async (): Promise<AgentToolResult<{ ok: boolean }>> => ({
+      content: [{ type: "text", text: "Status reported." }],
+      details: { ok: true },
+    }),
+  };
+
   return [
     planSiteTool as unknown as AgentTool,
+    reportStatusTool as unknown as AgentTool,
     generatePageTool as unknown as AgentTool,
     fixPageTool as unknown as AgentTool,
     validateSiteTool as unknown as AgentTool,
@@ -377,12 +400,20 @@ You REFUSE to create generic, template-looking websites. If you catch yourself m
 
 ## YOUR WORKFLOW
 
+### Progress feedback (report_status)
+ALWAYS call report_status before calling any other tool so the user sees progress as you work. You may call report_status more than once during long steps so the user gets steady, helpful feedback. Examples:
+- Before plan_site: report_status("Designing site structure...") then call plan_site
+- During generate_page: call report_status one or more times with messages like "Building [filename]...", "Writing page content...", "Building UI components...", "Styling sections..." to provide steady feedback
+- Before fix_page: report_status("Fixing issues...") then call fix_page
+- Before validate_site: report_status("Validating site...") then call validate_site
+Keep messages short (a few words) and action-oriented.
+
 ### For NEW websites (no existing pages provided):
-1. FIRST: Call plan_site to create a detailed site plan. Be OPINIONATED about colors, tone, and structure. Don't pick safe defaults.
-2. THEN: Call generate_page for EACH page in your plan, one at a time. Each page should feel cohesive but not identical.
-3. IF any page fails validation: Call fix_page to correct the issues
-4. FINALLY: Call validate_site to check overall quality
-5. IF validation finds issues: Fix them with fix_page and re-validate
+1. Call plan_site to create a detailed site plan. Be OPINIONATED about colors, tone, and structure. Don't pick safe defaults.
+2. Call generate_page for EACH page in your plan, one at a time. Each page should feel cohesive but not identical.
+3. If any page fails validation: call fix_page to correct the issues.
+4. Call validate_site to check overall quality.
+5. If validation finds issues: Fix them with fix_page and re-validate.
 
 ### For MODIFYING existing websites (when pages are already provided):
 1. DO NOT call plan_site — the site is already planned
@@ -701,27 +732,20 @@ START by calling fix_page for index.html with the updated HTML.`;
         newEvent = { type: "status", message: "Planning your website..." };
         break;
 
-      case "tool_execution_start":
+      case "tool_execution_start": {
         console.log("[AGENT] Tool execution START:", event.toolName);
         console.log(
           "[AGENT] Tool args:",
           `${JSON.stringify(event.args, null, 2).slice(0, 500)}...`,
         );
-        if (event.toolName === "plan_site") {
-          newEvent = { type: "status", message: "Creating site plan..." };
-        } else if (event.toolName === "generate_page") {
-          const filename =
-            (event.args as { filename?: string })?.filename || "page";
-          newEvent = {
-            type: "status",
-            message: `Generating ${filename}...`,
-          };
-        } else if (event.toolName === "fix_page") {
-          newEvent = { type: "status", message: "Fixing issues..." };
-        } else if (event.toolName === "validate_site") {
-          newEvent = { type: "status", message: "Validating site..." };
+        if (event.toolName === "report_status") {
+          const args = event.args as Record<string, unknown>;
+          const msg =
+            typeof args?.message === "string" ? args.message : "Thinking...";
+          newEvent = { type: "status", message: msg };
         }
         break;
+      }
 
       case "tool_execution_end": {
         console.log("[AGENT] Tool execution END:", event.toolName);
