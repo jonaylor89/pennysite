@@ -149,7 +149,7 @@ const ValidateSiteParams = Type.Object({
 const ReportStatusParams = Type.Object({
   message: Type.String({
     description:
-      "Short, user-friendly progress message shown in the UI (e.g. 'Designing site structure...', 'Writing page content...')",
+      "Short, user-friendly progress message shown in the UI (e.g. 'Designing site structure', 'Writing page content').",
   }),
 });
 
@@ -402,10 +402,10 @@ You REFUSE to create generic, template-looking websites. If you catch yourself m
 
 ### Progress feedback (report_status)
 ALWAYS call report_status before calling any other tool so the user sees progress as you work. You may call report_status more than once during long steps so the user gets steady, helpful feedback. Examples:
-- Before plan_site: report_status("Designing site structure...") then call plan_site
-- During generate_page: call report_status one or more times with messages like "Building [filename]...", "Writing page content...", "Building UI components...", "Styling sections..." to provide steady feedback
-- Before fix_page: report_status("Fixing issues...") then call fix_page
-- Before validate_site: report_status("Validating site...") then call validate_site
+- Before plan_site: report_status("Designing site structure") then call plan_site
+- During generate_page: call report_status one or more times with messages like "Building [filename]", "Writing page content", "Building UI components", "Styling sections" to provide steady feedback
+- Before fix_page: report_status("Fixing issues") then call fix_page
+- Before validate_site: report_status("Validating site") then call validate_site
 Keep messages short (a few words) and action-oriented.
 
 ### For NEW websites (no existing pages provided):
@@ -648,7 +648,7 @@ export async function* generateWebsite(
     () => apiKey,
   );
 
-  yield { type: "status", message: "Starting website generation..." };
+  yield { type: "status", message: "Starting website generation" };
 
   // === AGENT DEBUG LOGGING ===
   const isModification =
@@ -729,7 +729,7 @@ START by calling fix_page for index.html with the updated HTML.`;
     switch (event.type) {
       case "agent_start":
         console.log("[AGENT] Agent started processing");
-        newEvent = { type: "status", message: "Planning your website..." };
+        newEvent = { type: "status", message: "Planning your website" };
         break;
 
       case "tool_execution_start": {
@@ -741,7 +741,7 @@ START by calling fix_page for index.html with the updated HTML.`;
         if (event.toolName === "report_status") {
           const args = event.args as Record<string, unknown>;
           const msg =
-            typeof args?.message === "string" ? args.message : "Thinking...";
+            typeof args?.message === "string" ? args.message : "Thinking";
           newEvent = { type: "status", message: msg };
         }
         break;

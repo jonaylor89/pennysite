@@ -24,3 +24,18 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.thinkingDots::after {
+  display: inline-block;
+  /* Ensures the pseudo-element accepts display properties and prevents text shifting */
+  animation: dotty steps(1, end) 1s infinite;
+  content: '';
+}
+
+@keyframes dotty {
+  0% { content: ''; }
+  25% { content: '.'; }
+  50% { content: '..'; }
+  75% { content: '...'; }
+  100% { content: ''; } /* Resets the animation smoothly */
+}
