@@ -1462,7 +1462,7 @@ export function BuilderUI({
                 <div className="mr-2 rounded-lg bg-zinc-800 p-2 text-xs text-zinc-400 sm:mr-4 sm:p-3 sm:text-sm">
                   <span className="inline-flex items-center">
                   <span className="h-2 w-2 animate-pulse rounded-full bg-green-500 mr-1" />
-                    {generationPhase ? generationPhase : "Generating"}
+                    {generationPhase || "Generating"}
                     <span className="thinkingDots" />
                   </span>
                 </div>
