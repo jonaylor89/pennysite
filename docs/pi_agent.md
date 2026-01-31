@@ -5,8 +5,7 @@
 The website generation agent creates complete, production-ready websites from natural language descriptions. It uses a multi-step agentic workflow powered by [@mariozechner/pi-agent-core](https://github.com/mariozechner/pi-agent-core).
 
 **Model Support:**
-- **Anthropic Claude Sonnet 4** (preferred) - Used when `ANTHROPIC_API_KEY` is set
-- **OpenAI GPT-4o** (fallback) - Used when only `OPENAI_API_KEY` is available
+- **OpenAI GPT-5.2** - Primary model for website generation
 
 The agent streams progress events to the client via Server-Sent Events (SSE), enabling real-time UI updates during generation.
 
