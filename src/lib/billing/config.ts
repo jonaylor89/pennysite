@@ -23,6 +23,11 @@ export const MAX_RESERVED_CREDITS = Number(
   process.env.MAX_RESERVED_CREDITS || "150",
 );
 
+// Credits to reserve for enhance operations (smaller, single-page)
+export const ENHANCE_RESERVED_CREDITS = Number(
+  process.env.ENHANCE_RESERVED_CREDITS || "30",
+);
+
 // Calculate credits from token usage
 export function calculateCreditsFromTokens(
   inputTokens: number,

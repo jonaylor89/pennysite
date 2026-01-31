@@ -4,6 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { getAllSkills, getSkill, type SkillId } from "@/lib/generation/skills";
 import { captureEvent } from "@/lib/posthog/client";
 import { createClient } from "@/lib/supabase/client";
 import { AutoExpandTextarea } from "./AutoExpandTextarea";
@@ -11,12 +12,23 @@ import { GuestCheckoutModal } from "./GuestCheckoutModal";
 import { RatingModal } from "./RatingModal";
 import { SetPasswordModal } from "./SetPasswordModal";
 
-type MobileView = "chat" | "preview";
+type ViewportSize = "desktop" | "tablet" | "mobile";
 
-type Message = {
-  role: "user" | "assistant";
-  content: string;
-};
+type Message =
+  | {
+      role: "user" | "assistant";
+      content: string;
+    }
+  | {
+      role: "enhance";
+      skillId: SkillId;
+      skillName: string;
+      skillIcon: string;
+      filename: string;
+      status: "pending" | "complete" | "error";
+      error?: string;
+      creditsUsed?: number;
+    };
 
 type Pages = Record<string, string>;
 
@@ -585,7 +597,15 @@ export function BuilderUI({
   const hasTrackedFirstGenRef = useRef(false);
 
   // Mobile responsive state
-  const [mobileView, setMobileView] = useState<MobileView>("chat");
+  const [showChatSheet, setShowChatSheet] = useState(false);
+  const [showDeployMenu, setShowDeployMenu] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [viewportSize, setViewportSize] = useState<ViewportSize>("desktop");
+
+  // Enhance panel state
+  const [showEnhancePanel, setShowEnhancePanel] = useState(false);
+  const [enhancingSkill, setEnhancingSkill] = useState<SkillId | null>(null);
+  const [appliedSkills, setAppliedSkills] = useState<Set<SkillId>>(new Set());
 
   // Click-to-edit state
   const [editingElement, setEditingElement] = useState<EditingElement | null>(
@@ -1184,15 +1204,139 @@ export function BuilderUI({
     sendMessage(initialPrompt);
   }, [authChecked, initialPrompt]);
 
-  function downloadAll() {
-    for (const [filename, content] of Object.entries(pages)) {
-      const blob = new Blob([content], { type: "text/html" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(url);
+    async function downloadAll() {
+      const JSZip = (await import("jszip")).default;
+      const { saveAs } = await import("file-saver");
+  
+      const zip = new JSZip();
+      for (const [filename, content] of Object.entries(pages)) {
+        zip.file(filename, content);
+      }
+  
+      const blob = await zip.generateAsync({ type: "blob" });
+      saveAs(blob, `${projectName || "website"}.zip`);
+    }
+  async function handleEnhance(skillId: SkillId) {
+    if (!user) {
+      router.push("/auth/login");
+      return;
+    }
+
+    if (!currentHtml || enhancingSkill) return;
+
+    const skill = getSkill(skillId);
+    if (!skill) return;
+
+    // Close the modal immediately
+    setShowEnhancePanel(false);
+    setEnhancingSkill(skillId);
+    setError(null);
+
+    // Add pending enhancement message to chat
+    const enhanceMessage: Message = {
+      role: "enhance",
+      skillId,
+      skillName: skill.name,
+      skillIcon: skill.icon,
+      filename: currentPage,
+      status: "pending",
+    };
+    setMessages((prev) => [...prev, enhanceMessage]);
+
+    try {
+      const res = await fetch("/api/enhance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          skillId,
+          html: currentHtml,
+          filename: currentPage,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (data.error === "INSUFFICIENT_CREDITS") {
+          setInsufficientCreditsInfo({
+            available: data.availableCredits,
+            required: data.requiredCredits,
+          });
+          setShowBuyCredits(true);
+          // Update message to error state
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.role === "enhance" &&
+              msg.skillId === skillId &&
+              msg.status === "pending"
+                ? {
+                    ...msg,
+                    status: "error" as const,
+                    error: "Insufficient credits",
+                  }
+                : msg,
+            ),
+          );
+          return;
+        }
+        throw new Error(data.error || "Enhancement failed");
+      }
+
+      // Update the page with enhanced HTML
+      setPages((prev) => ({
+        ...prev,
+        [currentPage]: data.html,
+      }));
+
+      // Mark skill as applied
+      setAppliedSkills((prev) => new Set([...prev, skillId]));
+
+      // Update message to complete state
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.role === "enhance" &&
+          msg.skillId === skillId &&
+          msg.status === "pending"
+            ? {
+                ...msg,
+                status: "complete" as const,
+                creditsUsed: data.creditsUsed,
+              }
+            : msg,
+        ),
+      );
+
+      // Track enhancement
+      captureEvent("page_enhanced", {
+        project_id: projectId,
+        skill_id: skillId,
+        filename: currentPage,
+        credits_used: data.creditsUsed,
+      });
+
+      // Refresh credit balance
+      fetch("/api/credits/balance")
+        .then((r) => r.json())
+        .then((balance) => {
+          if (!balance.error) {
+            setCreditBalance(balance);
+          }
+        });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Enhancement failed";
+      // Update message to error state
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.role === "enhance" &&
+          msg.skillId === skillId &&
+          msg.status === "pending"
+            ? { ...msg, status: "error" as const, error: message }
+            : msg,
+        ),
+      );
+      setError(message);
+    } finally {
+      setEnhancingSkill(null);
     }
   }
 
@@ -1213,8 +1357,305 @@ export function BuilderUI({
     [projectId, regenerationCount],
   );
 
+  const viewportClasses = {
+    desktop: "w-full",
+    tablet: "max-w-[768px] mx-auto",
+    mobile: "max-w-[375px] mx-auto",
+  };
+
   return (
-    <div className="flex h-screen flex-col bg-zinc-950 lg:flex-row">
+    <div className="flex h-screen flex-col bg-zinc-950">
+      {/* ===== TOP NAVBAR (Desktop) ===== */}
+      <header className="hidden shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4 py-3 lg:flex">
+        <div className="flex items-center gap-4">
+          <Link
+            href="/projects"
+            className="flex items-center gap-2 text-zinc-400 hover:text-white"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+          </Link>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
+              className="bg-transparent text-lg font-semibold text-white focus:outline-none"
+              placeholder="Untitled"
+            />
+            {siteSpec && (
+              <span className="rounded bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">
+                {siteSpec.type}
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          {/* Credits */}
+          {user && creditBalance && (
+            <Link
+              href="/billing"
+              className="flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm text-zinc-300 hover:border-zinc-600"
+            >
+              <span className="text-emerald-400">⚡</span>
+              {creditBalance.availableCredits} credits
+            </Link>
+          )}
+          {!user && (
+            <Link
+              href="/auth/login"
+              className="text-sm text-zinc-400 hover:text-white"
+            >
+              Sign in
+            </Link>
+          )}
+          {/* Enhance Button */}
+          <button
+            type="button"
+            onClick={() => setShowEnhancePanel(true)}
+            disabled={pageNames.length === 0}
+            className="flex items-center gap-2 rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <span>✨</span>
+            Enhance
+          </button>
+          {/* Save Button */}
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={isSaving || pageNames.length === 0}
+            className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isSaving ? "Saving..." : saveStatus || "Save"}
+          </button>
+          {/* Deploy Dropdown */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowDeployMenu(!showDeployMenu)}
+              disabled={!projectId || pageNames.length === 0}
+              className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isPublishing ? "Publishing..." : publishStatus || "Deploy"}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+            {showDeployMenu && (
+              <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg border border-zinc-700 bg-zinc-900 py-1 shadow-xl">
+                <button
+                  type="button"
+                  onClick={() => {
+                    handlePublish();
+                    setShowDeployMenu(false);
+                  }}
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800"
+                >
+                  🚀 Publish to Web
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    downloadAll();
+                    setShowDeployMenu(false);
+                  }}
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800"
+                >
+                  📥 Download ZIP
+                </button>
+                {deployedUrl && (
+                  <>
+                    <div className="my-1 border-t border-zinc-700" />
+                    <a
+                      href={deployedUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-emerald-400 hover:bg-zinc-800"
+                      onClick={() => setShowDeployMenu(false)}
+                    >
+                      🌐 View Live Site
+                    </a>
+                  </>
+                )}
+                {deployedUrl && cfProjectName && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowDomainModal(true);
+                      setShowDeployMenu(false);
+                    }}
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800"
+                  >
+                    🔗 Custom Domain
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+          {/* User Menu */}
+          {user && (
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="text-sm text-zinc-500 hover:text-zinc-300"
+            >
+              Sign out
+            </button>
+          )}
+        </div>
+      </header>
+
+      {/* ===== MOBILE TOP BAR ===== */}
+      <header className="flex shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4 py-3 lg:hidden">
+        <div className="flex items-center gap-3">
+          <Link href="/projects" className="text-zinc-400 hover:text-white">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+          </Link>
+          <span className="max-w-[200px] truncate font-medium text-white">
+            {projectName}
+          </span>
+        </div>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setShowMoreMenu(!showMoreMenu)}
+            className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="1" />
+              <circle cx="12" cy="5" r="1" />
+              <circle cx="12" cy="19" r="1" />
+            </svg>
+          </button>
+          {showMoreMenu && (
+            <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg border border-zinc-700 bg-zinc-900 py-1 shadow-xl">
+              {user && creditBalance && (
+                <Link
+                  href="/billing"
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800"
+                  onClick={() => setShowMoreMenu(false)}
+                >
+                  <span className="text-emerald-400">⚡</span>
+                  {creditBalance.availableCredits} credits
+                </Link>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  handleSave();
+                  setShowMoreMenu(false);
+                }}
+                disabled={isSaving}
+                className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800 disabled:opacity-50"
+              >
+                💾 {isSaving ? "Saving..." : "Save"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  downloadAll();
+                  setShowMoreMenu(false);
+                }}
+                className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800"
+              >
+                📥 Download
+              </button>
+              {deployedUrl && (
+                <a
+                  href={deployedUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-emerald-400 hover:bg-zinc-800"
+                  onClick={() => setShowMoreMenu(false)}
+                >
+                  🌐 View Live
+                </a>
+              )}
+              {deployedUrl && cfProjectName && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDomainModal(true);
+                    setShowMoreMenu(false);
+                  }}
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800"
+                >
+                  🔗 Custom Domain
+                </button>
+              )}
+              <div className="my-1 border-t border-zinc-700" />
+              {user ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleSignOut();
+                    setShowMoreMenu(false);
+                  }}
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800"
+                >
+                  Sign out
+                </button>
+              ) : (
+                <Link
+                  href="/auth/login"
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800"
+                  onClick={() => setShowMoreMenu(false)}
+                >
+                  Sign in
+                </Link>
+              )}
+            </div>
+          )}
+        </div>
+      </header>
+
       {/* Buy Credits Modal */}
       {showBuyCredits && insufficientCreditsInfo && (
         <BuyCreditsModal
@@ -1346,439 +1787,592 @@ export function BuilderUI({
         </div>
       )}
 
-      {/* Mobile View Toggle */}
-      <div className="flex shrink-0 border-b border-zinc-800 bg-zinc-900 lg:hidden">
-        <button
-          type="button"
-          onClick={() => setMobileView("chat")}
-          className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-            mobileView === "chat"
-              ? "border-b-2 border-white text-white"
-              : "text-zinc-400 hover:text-zinc-200"
-          }`}
-        >
-          <span className="flex items-center justify-center gap-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z" />
-            </svg>
-            Chat
-          </span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setMobileView("preview")}
-          className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-            mobileView === "preview"
-              ? "border-b-2 border-white text-white"
-              : "text-zinc-400 hover:text-zinc-200"
-          }`}
-        >
-          <span className="flex items-center justify-center gap-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <rect width="18" height="18" x="3" y="3" rx="2" />
-              <path d="M3 9h18" />
-            </svg>
-            Preview
-            {isGenerating && (
-              <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
-            )}
-          </span>
-        </button>
-      </div>
+      {/* Enhance Panel Modal */}
+      {showEnhancePanel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md rounded-xl border border-zinc-700 bg-zinc-900 p-6 shadow-2xl">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-white">
+                  ✨ Enhance Your Site
+                </h2>
+                <p className="mt-1 text-sm text-zinc-400">
+                  Apply improvements to {currentPage}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowEnhancePanel(false)}
+                className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
+              </button>
+            </div>
 
-      {/* Left Panel - Chat */}
-      <div
-        className={`flex min-h-0 flex-1 flex-col border-r border-zinc-800 bg-zinc-900 lg:w-96 lg:flex-none ${
-          mobileView === "chat" ? "flex" : "hidden lg:flex"
-        }`}
-      >
-        <div className="flex items-center justify-between border-b border-zinc-800 p-3 sm:p-4">
-          <div className="min-w-0 flex-1">
-            <Link
-              href="/"
-              className="text-base font-semibold text-white sm:text-lg"
-            >
-              Pennysite
-            </Link>
-            <p className="hidden text-sm text-zinc-400 sm:block">
-              Chat with your website
-            </p>
-          </div>
-          <div className="shrink-0 text-right">
-            {user ? (
-              <div className="flex flex-col items-end gap-1">
-                {creditBalance && (
-                  <div className="flex flex-col items-end gap-0.5">
-                    <Link
-                      href="/billing"
-                      className="flex items-center gap-1 rounded-full border border-zinc-700 bg-zinc-800 px-2 py-1 text-xs text-zinc-300 hover:border-zinc-600"
-                    >
-                      <span className="text-emerald-400">⚡</span>
-                      <span className="hidden xs:inline">
-                        {creditBalance.availableCredits} credits
+            <div className="space-y-3">
+              {getAllSkills().map((skill) => {
+                const isApplied = appliedSkills.has(skill.id);
+                const isEnhancing = enhancingSkill === skill.id;
+                return (
+                  <button
+                    key={skill.id}
+                    type="button"
+                    onClick={() => handleEnhance(skill.id)}
+                    disabled={isEnhancing || enhancingSkill !== null}
+                    className={`flex w-full items-center gap-4 rounded-lg border p-4 text-left transition-all ${
+                      isApplied
+                        ? "border-emerald-500/50 bg-emerald-500/10"
+                        : "border-zinc-700 bg-zinc-800/50 hover:border-zinc-600 hover:bg-zinc-800"
+                    } ${isEnhancing || enhancingSkill !== null ? "opacity-70" : ""}`}
+                  >
+                    <span className="text-2xl">{skill.icon}</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-white">
+                          {skill.name}
+                        </span>
+                        {isApplied && (
+                          <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs text-emerald-400">
+                            Applied
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-zinc-400">
+                        {skill.description}
+                      </p>
+                    </div>
+                    {isEnhancing ? (
+                      <span className="shrink-0 text-sm text-zinc-400">
+                        Enhancing...
                       </span>
-                      <span className="xs:hidden">
-                        {creditBalance.availableCredits}
-                      </span>
-                    </Link>
-                    {isGenerating && liveUsage && (
-                      <span className="text-xs text-amber-400">
-                        ~{liveUsage.estimatedCredits} used
+                    ) : (
+                      <span className="shrink-0 rounded bg-zinc-700 px-2 py-1 text-xs text-zinc-300">
+                        ~30 credits
                       </span>
                     )}
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={handleSignOut}
-                  className="text-xs text-zinc-500 hover:text-zinc-300"
-                >
-                  Sign out
-                </button>
-              </div>
-            ) : (
-              <Link
-                href="/auth/login"
-                className="text-xs text-zinc-400 hover:text-white"
-              >
-                Sign in
-              </Link>
-            )}
-          </div>
-        </div>
-
-        {/* Project name & spec */}
-        {pageNames.length > 0 && (
-          <div className="border-b border-zinc-800 px-3 py-2 sm:px-4 sm:py-3">
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                className="min-w-0 flex-1 bg-transparent text-sm font-medium text-zinc-200 focus:outline-none"
-                placeholder="Project name..."
-              />
-              {projectId && (
-                <Link
-                  href={`/project/${projectId}/settings`}
-                  className="shrink-0 rounded p-1 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
-                  title="Project settings"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                </Link>
-              )}
+                  </button>
+                );
+              })}
             </div>
-            {siteSpec && (
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                <span className="rounded bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">
-                  {siteSpec.type}
-                </span>
-                <span className="hidden text-xs text-zinc-500 sm:inline">
-                  {siteSpec.industry}
-                </span>
-                <div className="ml-auto flex gap-1">
-                  <span
-                    className="h-3 w-3 rounded-full"
-                    style={{ backgroundColor: siteSpec.colorPalette.primary }}
-                    title="Primary"
-                  />
-                  <span
-                    className="h-3 w-3 rounded-full"
-                    style={{ backgroundColor: siteSpec.colorPalette.secondary }}
-                    title="Secondary"
-                  />
-                  <span
-                    className="h-3 w-3 rounded-full"
-                    style={{ backgroundColor: siteSpec.colorPalette.accent }}
-                    title="Accent"
-                  />
-                </div>
+
+            {error && (
+              <div className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
+                {error}
               </div>
             )}
-          </div>
-        )}
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-3 sm:p-4">
-          {messages.length === 0 ? (
-            <div className="text-sm text-zinc-500">
-              <p className="mb-3 text-xs sm:text-sm">
-                Describe the website you want to create:
-              </p>
-              <div className="space-y-2 text-xs">
-                <p className="rounded bg-zinc-800 p-2">
-                  "A landing page for a developer tools startup with features,
-                  pricing, and documentation"
-                </p>
-                <p className="hidden rounded bg-zinc-800 p-2 sm:block">
-                  "Personal site for an executive coach with about, services,
-                  and booking page"
-                </p>
-                <p className="rounded bg-zinc-800 p-2">
-                  "A consulting agency website with case studies and contact
-                  form"
-                </p>
-              </div>
-              {user &&
-                creditBalance &&
-                creditBalance.availableCredits < 150 && (
-                  <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
-                    <p className="text-xs text-amber-200">
-                      You have {creditBalance.availableCredits} credits. Buy
-                      more to start generating.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setInsufficientCreditsInfo({
-                          available: creditBalance.availableCredits,
-                          required: 150,
-                        });
-                        setShowBuyCredits(true);
-                      }}
-                      className="mt-2 rounded bg-amber-500 px-3 py-1 text-xs font-medium text-black hover:bg-amber-400"
-                    >
-                      Buy Credits
-                    </button>
-                  </div>
-                )}
-            </div>
-          ) : (
-            <div className="space-y-2 sm:space-y-3">
-              {messages.map((msg, i) => (
-                <div
-                  key={`${msg.role}-${i}`}
-                  className={`text-xs sm:text-sm ${
-                    msg.role === "user"
-                      ? "ml-2 rounded-lg bg-zinc-700 p-2 text-white sm:ml-4 sm:p-3"
-                      : "mr-2 rounded-lg bg-zinc-800 p-2 text-zinc-300 sm:mr-4 sm:p-3"
-                  }`}
-                >
-                  {msg.content}
-                </div>
-              ))}
-              {isGenerating && (
-                <div className="mr-2 rounded-lg bg-zinc-800 p-2 text-xs text-zinc-400 sm:mr-4 sm:p-3 sm:text-sm">
-                  <span className="inline-flex items-center gap-2">
-                    <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
-                    {generationPhase || "Generating..."}
-                  </span>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-          )}
-        </div>
-
-        {/* Input */}
-        <div className="border-t border-zinc-800 p-3 sm:p-4">
-          {error && <div className="mb-2 text-xs text-red-400">{error}</div>}
-          <div className="flex flex-col gap-2">
-            <AutoExpandTextarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={
-                messages.length === 0
-                  ? "Describe your website..."
-                  : "Ask for changes..."
-              }
-              rows={1}
-              maxHeight={120}
-              className="max-h-30 min-h-[38px] w-full resize-none rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-zinc-600 focus:outline-none sm:max-h-40"
-              disabled={isGenerating}
-            />
-            <button
-              type="button"
-              onClick={handleSend}
-              disabled={isGenerating || !input.trim()}
-              data-testid="send-button"
-              className="w-full rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isGenerating ? "Generating..." : "Send"}
-            </button>
+            <p className="mt-4 text-center text-xs text-zinc-500">
+              Enhancements modify {currentPage}. You can apply multiple skills.
+            </p>
           </div>
         </div>
+      )}
 
-        {/* Actions */}
-        {pageNames.length > 0 && (
-          <div className="border-t border-zinc-800 p-3 sm:p-4">
-            <div className="flex flex-col gap-2">
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className="rounded-lg bg-white px-2 py-2 text-xs font-medium text-black transition-colors hover:bg-zinc-200 disabled:opacity-50 sm:px-3 sm:text-sm"
-                >
-                  {isSaving ? "Saving..." : saveStatus || "Save"}
-                </button>
-                <button
-                  type="button"
-                  onClick={downloadAll}
-                  className="rounded-lg border border-zinc-700 px-2 py-2 text-xs text-zinc-300 transition-colors hover:bg-zinc-800 sm:px-3 sm:text-sm"
-                >
-                  Download
-                </button>
-              </div>
-              {projectId && (
-                <button
-                  type="button"
-                  onClick={handlePublish}
-                  disabled={isPublishing}
-                  className="w-full rounded-lg bg-emerald-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-emerald-500 disabled:opacity-50 sm:text-sm"
-                >
-                  {isPublishing
-                    ? "Publishing..."
-                    : publishStatus || "Publish to Web"}
-                </button>
-              )}
-              {deployedUrl && (
-                <a
-                  href={deployedUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-1 rounded-lg border border-emerald-700 bg-emerald-900/30 px-2 py-2 text-xs text-emerald-300 transition-colors hover:bg-emerald-900/50 sm:px-3 sm:text-sm"
-                >
-                  <span>🌐</span>
-                  <span className="max-w-[180px] truncate sm:max-w-none">
-                    {deployedUrl}
-                  </span>
-                </a>
-              )}
-              {/* Custom Domain */}
-              {deployedUrl && cfProjectName && (
-                <button
-                  type="button"
-                  onClick={() => setShowDomainModal(true)}
-                  className={`flex items-center justify-center gap-1 rounded-lg border px-2 py-2 text-xs transition-colors sm:px-3 sm:text-sm ${
-                    customDomainInfo?.status === "active"
-                      ? "border-purple-700 bg-purple-900/30 text-purple-300 hover:bg-purple-900/50"
-                      : customDomainInfo?.customDomain
-                        ? "border-amber-700 bg-amber-900/30 text-amber-300 hover:bg-amber-900/50"
-                        : "border-zinc-700 text-zinc-300 hover:bg-zinc-800"
-                  }`}
-                >
-                  <span>🔗</span>
-                  {customDomainInfo?.customDomain ? (
-                    <span className="max-w-[150px] truncate sm:max-w-none">
-                      {customDomainInfo.customDomain}
-                      {customDomainInfo.status === "pending" && " (pending)"}
-                    </span>
-                  ) : (
-                    <span>Custom Domain</span>
-                  )}
-                </button>
-              )}
+      {/* ===== MAIN CONTENT AREA ===== */}
+      <div className="flex min-h-0 flex-1 flex-row">
+        {/* ===== LEFT PANEL - CHAT (Desktop only) ===== */}
+        <div className="hidden w-96 shrink-0 flex-col border-r border-zinc-800 bg-zinc-900 lg:flex">
+          {/* Chat Header */}
+          <div className="flex items-center justify-between border-b border-zinc-800 p-4">
+            <div>
+              <h2 className="font-semibold text-white">Chat</h2>
+              <p className="text-sm text-zinc-400">Describe your changes</p>
             </div>
-          </div>
-        )}
-      </div>
-
-      {/* Right Panel - Preview */}
-      <div
-        className={`flex min-h-0 flex-1 flex-col ${
-          mobileView === "preview" ? "flex" : "hidden lg:flex"
-        }`}
-      >
-        {/* Page tabs */}
-        {pageNames.length > 1 && (
-          <div className="flex shrink-0 gap-1 overflow-x-auto border-b border-zinc-800 bg-zinc-900 px-3 py-2 sm:px-4">
-            {pageNames.map((name) => (
-              <button
-                key={name}
-                type="button"
-                onClick={() => setCurrentPage(name)}
-                className={`shrink-0 rounded px-2 py-1 text-xs transition-colors sm:px-3 sm:text-sm ${
-                  currentPage === name
-                    ? "bg-zinc-700 text-white"
-                    : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
-                }`}
-              >
-                {name}
-              </button>
-            ))}
-          </div>
-        )}
-
-        <div className="flex shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-900 px-3 py-2 sm:px-4 sm:py-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-zinc-400 sm:text-sm">
-              Preview{currentPage ? `: ${currentPage}` : ""}
-            </span>
-            {displayHtml && (
-              <span className="hidden text-xs text-zinc-500 sm:inline">
-                (double-click text to edit)
+            {isGenerating && liveUsage && (
+              <span className="text-xs text-amber-400">
+                ~{liveUsage.estimatedCredits} credits used
               </span>
             )}
           </div>
-          {isGenerating && (
-            <span className="flex items-center gap-2 text-xs text-zinc-500 sm:text-sm">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
-              Streaming...
-            </span>
-          )}
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4">
+            {messages.length === 0 ? (
+              <div className="text-sm text-zinc-500">
+                <p className="mb-3">Describe the website you want to create:</p>
+                <div className="space-y-2 text-xs">
+                  <p className="rounded bg-zinc-800 p-2">
+                    "A landing page for a developer tools startup with features,
+                    pricing, and documentation"
+                  </p>
+                  <p className="rounded bg-zinc-800 p-2">
+                    "Personal site for an executive coach with about, services,
+                    and booking page"
+                  </p>
+                  <p className="rounded bg-zinc-800 p-2">
+                    "A consulting agency website with case studies and contact
+                    form"
+                  </p>
+                </div>
+                {user &&
+                  creditBalance &&
+                  creditBalance.availableCredits < 150 && (
+                    <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+                      <p className="text-xs text-amber-200">
+                        You have {creditBalance.availableCredits} credits. Buy
+                        more to start generating.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setInsufficientCreditsInfo({
+                            available: creditBalance.availableCredits,
+                            required: 150,
+                          });
+                          setShowBuyCredits(true);
+                        }}
+                        className="mt-2 rounded bg-amber-500 px-3 py-1 text-xs font-medium text-black hover:bg-amber-400"
+                      >
+                        Buy Credits
+                      </button>
+                    </div>
+                  )}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {messages.map((msg, i) => {
+                  if (msg.role === "enhance") {
+                    return (
+                      <div
+                        key={`enhance-${msg.skillId}-${i}`}
+                        className={`mr-4 rounded-lg border p-3 ${
+                          msg.status === "pending"
+                            ? "border-zinc-700 bg-zinc-800"
+                            : msg.status === "complete"
+                              ? "border-emerald-500/30 bg-emerald-500/10"
+                              : "border-red-500/30 bg-red-500/10"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-xl">{msg.skillIcon}</span>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-white">
+                                {msg.skillName}
+                              </span>
+                              {msg.status === "pending" && (
+                                <span className="inline-flex items-center gap-1.5 text-xs text-zinc-400">
+                                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
+                                  Enhancing...
+                                </span>
+                              )}
+                              {msg.status === "complete" && (
+                                <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs text-emerald-400">
+                                  ✓ Applied
+                                </span>
+                              )}
+                              {msg.status === "error" && (
+                                <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-xs text-red-400">
+                                  Failed
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-zinc-400">
+                              {msg.status === "pending" &&
+                                `Applying to ${msg.filename}...`}
+                              {msg.status === "complete" && (
+                                <>
+                                  Enhanced {msg.filename}
+                                  {msg.creditsUsed
+                                    ? ` · ${msg.creditsUsed} credits`
+                                    : ""}
+                                </>
+                              )}
+                              {msg.status === "error" &&
+                                (msg.error || "Enhancement failed")}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div
+                      key={`${msg.role}-${i}`}
+                      className={`text-sm ${
+                        msg.role === "user"
+                          ? "ml-4 rounded-lg bg-zinc-700 p-3 text-white"
+                          : "mr-4 rounded-lg bg-zinc-800 p-3 text-zinc-300"
+                      }`}
+                    >
+                      {msg.content}
+                    </div>
+                  );
+                })}
+                {isGenerating && (
+                  <div className="mr-4 rounded-lg bg-zinc-800 p-3 text-sm text-zinc-400">
+                    <span className="inline-flex items-center gap-2">
+                      <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
+                      {generationPhase || "Generating..."}
+                    </span>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            )}
+          </div>
+
+          {/* Input */}
+          <div className="border-t border-zinc-800 p-4">
+            {error && <div className="mb-2 text-xs text-red-400">{error}</div>}
+            <div className="flex flex-col gap-2">
+              <AutoExpandTextarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={
+                  messages.length === 0
+                    ? "Describe your website..."
+                    : "Ask for changes..."
+                }
+                rows={1}
+                maxHeight={120}
+                className="min-h-[38px] w-full resize-none rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-zinc-600 focus:outline-none"
+                disabled={isGenerating}
+              />
+              <button
+                type="button"
+                onClick={handleSend}
+                disabled={isGenerating || !input.trim()}
+                data-testid="send-button"
+                className="w-full rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isGenerating ? "Generating..." : "Send"}
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div className="relative min-h-0 flex-1 bg-white">
-          {displayHtml ? (
-            <iframe
-              className="absolute inset-0 h-full w-full border-0"
-              title="Preview"
-              sandbox="allow-scripts allow-same-origin"
-              srcDoc={displayHtml}
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center bg-zinc-950 p-4 text-zinc-400">
-              <div className="text-center">
-                <div className="mb-2 text-4xl">🏗️</div>
-                <p className="text-sm sm:text-base">
-                  Your website will appear here
-                </p>
-                <p className="mt-2 hidden text-xs text-zinc-500 sm:block">
-                  Describe your website in the chat to get started
-                </p>
-              </div>
+        {/* ===== RIGHT PANEL - PREVIEW ===== */}
+        <div className="flex min-h-0 flex-1 flex-col">
+          {/* Page tabs */}
+          {pageNames.length > 1 && (
+            <div className="flex shrink-0 gap-1 overflow-x-auto border-b border-zinc-800 bg-zinc-900 px-4 py-2">
+              {pageNames.map((name) => (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => setCurrentPage(name)}
+                  className={`shrink-0 rounded px-3 py-1 text-sm transition-colors ${
+                    currentPage === name
+                      ? "bg-zinc-700 text-white"
+                      : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                  }`}
+                >
+                  {name}
+                </button>
+              ))}
             </div>
           )}
+
+          {/* Preview header with viewport toggles (desktop only) */}
+          <div className="hidden shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4 py-2 lg:flex">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-zinc-400">
+                Preview{currentPage ? `: ${currentPage}` : ""}
+              </span>
+              {displayHtml && (
+                <span className="text-xs text-zinc-500">
+                  (double-click text to edit)
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {isGenerating && (
+                <span className="flex items-center gap-2 text-sm text-zinc-500">
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
+                  Streaming...
+                </span>
+              )}
+              {/* Viewport size toggles */}
+              <div className="flex rounded-lg border border-zinc-700 p-0.5">
+                <button
+                  type="button"
+                  onClick={() => setViewportSize("desktop")}
+                  className={`rounded px-2 py-1 text-xs transition-colors ${
+                    viewportSize === "desktop"
+                      ? "bg-zinc-700 text-white"
+                      : "text-zinc-400 hover:text-white"
+                  }`}
+                  title="Desktop"
+                >
+                  🖥
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewportSize("tablet")}
+                  className={`rounded px-2 py-1 text-xs transition-colors ${
+                    viewportSize === "tablet"
+                      ? "bg-zinc-700 text-white"
+                      : "text-zinc-400 hover:text-white"
+                  }`}
+                  title="Tablet"
+                >
+                  📱
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewportSize("mobile")}
+                  className={`rounded px-2 py-1 text-xs transition-colors ${
+                    viewportSize === "mobile"
+                      ? "bg-zinc-700 text-white"
+                      : "text-zinc-400 hover:text-white"
+                  }`}
+                  title="Mobile"
+                >
+                  📲
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Preview iframe */}
+          <div className="relative min-h-0 flex-1 bg-zinc-950">
+            <div className={`h-full ${viewportClasses[viewportSize]}`}>
+              {displayHtml ? (
+                <iframe
+                  className="h-full w-full border-0 bg-white"
+                  title="Preview"
+                  sandbox="allow-scripts allow-same-origin"
+                  srcDoc={displayHtml}
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center p-4 text-zinc-400">
+                  <div className="text-center">
+                    <div className="mb-2 text-4xl">🏗️</div>
+                    <p className="text-base">Your website will appear here</p>
+                    <p className="mt-2 text-xs text-zinc-500">
+                      Describe your website in the chat to get started
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* ===== MOBILE BOTTOM BAR ===== */}
+      <div className="flex shrink-0 items-center justify-around border-t border-zinc-800 bg-zinc-900 py-2 lg:hidden">
+        <button
+          type="button"
+          onClick={() => setShowChatSheet(true)}
+          className="flex flex-col items-center gap-1 px-4 py-2 text-zinc-400 hover:text-white"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z" />
+          </svg>
+          <span className="text-xs">Chat</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowEnhancePanel(true)}
+          disabled={pageNames.length === 0}
+          className="flex flex-col items-center gap-1 px-4 py-2 text-zinc-400 hover:text-white disabled:text-zinc-600"
+        >
+          <span className="text-xl">✨</span>
+          <span className="text-xs">Enhance</span>
+        </button>
+        <button
+          type="button"
+          onClick={handlePublish}
+          disabled={!projectId || isPublishing}
+          className="flex flex-col items-center gap-1 px-4 py-2 text-emerald-400 hover:text-emerald-300 disabled:text-zinc-600"
+        >
+          <span className="text-xl">🚀</span>
+          <span className="text-xs">{isPublishing ? "..." : "Deploy"}</span>
+        </button>
+      </div>
+
+      {/* ===== MOBILE CHAT BOTTOM SHEET ===== */}
+      {showChatSheet && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          {/* Backdrop */}
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/60"
+            onClick={() => setShowChatSheet(false)}
+            aria-label="Close chat"
+          />
+          {/* Sheet */}
+          <div className="absolute inset-x-0 bottom-0 flex max-h-[85vh] flex-col rounded-t-2xl border-t border-zinc-700 bg-zinc-900">
+            {/* Drag handle */}
+            <div className="flex justify-center py-3">
+              <div className="h-1 w-12 rounded-full bg-zinc-600" />
+            </div>
+            {/* Chat header */}
+            <div className="flex items-center justify-between border-b border-zinc-800 px-4 pb-3">
+              <h2 className="font-semibold text-white">Chat</h2>
+              <button
+                type="button"
+                onClick={() => setShowChatSheet(false)}
+                className="rounded-lg p-1 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
+              </button>
+            </div>
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {messages.length === 0 ? (
+                <div className="text-sm text-zinc-500">
+                  <p className="mb-3">
+                    Describe the website you want to create:
+                  </p>
+                  <div className="space-y-2 text-xs">
+                    <p className="rounded bg-zinc-800 p-2">
+                      "A landing page for a startup"
+                    </p>
+                    <p className="rounded bg-zinc-800 p-2">
+                      "A portfolio for a photographer"
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {messages.map((msg, i) => {
+                    if (msg.role === "enhance") {
+                      return (
+                        <div
+                          key={`mobile-enhance-${msg.skillId}-${i}`}
+                          className={`mr-4 rounded-lg border p-3 ${
+                            msg.status === "pending"
+                              ? "border-zinc-700 bg-zinc-800"
+                              : msg.status === "complete"
+                                ? "border-emerald-500/30 bg-emerald-500/10"
+                                : "border-red-500/30 bg-red-500/10"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-lg">{msg.skillIcon}</span>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-white">
+                                  {msg.skillName}
+                                </span>
+                                {msg.status === "pending" && (
+                                  <span className="inline-flex items-center gap-1 text-xs text-zinc-400">
+                                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
+                                  </span>
+                                )}
+                                {msg.status === "complete" && (
+                                  <span className="text-xs text-emerald-400">
+                                    ✓
+                                  </span>
+                                )}
+                                {msg.status === "error" && (
+                                  <span className="text-xs text-red-400">
+                                    ✗
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-zinc-400">
+                                {msg.status === "pending" && "Enhancing..."}
+                                {msg.status === "complete" && msg.filename}
+                                {msg.status === "error" &&
+                                  (msg.error || "Failed")}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div
+                        key={`mobile-${msg.role}-${i}`}
+                        className={`text-sm ${
+                          msg.role === "user"
+                            ? "ml-4 rounded-lg bg-zinc-700 p-3 text-white"
+                            : "mr-4 rounded-lg bg-zinc-800 p-3 text-zinc-300"
+                        }`}
+                      >
+                        {msg.content}
+                      </div>
+                    );
+                  })}
+                  {isGenerating && (
+                    <div className="mr-4 rounded-lg bg-zinc-800 p-3 text-sm text-zinc-400">
+                      <span className="inline-flex items-center gap-2">
+                        <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
+                        {generationPhase || "Generating..."}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            {/* Input */}
+            <div className="border-t border-zinc-800 p-4">
+              {error && (
+                <div className="mb-2 text-xs text-red-400">{error}</div>
+              )}
+              <div className="flex gap-2">
+                <AutoExpandTextarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={
+                    messages.length === 0
+                      ? "Describe your website..."
+                      : "Ask for changes..."
+                  }
+                  rows={1}
+                  maxHeight={80}
+                  className="min-h-[38px] flex-1 resize-none rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-zinc-600 focus:outline-none"
+                  disabled={isGenerating}
+                />
+                <button
+                  type="button"
+                  onClick={handleSend}
+                  disabled={isGenerating || !input.trim()}
+                  data-testid="send-button-mobile"
+                  className="shrink-0 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isGenerating ? "..." : "Send"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
