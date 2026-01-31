@@ -76,6 +76,13 @@ For visual mood, choose 2-4 keywords that capture the aesthetic:
 - "editorial" - magazine-like, sophisticated layout
 - "playful" - fun, colorful, energetic
 
+For design effects, choose what enhances the brand:
+- "roundness": "sharp" (luxury, editorial), "subtle" (professional), "rounded" (friendly), "pill" (playful)
+- "shadow": "none" (flat/minimal), "subtle" (clean), "medium" (depth), "dramatic" (bold)
+- "grain": true/false - subtle noise texture for premium/editorial feel
+- "glassmorphism": true/false - frosted glass effects for modern tech feel
+- "animations": "none" (professional), "subtle" (polished), "expressive" (dynamic/creative)
+
 For font pairing, choose ONE that matches the brand:
 - "inter-playfair" - modern sans + elegant serif (luxury, editorial)
 - "dm-sans-fraunces" - friendly sans + editorial serif (creative, warm)
@@ -106,6 +113,13 @@ Output valid JSON matching this schema:
     "bodyFont": "sans|serif|mono",
     "fontPairing": "inter-playfair|dm-sans-fraunces|space-grotesk-mono|poppins-lora|plus-jakarta|source-serif-only"
   },
+  "designEffects": {
+    "roundness": "sharp|subtle|rounded|pill",
+    "shadow": "none|subtle|medium|dramatic", 
+    "grain": true|false,
+    "glassmorphism": true|false,
+    "animations": "none|subtle|expressive"
+  },
   "contentDetails": {
     "featureNames": ["Actual Feature Name 1", "Specific Feature 2", "Branded Feature 3"],
     "testimonialIdeas": [
@@ -119,6 +133,7 @@ Output valid JSON matching this schema:
       "filename": "index.html",
       "title": "Page Title",
       "purpose": "What this page accomplishes",
+      "layoutStrategy": "centered|asymmetric|masonry|editorial",
       "sections": [
         {
           "type": "hero|features|testimonials|pricing|cta|about|team|gallery|contact|faq|stats|logos|process|services|menu|footer",
@@ -147,7 +162,11 @@ Every website should be UNMISTAKABLY unique. Before generating any code, ask you
 1. Output ONLY valid HTML. First character must be "<"
 2. Use Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"></script>
 3. Use Alpine.js for interactivity: <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-4. Each page must be completely self-contained
+4. Use AOS for scroll animations: <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet"> and <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+5. Use Lucide Icons for beautiful SVG icons: <script src="https://unpkg.com/lucide@latest"></script>
+6. Each page must be completely self-contained
+7. Initialize AOS with: <script>AOS.init({ duration: 800, once: true });</script> before closing </body>
+8. Initialize Lucide with: <script>lucide.createIcons();</script> after AOS init
 
 ## TEXT-FORWARD DESIGN (Critical!)
 
@@ -179,6 +198,7 @@ NEVER use these overused patterns:
 - Hero → Features → Testimonials → CTA → Footer for every single site
 - Stock photo placeholders that add nothing
 - Glassmorphism when it doesn't fit the brand
+- Every section looking the same - vary layouts between centered, asymmetric, and grid
 
 ## INDUSTRY-SPECIFIC DESIGN INTUITION
 
@@ -228,6 +248,37 @@ NEVER use these overused patterns:
 - Rounded corners for modern feel: rounded-2xl, rounded-3xl
 - Smooth transitions: transition, duration-300
 - Hover states on interactive elements
+
+## PREMIUM EFFECTS (Apply based on designEffects spec)
+
+### Grain Overlay (for editorial/luxury feel)
+Add this to <style> when grain is enabled:
+.grain::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  opacity: 0.03;
+  z-index: 50;
+  pointer-events: none;
+  background-image: url('https://grainy-gradients.vercel.app/noise.svg');
+}
+Then add class="grain" to the <body> tag.
+
+### Glassmorphism (for modern tech feel)
+Use: backdrop-blur-md bg-white/70 border border-white/20
+
+### Scroll Animations
+Use AOS attributes on sections: data-aos="fade-up", data-aos="fade-right", data-aos-delay="100"
+- Hero sections: data-aos="fade-up"
+- Feature cards: data-aos="fade-up" with staggered data-aos-delay
+- Images: data-aos="zoom-in"
+
+### Lucide Icons Usage
+Use <i data-lucide="icon-name"></i> for icons. Common icons:
+- Navigation: menu, x, chevron-down, arrow-right
+- Actions: check, plus, minus, search, mail, phone
+- Social: github, twitter, linkedin, instagram
+- Features: zap, shield, clock, star, heart, users
 
 ## TYPOGRAPHY
 
@@ -289,10 +340,18 @@ export function buildGenerationPrompt(
       testimonialIdeas?: string[];
       statsToShow?: string[];
     };
+    designEffects?: {
+      roundness: string;
+      shadow: string;
+      grain: boolean;
+      glassmorphism: boolean;
+      animations: string;
+    };
     pages: Array<{
       filename: string;
       title: string;
       purpose: string;
+      layoutStrategy?: string;
       sections: Array<{
         type: string;
         headline?: string;
@@ -340,6 +399,17 @@ ${
     : ""
 }
 
+## DESIGN EFFECTS
+${
+  spec.designEffects
+    ? `- Roundness: ${spec.designEffects.roundness}
+- Shadow: ${spec.designEffects.shadow}
+- Grain Overlay: ${spec.designEffects.grain ? "Yes - add grain effect" : "No"}
+- Glassmorphism: ${spec.designEffects.glassmorphism ? "Yes - use frosted glass effects" : "No"}
+- Animations: ${spec.designEffects.animations}`
+    : "- Use default subtle effects"
+}
+
 ${
   spec.contentDetails
     ? `## CONTENT DETAILS
@@ -359,7 +429,9 @@ ${spec.features.map((f) => `- ${f}`).join("\n")}
 
 ${spec.pages
   .map(
-    (page) => `### ${page.filename}
+    (
+      page,
+    ) => `### ${page.filename}${page.layoutStrategy ? ` (${page.layoutStrategy} layout)` : ""}
 **Title:** ${page.title}
 **Purpose:** ${page.purpose}
 

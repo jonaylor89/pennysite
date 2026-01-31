@@ -1,3 +1,11 @@
+export interface DesignEffects {
+  roundness: "sharp" | "subtle" | "rounded" | "pill";
+  shadow: "none" | "subtle" | "medium" | "dramatic";
+  grain: boolean;
+  glassmorphism: boolean;
+  animations: "none" | "subtle" | "expressive";
+}
+
 export interface SiteSpec {
   name: string;
   tagline: string;
@@ -24,6 +32,7 @@ export interface SiteSpec {
     headingStyle: "bold" | "elegant" | "modern" | "classic";
     bodyFont: "sans" | "serif" | "mono";
   };
+  designEffects?: DesignEffects;
   pages: PageSpec[];
   features: string[];
 }
@@ -33,6 +42,7 @@ export interface PageSpec {
   title: string;
   purpose: string;
   sections: SectionSpec[];
+  layoutStrategy?: "centered" | "asymmetric" | "masonry" | "editorial";
 }
 
 export interface SectionSpec {
