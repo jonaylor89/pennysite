@@ -457,5 +457,20 @@ export function validateHtml(html: string): {
   qualityWarnings.push(...checkPopsyUrls(html));
   qualityWarnings.push(...checkAccessibility(html));
 
+  // Check for recommended CDNs (soft warnings)
+  const hasAosCss = /aos\.css|aos@[^"']*\.css/i.test(html);
+  const hasAosJs = /aos\.js|aos@[^"']*\.js/i.test(html);
+  const hasLucide = /lucide/i.test(html);
+
+  if (!hasAosCss) {
+    qualityWarnings.push("Missing AOS CSS CDN (aos.css) for scroll animations");
+  }
+  if (!hasAosJs) {
+    qualityWarnings.push("Missing AOS JS CDN (aos.js) for scroll animations");
+  }
+  if (!hasLucide) {
+    qualityWarnings.push("Missing Lucide icons CDN for icon support");
+  }
+
   return { valid: issues.length === 0, issues, qualityWarnings };
 }
