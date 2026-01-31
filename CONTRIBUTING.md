@@ -6,7 +6,7 @@ Thanks for contributing! This is a Next.js 16 app with Supabase, AI providers, a
 
 - Node.js 18+ (npm)
 - Supabase account
-- At least one AI provider key (Anthropic or OpenAI)
+- OpenAI API key
 - Supabase CLI (for migrations)
 - Optional: Stripe + Cloudflare + PostHog credentials for those features
 

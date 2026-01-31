@@ -43,21 +43,17 @@ async function main() {
     process.exit(1);
   }
 
-  // Check for API keys
-  const hasAnthropicKey = !!process.env.ANTHROPIC_API_KEY;
+  // Check for API key
   const hasOpenAIKey = !!process.env.OPENAI_API_KEY;
 
   console.log("=== Agent Test ===");
   console.log(`Prompt: ${prompt}`);
   console.log(`Output directory: ${outputDir}`);
-  console.log(`API Keys: Anthropic=${hasAnthropicKey}, OpenAI=${hasOpenAIKey}`);
-  console.log(`Using provider: ${hasAnthropicKey ? "Anthropic" : "OpenAI"}`);
+  console.log(`API Key: OpenAI=${hasOpenAIKey}`);
   console.log("");
 
-  if (!hasAnthropicKey && !hasOpenAIKey) {
-    console.error(
-      "ERROR: No API key found. Set ANTHROPIC_API_KEY or OPENAI_API_KEY",
-    );
+  if (!hasOpenAIKey) {
+    console.error("ERROR: No API key found. Set OPENAI_API_KEY");
     process.exit(1);
   }
 

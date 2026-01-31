@@ -587,19 +587,9 @@ export async function* generateWebsite(
     validationPassed: false,
   };
 
-  const hasAnthropicKey = !!process.env.ANTHROPIC_API_KEY;
+  const model = deps?.model ?? getModel("openai", "gpt-5.2");
 
-  const model =
-    deps?.model ??
-    (hasAnthropicKey
-      ? getModel("anthropic", "claude-sonnet-4-20250514")
-      : getModel("openai", "gpt-4o"));
-
-  const apiKey =
-    deps?.apiKey ??
-    (hasAnthropicKey
-      ? process.env.ANTHROPIC_API_KEY
-      : process.env.OPENAI_API_KEY);
+  const apiKey = deps?.apiKey ?? process.env.OPENAI_API_KEY;
 
   const tools = createTools(state);
 
