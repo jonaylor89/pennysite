@@ -555,11 +555,23 @@ export interface ToolCallMetrics {
   fixAttemptsPerPage: Record<string, number>;
 }
 
+export type ToolActivityEvent = {
+  type: "tool_activity";
+  toolName: string;
+  status: "start" | "end";
+  args?: Record<string, unknown>;
+  result?: {
+    success: boolean;
+    message?: string;
+  };
+};
+
 export type GenerationEvent =
   | { type: "status"; message: string }
   | { type: "spec"; spec: SiteSpec }
   | { type: "page"; filename: string; html: string }
   | { type: "thinking"; content: string }
+  | ToolActivityEvent
   | { type: "usage"; usage: TokenUsage }
   | {
       type: "complete";
@@ -691,12 +703,20 @@ START by calling fix_page for index.html with the updated HTML.`;
         newEvent = { type: "status", message: "Planning your website..." };
         break;
 
-      case "tool_execution_start":
+      case "tool_execution_start": {
         console.log("[AGENT] Tool execution START:", event.toolName);
+        const argsPreview = JSON.stringify(event.args, null, 2);
         console.log(
           "[AGENT] Tool args:",
-          `${JSON.stringify(event.args, null, 2).slice(0, 500)}...`,
+          `${argsPreview?.slice(0, 200)}${argsPreview && argsPreview.length > 200 ? "..." : ""}`,
         );
+        const startArgs = event.args as Record<string, unknown> | undefined;
+        eventQueue.push({
+          type: "tool_activity",
+          toolName: event.toolName,
+          status: "start",
+          args: startArgs,
+        });
         if (event.toolName === "plan_site") {
           newEvent = { type: "status", message: "Creating site plan..." };
         } else if (event.toolName === "generate_page") {
@@ -712,12 +732,14 @@ START by calling fix_page for index.html with the updated HTML.`;
           newEvent = { type: "status", message: "Validating site..." };
         }
         break;
+      }
 
       case "tool_execution_end": {
         console.log("[AGENT] Tool execution END:", event.toolName);
+        const resultPreview = JSON.stringify(event.result?.content, null, 2);
         console.log(
           "[AGENT] Tool result:",
-          JSON.stringify(event.result?.content, null, 2)?.slice(0, 300),
+          `${resultPreview?.slice(0, 200)}${resultPreview && resultPreview.length > 200 ? "..." : ""}`,
         );
 
         // Track tool call metrics
@@ -747,6 +769,21 @@ START by calling fix_page for index.html with the updated HTML.`;
         } else if (toolName === "validate_site") {
           toolMetrics.validateSiteCalls++;
         }
+
+        const resultSuccess = details?.valid !== false;
+        const resultMessage =
+          typeof event.result?.content === "string"
+            ? event.result.content.slice(0, 100)
+            : undefined;
+        eventQueue.push({
+          type: "tool_activity",
+          toolName,
+          status: "end",
+          result: {
+            success: resultSuccess,
+            message: resultMessage,
+          },
+        });
 
         if (details) {
           if (details.spec) {
@@ -815,17 +852,8 @@ START by calling fix_page for index.html with the updated HTML.`;
         break;
       }
 
-      case "message_update": {
-        const msg = event.message;
-        if (msg && "content" in msg && Array.isArray(msg.content)) {
-          for (const block of msg.content) {
-            if (block.type === "thinking" && "thinking" in block) {
-              newEvent = { type: "thinking", content: block.thinking };
-            }
-          }
-        }
+      case "message_update":
         break;
-      }
 
       case "agent_end":
         console.log("[AGENT] Agent finished");

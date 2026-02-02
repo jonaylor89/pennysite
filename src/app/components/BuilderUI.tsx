@@ -7,6 +7,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { getAllSkills, getSkill, type SkillId } from "@/lib/generation/skills";
 import { captureEvent } from "@/lib/posthog/client";
 import { createClient } from "@/lib/supabase/client";
+import { type ActivityItem, AgentActivityLog } from "./AgentActivityLog";
 import { AutoExpandTextarea } from "./AutoExpandTextarea";
 import { GuestCheckoutModal } from "./GuestCheckoutModal";
 import { RatingModal } from "./RatingModal";
@@ -574,6 +575,8 @@ export function BuilderUI({
   const editLinkUrlId = useId();
   const [siteSpec, setSiteSpec] = useState<SiteSpec | null>(null);
   const [generationPhase, setGenerationPhase] = useState<string>("");
+  const [agentActivities, setAgentActivities] = useState<ActivityItem[]>([]);
+  const activityIdCounter = useRef(0);
   const [_pendingPrompt, setPendingPrompt] = useState<string | null>(null);
   const [liveUsage, setLiveUsage] = useState<{
     inputTokens: number;
@@ -860,6 +863,8 @@ export function BuilderUI({
     setIsGenerating(true);
     setError(null);
     setLiveUsage(null);
+    setAgentActivities([]);
+    activityIdCounter.current = 0;
 
     try {
       setGenerationPhase("Starting...");
@@ -933,6 +938,55 @@ export function BuilderUI({
               case "status":
                 setGenerationPhase(event.message);
                 break;
+
+              case "tool_activity": {
+                const toolDisplayNames: Record<string, string> = {
+                  plan_site: "Planning site structure",
+                  generate_page: "Generating page",
+                  fix_page: "Fixing issues",
+                  validate_site: "Validating site",
+                };
+                if (event.status === "start") {
+                  const toolName = event.toolName as string;
+                  let message = toolDisplayNames[toolName] || toolName;
+                  if (toolName === "generate_page" && event.args?.filename) {
+                    message = `Generating ${event.args.filename}`;
+                  }
+                  const rawDetails = event.args
+                    ? JSON.stringify(event.args, null, 2)
+                    : undefined;
+                  const details =
+                    rawDetails && rawDetails.length > 800
+                      ? `${rawDetails.slice(0, 800)}...`
+                      : rawDetails;
+                  const newActivity: ActivityItem = {
+                    id: `tool-${activityIdCounter.current++}`,
+                    type: "tool",
+                    toolName,
+                    status: "running",
+                    message,
+                    details,
+                    timestamp: Date.now(),
+                  };
+                  setAgentActivities((prev) => [...prev, newActivity]);
+                } else if (event.status === "end") {
+                  setAgentActivities((prev) =>
+                    prev.map((a) =>
+                      a.type === "tool" &&
+                      a.toolName === event.toolName &&
+                      a.status === "running"
+                        ? {
+                            ...a,
+                            status: event.result?.success
+                              ? "complete"
+                              : "error",
+                          }
+                        : a,
+                    ),
+                  );
+                }
+                break;
+              }
 
               case "spec":
                 setSiteSpec(event.spec);
@@ -1204,18 +1258,18 @@ export function BuilderUI({
     sendMessage(initialPrompt);
   }, [authChecked, initialPrompt]);
 
-    async function downloadAll() {
-      const JSZip = (await import("jszip")).default;
-      const { saveAs } = await import("file-saver");
-  
-      const zip = new JSZip();
-      for (const [filename, content] of Object.entries(pages)) {
-        zip.file(filename, content);
-      }
-  
-      const blob = await zip.generateAsync({ type: "blob" });
-      saveAs(blob, `${projectName || "website"}.zip`);
+  async function downloadAll() {
+    const JSZip = (await import("jszip")).default;
+    const { saveAs } = await import("file-saver");
+
+    const zip = new JSZip();
+    for (const [filename, content] of Object.entries(pages)) {
+      zip.file(filename, content);
     }
+
+    const blob = await zip.generateAsync({ type: "blob" });
+    saveAs(blob, `${projectName || "website"}.zip`);
+  }
   async function handleEnhance(skillId: SkillId) {
     if (!user) {
       router.push("/auth/login");
@@ -2013,13 +2067,12 @@ export function BuilderUI({
                     </div>
                   );
                 })}
-                {isGenerating && (
-                  <div className="mr-4 rounded-lg bg-zinc-800 p-3 text-sm text-zinc-400">
-                    <span className="inline-flex items-center gap-2">
-                      <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
-                      {generationPhase || "Generating..."}
-                    </span>
-                  </div>
+                {(isGenerating || agentActivities.length > 0) && (
+                  <AgentActivityLog
+                    activities={agentActivities}
+                    isGenerating={isGenerating}
+                    currentPhase={generationPhase}
+                  />
                 )}
                 <div ref={messagesEndRef} />
               </div>
@@ -2328,13 +2381,12 @@ export function BuilderUI({
                       </div>
                     );
                   })}
-                  {isGenerating && (
-                    <div className="mr-4 rounded-lg bg-zinc-800 p-3 text-sm text-zinc-400">
-                      <span className="inline-flex items-center gap-2">
-                        <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
-                        {generationPhase || "Generating..."}
-                      </span>
-                    </div>
+                  {(isGenerating || agentActivities.length > 0) && (
+                    <AgentActivityLog
+                      activities={agentActivities}
+                      isGenerating={isGenerating}
+                      currentPhase={generationPhase}
+                    />
                   )}
                 </div>
               )}
