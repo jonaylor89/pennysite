@@ -3,11 +3,11 @@ import { createClient as createServiceClient } from "@supabase/supabase-js";
 // Service role client for billing operations (bypasses RLS)
 function getServiceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const secretKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
+  const secretKey = process.env.SUPABASE_SECRET_KEY;
 
   if (!url || !secretKey) {
     throw new Error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY",
+      "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SECRET_KEY",
     );
   }
 
