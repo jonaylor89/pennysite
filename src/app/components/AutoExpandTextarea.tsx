@@ -25,5 +25,16 @@ export function AutoExpandTextarea({
     [maxHeight],
   );
 
-  return <textarea onInput={handleInput} {...props} />;
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        e.currentTarget.form?.requestSubmit();
+      }
+      props.onKeyDown?.(e);
+    },
+    [props.onKeyDown],
+  );
+
+  return <textarea onInput={handleInput} onKeyDown={handleKeyDown} {...props} />;
 }
