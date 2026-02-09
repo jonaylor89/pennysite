@@ -61,6 +61,7 @@ export async function POST(req: Request) {
         flow: "guest_checkout",
         credits: "100",
       },
+      allow_promotion_codes: true,
       success_url: `${origin}/project/new?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/project/new?canceled=true`,
     });

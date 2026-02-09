@@ -49,6 +49,7 @@ export async function POST(req: Request) {
       pack_id: pack.id,
       credits: pack.credits.toString(),
     },
+    allow_promotion_codes: true,
     success_url: `${origin}/billing?success=true`,
     cancel_url: `${origin}/billing?canceled=true`,
   });
