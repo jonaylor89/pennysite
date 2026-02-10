@@ -1,3 +1,4 @@
+import assert from "node:assert";
 import type { AgentEvent, AgentTool } from "@mariozechner/pi-agent-core";
 import { describe, expect, it } from "vitest";
 import {
@@ -391,7 +392,8 @@ describe("createTools", () => {
       validationPassed: false,
     };
     const tools = createTools(state);
-    const editPageTool = tools.find((t) => t.name === "edit_page")!;
+    const editPageTool = tools.find((t) => t.name === "edit_page");
+    assert(editPageTool);
 
     await editPageTool.execute("test-id", {
       filename: "index.html",
@@ -412,7 +414,8 @@ describe("createTools", () => {
       validationPassed: false,
     };
     const tools = createTools(state);
-    const editPageTool = tools.find((t) => t.name === "edit_page")!;
+    const editPageTool = tools.find((t) => t.name === "edit_page");
+    assert(editPageTool);
 
     const result = await editPageTool.execute("test-id", {
       filename: "index.html",
@@ -434,7 +437,8 @@ describe("createTools", () => {
       validationPassed: false,
     };
     const tools = createTools(state);
-    const editPageTool = tools.find((t) => t.name === "edit_page")!;
+    const editPageTool = tools.find((t) => t.name === "edit_page");
+    assert(editPageTool);
 
     const result = await editPageTool.execute("test-id", {
       filename: "index.html",
@@ -455,7 +459,8 @@ describe("createTools", () => {
       validationPassed: false,
     };
     const tools = createTools(state);
-    const editPageTool = tools.find((t) => t.name === "edit_page")!;
+    const editPageTool = tools.find((t) => t.name === "edit_page");
+    assert(editPageTool);
 
     const result = await editPageTool.execute("test-id", {
       filename: "missing.html",
@@ -480,7 +485,8 @@ describe("createTools", () => {
       validationPassed: false,
     };
     const tools = createTools(state);
-    const editPageTool = tools.find((t) => t.name === "edit_page")!;
+    const editPageTool = tools.find((t) => t.name === "edit_page");
+    assert(editPageTool);
 
     await editPageTool.execute("test-id", {
       filename: "index.html",
@@ -504,7 +510,8 @@ describe("createTools", () => {
       validationPassed: false,
     };
     const tools = createTools(state);
-    const readPageTool = tools.find((t) => t.name === "read_page")!;
+    const readPageTool = tools.find((t) => t.name === "read_page");
+    assert(readPageTool);
 
     const result = await readPageTool.execute("test-id", {
       filename: "index.html",
@@ -523,7 +530,8 @@ describe("createTools", () => {
       validationPassed: false,
     };
     const tools = createTools(state);
-    const readPageTool = tools.find((t) => t.name === "read_page")!;
+    const readPageTool = tools.find((t) => t.name === "read_page");
+    assert(readPageTool);
 
     const result = await readPageTool.execute("test-id", {
       filename: "missing.html",

@@ -1865,10 +1865,14 @@ export function BuilderUI({
 
             {editingElement.tagName === "IMG" ? (
               <>
-                <label className="mb-1 block text-sm text-zinc-400">
+                <label
+                  htmlFor="edit-img-src"
+                  className="mb-1 block text-sm text-zinc-400"
+                >
                   Image URL
                 </label>
                 <input
+                  id="edit-img-src"
                   type="text"
                   className="mb-2 w-full rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
                   value={editImgSrc}
@@ -1896,10 +1900,14 @@ export function BuilderUI({
                   </a>
                   . Paste the &quot;Direct Link&quot; here.
                 </p>
-                <label className="mb-1 block text-sm text-zinc-400">
+                <label
+                  htmlFor="edit-img-alt"
+                  className="mb-1 block text-sm text-zinc-400"
+                >
                   Alt Text (Description)
                 </label>
                 <input
+                  id="edit-img-alt"
                   type="text"
                   className="mb-4 w-full rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
                   value={editImgAlt}
@@ -1925,10 +1933,14 @@ export function BuilderUI({
 
                 {editingElement.bgImage !== undefined && (
                   <>
-                    <label className="mb-1 block text-sm text-zinc-400">
+                    <label
+                      htmlFor="edit-bg-image"
+                      className="mb-1 block text-sm text-zinc-400"
+                    >
                       Background Image URL
                     </label>
                     <input
+                      id="edit-bg-image"
                       type="text"
                       className="mb-2 w-full rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
                       value={editBgImage}
