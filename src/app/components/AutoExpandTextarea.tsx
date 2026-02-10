@@ -36,5 +36,7 @@ export function AutoExpandTextarea({
     [props.onKeyDown],
   );
 
-  return <textarea onInput={handleInput} onKeyDown={handleKeyDown} {...props} />;
+  return (
+    <textarea onInput={handleInput} onKeyDown={handleKeyDown} {...props} />
+  );
 }

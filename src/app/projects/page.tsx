@@ -30,7 +30,9 @@ export default async function ProjectsPage({
 
   const { data: projects, count } = await supabase
     .from("projects")
-    .select("id, name, created_at, updated_at, deployed_url", { count: "exact" })
+    .select("id, name, created_at, updated_at, deployed_url", {
+      count: "exact",
+    })
     .eq("user_id", user.id)
     .order("updated_at", { ascending: false })
     .range(from, to);

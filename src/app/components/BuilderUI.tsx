@@ -942,15 +942,20 @@ export function BuilderUI({
               case "tool_activity": {
                 const toolDisplayNames: Record<string, string> = {
                   plan_site: "Planning site structure",
-                  generate_page: "Generating page",
-                  fix_page: "Fixing issues",
+                  write_page: "Writing page",
+                  edit_page: "Editing page",
+                  read_page: "Reading page",
                   validate_site: "Validating site",
                 };
                 if (event.status === "start") {
                   const toolName = event.toolName as string;
                   let message = toolDisplayNames[toolName] || toolName;
-                  if (toolName === "generate_page" && event.args?.filename) {
-                    message = `Generating ${event.args.filename}`;
+                  if (toolName === "write_page" && event.args?.filename) {
+                    message = `Writing ${event.args.filename}`;
+                  } else if (toolName === "edit_page" && event.args?.filename) {
+                    message = `Editing ${event.args.filename}`;
+                  } else if (toolName === "read_page" && event.args?.filename) {
+                    message = `Reading ${event.args.filename}`;
                   }
                   const rawDetails = event.args
                     ? JSON.stringify(event.args, null, 2)

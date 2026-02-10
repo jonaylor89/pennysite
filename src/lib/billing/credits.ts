@@ -6,9 +6,7 @@ function getServiceClient() {
   const secretKey = process.env.SUPABASE_SECRET_KEY;
 
   if (!url || !secretKey) {
-    throw new Error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SECRET_KEY",
-    );
+    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SECRET_KEY");
   }
 
   return createServiceClient(url, secretKey);

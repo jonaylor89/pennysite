@@ -170,10 +170,10 @@ export async function POST(req: Request) {
 
         const totalPages = finalPages ? Object.keys(finalPages).length : 0;
         const htmlValidityPercent =
-          finalToolMetrics && finalToolMetrics.generatePageCalls > 0
+          finalToolMetrics && finalToolMetrics.writePageCalls > 0
             ? Math.round(
                 (finalToolMetrics.pagesPassedValidation /
-                  finalToolMetrics.generatePageCalls) *
+                  finalToolMetrics.writePageCalls) *
                   100,
               )
             : 0;
@@ -190,7 +190,7 @@ export async function POST(req: Request) {
                 )
               : undefined,
             total_pages: totalPages,
-            fix_page_calls: finalToolMetrics?.fixPageCalls ?? 0,
+            edit_page_calls: finalToolMetrics?.editPageCalls ?? 0,
             total_tool_calls: finalToolMetrics?.totalToolCalls ?? 0,
             pages_passed_validation:
               finalToolMetrics?.pagesPassedValidation ?? 0,
@@ -206,7 +206,7 @@ export async function POST(req: Request) {
           trackServerEvent(user.id, "generation_failed", {
             project_id: projectId,
             error: generationError,
-            fix_page_calls: finalToolMetrics?.fixPageCalls ?? 0,
+            edit_page_calls: finalToolMetrics?.editPageCalls ?? 0,
             total_tool_calls: finalToolMetrics?.totalToolCalls ?? 0,
           });
         }

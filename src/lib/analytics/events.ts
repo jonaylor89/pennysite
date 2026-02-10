@@ -68,7 +68,7 @@ export type GenerationCompletedProperties = {
   output_tokens?: number;
   credits_used?: number;
   total_pages: number;
-  fix_page_calls: number;
+  edit_page_calls: number;
   total_tool_calls: number;
   avg_palette_consistency: number;
   structure_quality_percent: number;

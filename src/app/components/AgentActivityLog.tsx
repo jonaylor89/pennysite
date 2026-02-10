@@ -20,8 +20,9 @@ type AgentActivityLogProps = {
 
 const TOOL_DISPLAY_NAMES: Record<string, { name: string; icon: string }> = {
   plan_site: { name: "Planning site structure", icon: "📋" },
-  generate_page: { name: "Generating page", icon: "📄" },
-  fix_page: { name: "Fixing issues", icon: "🔧" },
+  write_page: { name: "Writing page", icon: "📄" },
+  edit_page: { name: "Editing page", icon: "✏️" },
+  read_page: { name: "Reading page", icon: "👁" },
   validate_site: { name: "Validating site", icon: "✓" },
 };
 
