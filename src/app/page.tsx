@@ -48,8 +48,8 @@ export default function Home() {
         </div>
 
         <header className="relative mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-6">
-          <Link href="/" className="text-sm font-semibold tracking-wide">
-            Pennysite
+          <Link href="https://www.jonaylor.com/blog/i-built-a-website-builder-that-costs-pennies" className="text-sm font-semibold tracking-wide">
+            What is Pennysite?
           </Link>
           <HeaderNav />
         </header>
