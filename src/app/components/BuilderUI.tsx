@@ -82,8 +82,11 @@ type BuilderUIProps = {
 type EditingElement = {
   selector: string;
   tagName: string;
-  text: string;
+  text?: string;
   href?: string;
+  src?: string;
+  alt?: string;
+  bgImage?: string;
 };
 
 function injectNavigationScript(html: string): string {
@@ -112,7 +115,7 @@ function injectNavigationScript(html: string): string {
   }
 
   // Editable text elements
-  const editableTags = ['H1','H2','H3','H4','H5','H6','P','SPAN','A','LI','BUTTON','LABEL'];
+  const editableTags = ['H1','H2','H3','H4','H5','H6','P','SPAN','A','LI','BUTTON','LABEL', 'IMG'];
 
   document.addEventListener('click', function(e) {
     const link = e.target.closest('a');
@@ -132,22 +135,81 @@ function injectNavigationScript(html: string): string {
     }
   });
 
-  // Double-click to edit text/links
+  // Double-click to edit text/links/images
   document.addEventListener('dblclick', function(e) {
-    const el = e.target;
-    if (!el || !editableTags.includes(el.tagName)) return;
+    let el = e.target;
+    if (!el) return;
+
+    // Check if it's a direct editable tag or an image
+    let editableEl = el.closest(editableTags.join(','));
+    
+    // Also check if el or any ancestor has a background image
+    let bgEl = el;
+    while (bgEl && bgEl !== document.body) {
+      const style = window.getComputedStyle(bgEl);
+      if (style.backgroundImage && style.backgroundImage !== 'none') {
+        break;
+      }
+      bgEl = bgEl.parentElement;
+    }
+    if (bgEl === document.body) bgEl = null;
+
+    if (!editableEl && !bgEl) return;
+
     e.preventDefault();
+    
+    // We favor the editable element (text/img) if it exists, otherwise the background element
+    const target = editableEl || bgEl;
+    if (!target) return;
+
     const data = {
       type: 'edit-element',
-      selector: getSelector(el),
-      tagName: el.tagName,
-      text: el.innerText || el.textContent || ''
+      selector: getSelector(target),
+      tagName: target.tagName,
     };
-    if (el.tagName === 'A') {
-      data.href = el.getAttribute('href') || '';
+
+    if (target.tagName === 'IMG') {
+      data.src = target.getAttribute('src') || '';
+      data.alt = target.getAttribute('alt') || '';
+    } else {
+      data.text = target.innerText || target.textContent || '';
+      if (target.tagName === 'A') {
+        data.href = target.getAttribute('href') || '';
+      }
+      
+      const style = window.getComputedStyle(target);
+      if (style.backgroundImage && style.backgroundImage !== 'none') {
+        // Extract URL from background-image: url("...")
+        const urlMatch = style.backgroundImage.match(/url(["']?([^"']+)["']?)/);
+        if (urlMatch) {
+          data.bgImage = urlMatch[1];
+        }
+      }
     }
+    
     window.parent.postMessage(data, '*');
   });
+
+  // Handle broken images on load
+  function handleBrokenImages() {
+    document.querySelectorAll('img').forEach(img => {
+      if (img.dataset.hasErrorListener) return;
+      img.dataset.hasErrorListener = 'true';
+      img.addEventListener('error', function() {
+        if (this.src.includes('placehold.co')) return;
+        this.src = 'https://placehold.co/600x400?text=' + encodeURIComponent(this.alt || 'Image Placeholder');
+      });
+      // If already broken
+      if (img.naturalWidth === 0 && img.src) {
+        img.dispatchEvent(new Event('error'));
+      }
+    });
+  }
+
+  // Run on load and whenever DOM might change
+  handleBrokenImages();
+  const observer = new MutationObserver(handleBrokenImages);
+  observer.observe(document.body, { childList: true, subtree: true });
 })();
 </script>`;
 
@@ -617,6 +679,9 @@ export function BuilderUI({
   const [editText, setEditText] = useState("");
   const [editHref, setEditHref] = useState("");
   const [editAsLink, setEditAsLink] = useState(false);
+  const [editImgSrc, setEditImgSrc] = useState("");
+  const [editImgAlt, setEditImgAlt] = useState("");
+  const [editBgImage, setEditBgImage] = useState("");
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const didAutoSendRef = useRef(false);
@@ -759,10 +824,16 @@ export function BuilderUI({
           tagName: e.data.tagName,
           text: e.data.text,
           href: e.data.href,
+          src: e.data.src,
+          alt: e.data.alt,
+          bgImage: e.data.bgImage,
         });
-        setEditText(e.data.text);
+        setEditText(e.data.text || "");
         setEditHref(e.data.href || "");
         setEditAsLink(isLink);
+        setEditImgSrc(e.data.src || "");
+        setEditImgAlt(e.data.alt || "");
+        setEditBgImage(e.data.bgImage || "");
       }
     }
     window.addEventListener("message", handleMessage);
@@ -776,35 +847,45 @@ export function BuilderUI({
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, "text/html");
-    const el = doc.querySelector(editingElement.selector);
+    const el = doc.querySelector(editingElement.selector) as HTMLElement | null;
     if (!el) {
       setEditingElement(null);
       return;
     }
 
-    const wasLink = editingElement.tagName === "A";
-    const wantsLink = editAsLink;
-
-    if (wasLink && !wantsLink) {
-      // Convert link to span (preserve inline nature)
-      const span = doc.createElement("span");
-      span.textContent = editText;
-      // Copy classes if any
-      if (el.className) span.className = el.className;
-      el.replaceWith(span);
-    } else if (!wasLink && wantsLink) {
-      // Convert element to link
-      const link = doc.createElement("a");
-      link.textContent = editText;
-      link.setAttribute("href", editHref || "#");
-      // Copy classes if any
-      if (el.className) link.className = el.className;
-      el.replaceWith(link);
+    if (editingElement.tagName === "IMG") {
+      el.setAttribute("src", editImgSrc);
+      el.setAttribute("alt", editImgAlt);
     } else {
-      // Same type - just update content
-      el.textContent = editText;
-      if (wasLink && editHref) {
-        el.setAttribute("href", editHref);
+      const wasLink = editingElement.tagName === "A";
+      const wantsLink = editAsLink;
+
+      if (wasLink && !wantsLink) {
+        // Convert link to span (preserve inline nature)
+        const span = doc.createElement("span");
+        span.textContent = editText;
+        // Copy classes if any
+        if (el.className) span.className = el.className;
+        el.replaceWith(span);
+      } else if (!wasLink && wantsLink) {
+        // Convert element to link
+        const link = doc.createElement("a");
+        link.textContent = editText;
+        link.setAttribute("href", editHref || "#");
+        // Copy classes if any
+        if (el.className) link.className = el.className;
+        el.replaceWith(link);
+      } else {
+        // Same type - just update content
+        el.textContent = editText;
+        if (wasLink && editHref) {
+          el.setAttribute("href", editHref);
+        }
+      }
+
+      // Handle background image update if it was edited
+      if (editBgImage) {
+        el.style.backgroundImage = `url('${editBgImage}')`;
       }
     }
 
@@ -1777,55 +1858,144 @@ export function BuilderUI({
       {/* Click-to-Edit Modal */}
       {editingElement && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-md rounded-lg border border-zinc-700 bg-zinc-900 p-6">
+          <div className="w-full max-w-md rounded-lg border border-zinc-700 bg-zinc-900 p-6 shadow-2xl">
             <h3 className="mb-4 text-lg font-semibold text-white">
               Edit {editingElement.tagName.toLowerCase()}
             </h3>
-            <label
-              className="mb-1 block text-sm text-zinc-400"
-              htmlFor={editTextId}
-            >
-              Text
-            </label>
-            <textarea
-              id={editTextId}
-              className="mb-4 w-full rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
-              rows={3}
-              value={editText}
-              onChange={(e) => setEditText(e.target.value)}
-            />
-            <label className="mb-3 flex cursor-pointer items-center gap-2">
-              <input
-                type="checkbox"
-                checked={editAsLink}
-                onChange={(e) => {
-                  setEditAsLink(e.target.checked);
-                  if (e.target.checked && !editHref) {
-                    setEditHref("#");
-                  }
-                }}
-                className="h-4 w-4 rounded border-zinc-600 bg-zinc-800 text-blue-500 focus:ring-blue-500"
-              />
-              <span className="text-sm text-zinc-300">Make this a link</span>
-            </label>
-            {editAsLink && (
+
+            {editingElement.tagName === "IMG" ? (
               <>
-                <label
-                  className="mb-1 block text-sm text-zinc-400"
-                  htmlFor={editLinkUrlId}
-                >
-                  Link URL
+                <label className="mb-1 block text-sm text-zinc-400">
+                  Image URL
                 </label>
                 <input
                   type="text"
-                  id={editLinkUrlId}
+                  className="mb-2 w-full rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
+                  value={editImgSrc}
+                  onChange={(e) => setEditImgSrc(e.target.value)}
+                  placeholder="https://images.unsplash.com/photo-1519389950473-47ba0277781c"
+                />
+                <p className="mb-4 text-xs text-zinc-500 leading-relaxed">
+                  Tip: We recommend hosting images on{" "}
+                  <a
+                    href="https://cloudinary.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400 hover:underline"
+                  >
+                    Cloudinary
+                  </a>{" "}
+                  or{" "}
+                  <a
+                    href="https://imgbb.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400 hover:underline"
+                  >
+                    ImgBB
+                  </a>
+                  . Paste the &quot;Direct Link&quot; here.
+                </p>
+                <label className="mb-1 block text-sm text-zinc-400">
+                  Alt Text (Description)
+                </label>
+                <input
+                  type="text"
                   className="mb-4 w-full rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
-                  value={editHref}
-                  onChange={(e) => setEditHref(e.target.value)}
-                  placeholder="https://example.com or #section"
+                  value={editImgAlt}
+                  onChange={(e) => setEditImgAlt(e.target.value)}
+                  placeholder="A descriptive caption"
                 />
               </>
+            ) : (
+              <>
+                <label
+                  className="mb-1 block text-sm text-zinc-400"
+                  htmlFor={editTextId}
+                >
+                  Text
+                </label>
+                <textarea
+                  id={editTextId}
+                  className="mb-4 w-full rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
+                  rows={3}
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                />
+
+                {editingElement.bgImage !== undefined && (
+                  <>
+                    <label className="mb-1 block text-sm text-zinc-400">
+                      Background Image URL
+                    </label>
+                    <input
+                      type="text"
+                      className="mb-2 w-full rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
+                      value={editBgImage}
+                      onChange={(e) => setEditBgImage(e.target.value)}
+                      placeholder="https://example.com/image.jpg"
+                    />
+                    <p className="mb-4 text-xs text-zinc-500 leading-relaxed">
+                      Tip: We recommend hosting images on{" "}
+                      <a
+                        href="https://cloudinary.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:underline"
+                      >
+                        Cloudinary
+                      </a>{" "}
+                      or{" "}
+                      <a
+                        href="https://imgbb.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:underline"
+                      >
+                        ImgBB
+                      </a>
+                      .
+                    </p>
+                  </>
+                )}
+
+                <label className="mb-3 flex cursor-pointer items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={editAsLink}
+                    onChange={(e) => {
+                      setEditAsLink(e.target.checked);
+                      if (e.target.checked && !editHref) {
+                        setEditHref("#");
+                      }
+                    }}
+                    className="h-4 w-4 rounded border-zinc-600 bg-zinc-800 text-blue-500 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-zinc-300">
+                    Make this a link
+                  </span>
+                </label>
+                {editAsLink && (
+                  <>
+                    <label
+                      className="mb-1 block text-sm text-zinc-400"
+                      htmlFor={editLinkUrlId}
+                    >
+                      Link URL
+                    </label>
+                    <input
+                      type="text"
+                      id={editLinkUrlId}
+                      className="mb-4 w-full rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
+                      value={editHref}
+                      onChange={(e) => setEditHref(e.target.value)}
+                      placeholder="https://example.com or #section"
+                    />
+                  </>
+                )}
+              </>
             )}
+
             <div className="flex justify-end gap-2">
               <button
                 type="button"

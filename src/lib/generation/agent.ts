@@ -7,12 +7,14 @@ import {
   type GenerationDeps,
   type GenerationState,
 } from "./agent-interface";
+import { selectComponentExamples } from "./components";
+import { generateDesignSeed } from "./design-seeds";
 import type {
   GenerationEvent,
   TokenUsage,
   ToolCallMetrics,
 } from "./generation-events";
-import { AGENT_SYSTEM_PROMPT } from "./system-prompt";
+import { buildAgentSystemPrompt } from "./system-prompt";
 import { createTools } from "./tools";
 import type { SiteSpec } from "./types";
 
@@ -24,14 +26,14 @@ export type {
   PageDetails,
 } from "./agent-interface";
 export { validateHtml } from "./agent-interface";
-export { createTools } from "./tools";
 export type {
   GenerationEvent,
   TokenUsage,
   ToolActivityEvent,
   ToolCallMetrics,
 } from "./generation-events";
-export { AGENT_SYSTEM_PROMPT } from "./system-prompt";
+export { AGENT_SYSTEM_PROMPT, buildAgentSystemPrompt } from "./system-prompt";
+export { createTools } from "./tools";
 
 export async function* generateWebsite(
   userRequest: string,
@@ -51,12 +53,21 @@ export async function* generateWebsite(
 
   const tools = createTools(state);
 
+  const seed = Date.now();
+  const sectionTypes = existingSpec?.pages?.flatMap(
+    (p) => p.sections?.map((s) => s.type) ?? [],
+  ) ?? ["hero", "features", "testimonials", "cta", "footer"];
+  const complexity = existingSpec?.siteComplexity;
+  const selectedExamples = selectComponentExamples(sectionTypes, seed);
+  const designSeed = generateDesignSeed(seed, complexity);
+  const systemPrompt = buildAgentSystemPrompt(selectedExamples, designSeed);
+
   const agentFactory: AgentFactory =
     deps?.agentFactory ?? createDefaultAgentFactory();
 
   const agent: AgentLike = agentFactory(
     {
-      systemPrompt: AGENT_SYSTEM_PROMPT,
+      systemPrompt,
       model,
       tools,
       thinkingLevel: "low",

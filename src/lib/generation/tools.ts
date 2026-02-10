@@ -1,7 +1,4 @@
-import type {
-  AgentTool,
-  AgentToolResult,
-} from "@mariozechner/pi-agent-core";
+import type { AgentTool, AgentToolResult } from "@mariozechner/pi-agent-core";
 import { Type } from "@sinclair/typebox";
 import {
   type GenerationState,
@@ -75,6 +72,18 @@ const PlanSiteParams = Type.Object({
     {
       description:
         "Tone and style. Must be exactly one of: professional, casual, playful, luxurious, minimal",
+    },
+  ),
+  siteComplexity: Type.Union(
+    [
+      Type.Literal("minimal"),
+      Type.Literal("fun"),
+      Type.Literal("standard"),
+      Type.Literal("premium"),
+    ],
+    {
+      description:
+        "How complex the site should be. minimal: joke/meme sites (1-3 sections, emoji-heavy). fun: casual events/parties (3-5 sections). standard: normal business sites. premium: high-end/luxury.",
     },
   ),
   colorPalette: ColorPaletteSchema,
@@ -180,6 +189,7 @@ PERSONALITY: What's the ONE thing that makes this site memorable?
         industry: params.industry,
         audience: params.audience,
         tone: params.tone,
+        siteComplexity: params.siteComplexity,
         colorPalette: params.colorPalette,
         typography: params.typography,
         pages: params.pages as PageSpec[],

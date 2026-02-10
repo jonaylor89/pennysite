@@ -21,6 +21,7 @@ export interface SiteSpec {
   industry: string;
   audience: string;
   tone: "professional" | "casual" | "playful" | "luxurious" | "minimal";
+  siteComplexity?: "minimal" | "fun" | "standard" | "premium";
   colorPalette: {
     primary: string;
     secondary: string;

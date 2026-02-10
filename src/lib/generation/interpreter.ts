@@ -39,6 +39,11 @@ const SiteSpecSchema = z.object({
   industry: z.string(),
   audience: z.string(),
   tone: z.enum(["professional", "casual", "playful", "luxurious", "minimal"]),
+  siteComplexity: z
+    .enum(["minimal", "fun", "standard", "premium"])
+    .describe(
+      "How complex/serious the site should be: minimal (1-2 sections, joke sites), fun (casual/party, playful), standard (normal business sites), premium (polished, multi-section)",
+    ),
   colorPalette: z.object({
     primary: z.string(),
     secondary: z.string(),

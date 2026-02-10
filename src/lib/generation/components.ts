@@ -1,13 +1,39 @@
-export const COMPONENT_EXAMPLES = `
-## REFERENCE COMPONENTS
+export type ComponentExampleType =
+  | "hero"
+  | "features"
+  | "testimonials"
+  | "pricing"
+  | "cta"
+  | "footer"
+  | "gallery"
+  | "contact"
+  | "faq"
+  | "navbar"
+  | "services"
+  | "about"
+  | "stats"
+  | "logos"
+  | "team"
+  | "process"
+  | "bento"
+  | "schedule"
+  | "menu";
 
-These are examples of high-quality, distinctive designs. Study the PRINCIPLES, then create ORIGINAL variations tailored to each project. Never copy these verbatim.
+export type ComponentExample = {
+  id: string;
+  type: ComponentExampleType;
+  label: string;
+  bestFor: string;
+  html: string;
+};
 
----
-
-### HERO: Bold Typography Focus (Great for SaaS/Dev Tools)
-\`\`\`html
-<section class="bg-zinc-950 py-32">
+export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
+  {
+    id: "hero-bold-typography-focus",
+    type: "hero",
+    label: "Bold Typography Focus",
+    bestFor: "SaaS/Dev Tools",
+    html: `<section class="bg-zinc-950 py-32">
   <div class="mx-auto max-w-5xl px-6 text-center">
     <div class="mb-8 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-2">
       <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -46,14 +72,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       </div>
     </div>
   </div>
-</section>
-\`\`\`
-
----
-
-### HERO: Split Layout with SVG Illustration (Great for Consultants/Services)
-\`\`\`html
-<section class="bg-stone-50 py-24">
+</section>`,
+  },
+  {
+    id: "hero-split-layout-with-svg-illustration",
+    type: "hero",
+    label: "Split Layout with SVG Illustration",
+    bestFor: "Consultants/Services",
+    html: `<section class="bg-stone-50 py-24">
   <div class="mx-auto max-w-7xl px-6 lg:flex lg:items-center lg:gap-16">
     <div class="lg:w-1/2">
       <p class="text-sm font-semibold uppercase tracking-widest text-amber-600">Executive Coaching</p>
@@ -90,14 +116,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       <img src="https://illustrations.popsy.co/amber/success.svg" alt="Success illustration" class="w-full">
     </div>
   </div>
-</section>
-\`\`\`
-
----
-
-### HERO: Minimal/Editorial (Great for Portfolios/Writers)
-\`\`\`html
-<section class="bg-white py-32">
+</section>`,
+  },
+  {
+    id: "hero-minimal-editorial",
+    type: "hero",
+    label: "Minimal/Editorial",
+    bestFor: "Portfolios/Writers",
+    html: `<section class="bg-white py-32">
   <div class="mx-auto max-w-3xl px-6">
     <h1 class="font-serif text-5xl font-normal leading-tight text-gray-900 md:text-6xl">
       I write code that<br>
@@ -118,14 +144,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       </a>
     </div>
   </div>
-</section>
-\`\`\`
-
----
-
-### FEATURES: Icon Grid with Descriptions
-\`\`\`html
-<section class="bg-white py-24">
+</section>`,
+  },
+  {
+    id: "features-icon-grid-with-descriptions",
+    type: "features",
+    label: "Icon Grid with Descriptions",
+    bestFor: "",
+    html: `<section class="bg-white py-24">
   <div class="mx-auto max-w-7xl px-6">
     <div class="text-center">
       <h2 class="text-3xl font-bold text-gray-900 md:text-4xl">Everything you need to ship fast</h2>
@@ -155,14 +181,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       </div>
     </div>
   </div>
-</section>
-\`\`\`
-
----
-
-### FEATURES: Alternating Layout with Illustrations
-\`\`\`html
-<section class="bg-slate-50 py-24">
+</section>`,
+  },
+  {
+    id: "features-alternating-layout-with-illustrations",
+    type: "features",
+    label: "Alternating Layout with Illustrations",
+    bestFor: "",
+    html: `<section class="bg-slate-50 py-24">
   <div class="mx-auto max-w-7xl px-6">
     <!-- Feature 1 -->
     <div class="lg:flex lg:items-center lg:gap-16">
@@ -192,14 +218,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       </div>
     </div>
   </div>
-</section>
-\`\`\`
-
----
-
-### TESTIMONIALS: Quote Cards
-\`\`\`html
-<section class="bg-white py-24">
+</section>`,
+  },
+  {
+    id: "testimonials-quote-cards",
+    type: "testimonials",
+    label: "Quote Cards",
+    bestFor: "",
+    html: `<section class="bg-white py-24">
   <div class="mx-auto max-w-7xl px-6">
     <h2 class="text-center text-3xl font-bold text-gray-900">Trusted by teams everywhere</h2>
     <div class="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
@@ -253,14 +279,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       </div>
     </div>
   </div>
-</section>
-\`\`\`
-
----
-
-### PRICING: Simple Three Tier
-\`\`\`html
-<section class="bg-slate-50 py-24">
+</section>`,
+  },
+  {
+    id: "pricing-simple-three-tier",
+    type: "pricing",
+    label: "Simple Three Tier",
+    bestFor: "",
+    html: `<section class="bg-slate-50 py-24">
   <div class="mx-auto max-w-7xl px-6">
     <div class="text-center">
       <h2 class="text-3xl font-bold text-gray-900">Simple, honest pricing</h2>
@@ -329,14 +355,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       </div>
     </div>
   </div>
-</section>
-\`\`\`
-
----
-
-### CTA: Simple Centered
-\`\`\`html
-<section class="bg-indigo-600 py-24">
+</section>`,
+  },
+  {
+    id: "cta-simple-centered",
+    type: "cta",
+    label: "Simple Centered",
+    bestFor: "",
+    html: `<section class="bg-indigo-600 py-24">
   <div class="mx-auto max-w-4xl px-6 text-center">
     <h2 class="text-3xl font-bold text-white md:text-4xl">Ready to ship faster?</h2>
     <p class="mt-4 text-xl text-indigo-100">Join 10,000+ developers who've already made the switch.</p>
@@ -348,14 +374,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       <a href="#" class="font-medium text-white underline underline-offset-4 transition hover:text-indigo-100">Schedule a demo</a>
     </div>
   </div>
-</section>
-\`\`\`
-
----
-
-### NAVBAR: Clean with Mobile Menu
-\`\`\`html
-<nav class="fixed top-0 z-50 w-full bg-white/80 backdrop-blur-lg border-b border-gray-200" x-data="{ open: false }">
+</section>`,
+  },
+  {
+    id: "navbar-clean-with-mobile-menu",
+    type: "navbar",
+    label: "Clean with Mobile Menu",
+    bestFor: "",
+    html: `<nav class="fixed top-0 z-50 w-full bg-white/80 backdrop-blur-lg border-b border-gray-200" x-data="{ open: false }">
   <div class="mx-auto max-w-7xl px-6">
     <div class="flex h-16 items-center justify-between">
       <a href="/" class="text-xl font-bold text-gray-900">Brand</a>
@@ -379,14 +405,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       <a href="#" class="mt-4 block rounded-lg bg-gray-900 py-3 text-center font-medium text-white">Get Started</a>
     </div>
   </div>
-</nav>
-\`\`\`
-
----
-
-### FOOTER: Minimal
-\`\`\`html
-<footer class="bg-gray-900 py-12">
+</nav>`,
+  },
+  {
+    id: "footer-minimal",
+    type: "footer",
+    label: "Minimal",
+    bestFor: "",
+    html: `<footer class="bg-gray-900 py-12">
   <div class="mx-auto max-w-7xl px-6">
     <div class="flex flex-col items-center justify-between gap-6 md:flex-row">
       <p class="text-sm text-gray-400">© 2025 Brand. All rights reserved.</p>
@@ -405,14 +431,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       </div>
     </div>
   </div>
-</footer>
-\`\`\`
-
----
-
-### SERVICES: Cards for Consultants
-\`\`\`html
-<section class="bg-white py-24">
+</footer>`,
+  },
+  {
+    id: "services-cards-for-consultants",
+    type: "services",
+    label: "Cards for Consultants",
+    bestFor: "",
+    html: `<section class="bg-white py-24">
   <div class="mx-auto max-w-7xl px-6">
     <div class="text-center">
       <h2 class="text-3xl font-bold text-gray-900">How I Can Help</h2>
@@ -439,14 +465,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       </div>
     </div>
   </div>
-</section>
-\`\`\`
-
----
-
-### ABOUT: Personal Bio Section
-\`\`\`html
-<section class="bg-stone-50 py-24">
+</section>`,
+  },
+  {
+    id: "about-personal-bio-section",
+    type: "about",
+    label: "Personal Bio Section",
+    bestFor: "",
+    html: `<section class="bg-stone-50 py-24">
   <div class="mx-auto max-w-4xl px-6">
     <div class="md:flex md:items-start md:gap-12">
       <div class="md:w-1/3">
@@ -472,14 +498,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       </div>
     </div>
   </div>
-</section>
-\`\`\`
-
----
-
-### STATS: Metrics Grid
-\`\`\`html
-<section class="bg-white py-16">
+</section>`,
+  },
+  {
+    id: "stats-metrics-grid",
+    type: "stats",
+    label: "Metrics Grid",
+    bestFor: "",
+    html: `<section class="bg-white py-16">
   <div class="mx-auto max-w-7xl px-6">
     <div class="grid grid-cols-2 gap-8 lg:grid-cols-4">
       <div class="text-center">
@@ -500,14 +526,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       </div>
     </div>
   </div>
-</section>
-\`\`\`
-
----
-
-### LOGOS: Trust Bar
-\`\`\`html
-<section class="bg-gray-50 py-12">
+</section>`,
+  },
+  {
+    id: "logos-trust-bar",
+    type: "logos",
+    label: "Trust Bar",
+    bestFor: "",
+    html: `<section class="bg-gray-50 py-12">
   <div class="mx-auto max-w-7xl px-6">
     <p class="text-center text-sm font-medium uppercase tracking-widest text-gray-500">Trusted by innovative teams</p>
     <div class="mt-8 flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
@@ -518,14 +544,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       <div class="flex h-8 w-24 items-center justify-center rounded bg-gray-300 text-xs font-bold text-gray-600">LOGO</div>
     </div>
   </div>
-</section>
-\`\`\`
-
----
-
-### FAQ: Accordion
-\`\`\`html
-<section class="bg-white py-24">
+</section>`,
+  },
+  {
+    id: "faq-accordion",
+    type: "faq",
+    label: "Accordion",
+    bestFor: "",
+    html: `<section class="bg-white py-24">
   <div class="mx-auto max-w-3xl px-6">
     <h2 class="text-center text-3xl font-bold text-gray-900">Frequently Asked Questions</h2>
     <div class="mt-12 space-y-4" x-data="{ open: null }">
@@ -558,14 +584,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       </div>
     </div>
   </div>
-</section>
-\`\`\`
-
----
-
-### TEAM: Grid with Cards
-\`\`\`html
-<section class="bg-gray-50 py-24">
+</section>`,
+  },
+  {
+    id: "team-grid-with-cards",
+    type: "team",
+    label: "Grid with Cards",
+    bestFor: "",
+    html: `<section class="bg-gray-50 py-24">
   <div class="mx-auto max-w-7xl px-6">
     <div class="text-center">
       <h2 class="text-3xl font-bold text-gray-900">Meet the Team</h2>
@@ -594,14 +620,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       </div>
     </div>
   </div>
-</section>
-\`\`\`
-
----
-
-### PROCESS: Timeline Steps
-\`\`\`html
-<section class="bg-white py-24">
+</section>`,
+  },
+  {
+    id: "process-timeline-steps",
+    type: "process",
+    label: "Timeline Steps",
+    bestFor: "",
+    html: `<section class="bg-white py-24">
   <div class="mx-auto max-w-4xl px-6">
     <div class="text-center">
       <h2 class="text-3xl font-bold text-gray-900">How It Works</h2>
@@ -639,14 +665,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       </div>
     </div>
   </div>
-</section>
-\`\`\`
-
----
-
-### BENTO: Asymmetric Grid
-\`\`\`html
-<section class="bg-gray-50 py-24">
+</section>`,
+  },
+  {
+    id: "bento-asymmetric-grid",
+    type: "bento",
+    label: "Asymmetric Grid",
+    bestFor: "",
+    html: `<section class="bg-gray-50 py-24">
   <div class="mx-auto max-w-7xl px-6">
     <h2 class="text-3xl font-bold text-gray-900">Everything in one place</h2>
     <div class="mt-12 grid gap-4 lg:grid-cols-3 lg:grid-rows-2">
@@ -669,14 +695,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       </div>
     </div>
   </div>
-</section>
-\`\`\`
-
----
-
-### HERO: Gradient Mesh Background
-\`\`\`html
-<section class="relative min-h-screen overflow-hidden bg-slate-950">
+</section>`,
+  },
+  {
+    id: "hero-gradient-mesh-background",
+    type: "hero",
+    label: "Gradient Mesh Background",
+    bestFor: "",
+    html: `<section class="relative min-h-screen overflow-hidden bg-slate-950">
   <div class="absolute inset-0 overflow-hidden">
     <div class="absolute -left-1/4 -top-1/4 h-96 w-96 rounded-full bg-purple-500/30 blur-3xl"></div>
     <div class="absolute -right-1/4 top-1/4 h-96 w-96 rounded-full bg-blue-500/30 blur-3xl"></div>
@@ -694,14 +720,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       <a href="#" class="rounded-full border border-slate-600 px-8 py-4 font-semibold text-white transition hover:border-slate-400">Watch Demo</a>
     </div>
   </div>
-</section>
-\`\`\`
-
----
-
-### HERO: Asymmetric Split with Shapes
-\`\`\`html
-<section class="bg-orange-50 py-24 lg:py-0 lg:min-h-screen">
+</section>`,
+  },
+  {
+    id: "hero-asymmetric-split-with-shapes",
+    type: "hero",
+    label: "Asymmetric Split with Shapes",
+    bestFor: "",
+    html: `<section class="bg-orange-50 py-24 lg:py-0 lg:min-h-screen">
   <div class="mx-auto max-w-7xl lg:flex lg:items-center">
     <div class="px-6 lg:w-1/2 lg:py-24">
       <span class="inline-block rounded-full bg-orange-200 px-4 py-1 text-sm font-medium text-orange-800">New Release</span>
@@ -723,14 +749,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       <div class="absolute bottom-0 right-48 h-24 w-24 rounded-full bg-orange-500/40"></div>
     </div>
   </div>
-</section>
-\`\`\`
-
----
-
-### GALLERY: Portfolio Grid
-\`\`\`html
-<section class="bg-white py-24">
+</section>`,
+  },
+  {
+    id: "gallery-portfolio-grid",
+    type: "gallery",
+    label: "Portfolio Grid",
+    bestFor: "",
+    html: `<section class="bg-white py-24">
   <div class="mx-auto max-w-7xl px-6">
     <h2 class="text-3xl font-bold text-gray-900">Our Work</h2>
     <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -763,14 +789,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       </div>
     </div>
   </div>
-</section>
-\`\`\`
-
----
-
-### CONTACT: Simple Info Display
-\`\`\`html
-<section class="bg-gray-50 py-24">
+</section>`,
+  },
+  {
+    id: "contact-simple-info-display",
+    type: "contact",
+    label: "Simple Info Display",
+    bestFor: "",
+    html: `<section class="bg-gray-50 py-24">
   <div class="mx-auto max-w-4xl px-6">
     <div class="text-center">
       <h2 class="text-3xl font-bold text-gray-900">Get in Touch</h2>
@@ -800,14 +826,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       </div>
     </div>
   </div>
-</section>
-\`\`\`
-
----
-
-### CTA: With Stats
-\`\`\`html
-<section class="bg-gradient-to-r from-indigo-600 to-purple-700 py-24">
+</section>`,
+  },
+  {
+    id: "cta-with-stats",
+    type: "cta",
+    label: "With Stats",
+    bestFor: "",
+    html: `<section class="bg-gradient-to-r from-indigo-600 to-purple-700 py-24">
   <div class="mx-auto max-w-7xl px-6">
     <div class="lg:flex lg:items-center lg:justify-between">
       <div>
@@ -835,14 +861,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       </div>
     </div>
   </div>
-</section>
-\`\`\`
-
----
-
-### TESTIMONIALS: Large Quote
-\`\`\`html
-<section class="bg-white py-24">
+</section>`,
+  },
+  {
+    id: "testimonials-large-quote",
+    type: "testimonials",
+    label: "Large Quote",
+    bestFor: "",
+    html: `<section class="bg-white py-24">
   <div class="mx-auto max-w-4xl px-6 text-center">
     <svg class="mx-auto h-12 w-12 text-gray-300" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
     <blockquote class="mt-8 text-2xl font-medium leading-relaxed text-gray-900 md:text-3xl">
@@ -853,14 +879,14 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       <p class="text-gray-600">VP of Operations, TechCorp</p>
     </div>
   </div>
-</section>
-\`\`\`
-
----
-
-### FOOTER: Multi-column
-\`\`\`html
-<footer class="bg-gray-900 py-16">
+</section>`,
+  },
+  {
+    id: "footer-multi-column",
+    type: "footer",
+    label: "Multi-column",
+    bestFor: "",
+    html: `<footer class="bg-gray-900 py-16">
   <div class="mx-auto max-w-7xl px-6">
     <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
       <div>
@@ -909,6 +935,569 @@ These are examples of high-quality, distinctive designs. Study the PRINCIPLES, t
       </div>
     </div>
   </div>
-</footer>
-\`\`\`
-`;
+</footer>`,
+  },
+  {
+    id: "hero-event-countdown",
+    type: "hero",
+    label: "Event Countdown with Date",
+    bestFor: "Events/Parties/Conferences",
+    html: `<section class="relative overflow-hidden bg-gradient-to-br from-violet-950 via-fuchsia-900 to-rose-900 py-32">
+  <div class="absolute inset-0">
+    <div class="absolute left-1/4 top-1/3 h-64 w-64 rounded-full bg-fuchsia-500/20 blur-3xl"></div>
+    <div class="absolute right-1/4 bottom-1/4 h-48 w-48 rounded-full bg-amber-500/15 blur-3xl"></div>
+  </div>
+  <div class="relative mx-auto max-w-5xl px-6 text-center">
+    <p class="inline-block rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-5 py-2 text-sm font-semibold uppercase tracking-widest text-fuchsia-300">You're Invited</p>
+    <h1 class="mt-8 text-5xl font-extrabold tracking-tight text-white md:text-8xl">
+      The Big<br><span class="bg-gradient-to-r from-amber-300 via-rose-400 to-fuchsia-400 bg-clip-text text-transparent">Game Day</span>
+    </h1>
+    <p class="mx-auto mt-6 max-w-xl text-xl text-fuchsia-100/80">Kickoff, food, friends, and the best halftime show of the decade. Don't miss it.</p>
+    <div class="mt-12 flex items-center justify-center gap-6">
+      <div class="rounded-2xl bg-white/10 px-6 py-4 backdrop-blur-sm">
+        <p class="text-3xl font-bold text-white">FEB</p>
+        <p class="text-5xl font-extrabold text-amber-300">8</p>
+      </div>
+      <div class="text-left">
+        <p class="text-lg font-semibold text-white">Sunday, 2026</p>
+        <p class="text-fuchsia-200">Doors open at 3:00 PM</p>
+        <p class="text-fuchsia-200">123 Main Street, Seattle</p>
+      </div>
+    </div>
+    <div class="mt-10">
+      <a href="#rsvp" class="inline-flex items-center gap-2 rounded-full bg-amber-400 px-8 py-4 text-lg font-bold text-amber-950 transition hover:bg-amber-300 hover:scale-105">
+        RSVP Now
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+      </a>
+    </div>
+  </div>
+</section>`,
+  },
+  {
+    id: "hero-brutalist-bold",
+    type: "hero",
+    label: "Brutalist Bold Typography",
+    bestFor: "Creative Agencies/Bold Brands",
+    html: `<section class="bg-lime-300 py-24">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="border-b-4 border-black pb-8">
+      <p class="font-mono text-sm uppercase tracking-widest text-black/60">Est. 2024 — Creative Studio</p>
+    </div>
+    <h1 class="mt-12 text-6xl font-black uppercase leading-none text-black md:text-9xl">
+      We make<br>
+      <span class="inline-block -rotate-2 bg-black px-4 text-lime-300">wild</span><br>
+      things happen
+    </h1>
+    <div class="mt-16 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+      <p class="max-w-md text-xl leading-relaxed text-black/70">
+        Branding, campaigns, and digital experiences for companies that refuse to blend in.
+      </p>
+      <a href="#work" class="group inline-flex items-center gap-3 border-2 border-black px-8 py-4 font-mono text-lg font-bold uppercase text-black transition hover:bg-black hover:text-lime-300">
+        See our work
+        <svg class="h-5 w-5 transition group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+      </a>
+    </div>
+  </div>
+</section>`,
+  },
+  {
+    id: "schedule-event-timeline",
+    type: "schedule",
+    label: "Event Timeline with Blocks",
+    bestFor: "Events/Watch Parties/Conferences",
+    html: `<section class="bg-zinc-950 py-24">
+  <div class="mx-auto max-w-4xl px-6">
+    <h2 class="text-center text-3xl font-bold text-white">Game Day Schedule</h2>
+    <p class="mt-4 text-center text-lg text-zinc-400">Here's how the day breaks down</p>
+    <div class="mt-16 space-y-6">
+      <div class="flex gap-6 rounded-2xl border border-zinc-800 bg-zinc-900 p-6 transition hover:border-amber-500/50">
+        <div class="flex-shrink-0 text-center">
+          <p class="text-2xl font-bold text-amber-400">3:00</p>
+          <p class="text-sm text-zinc-500">PM</p>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-white">Doors Open</h3>
+          <p class="mt-1 text-zinc-400">Arrive early, grab a drink, claim your spot on the couch.</p>
+        </div>
+      </div>
+      <div class="flex gap-6 rounded-2xl border border-zinc-800 bg-zinc-900 p-6 transition hover:border-emerald-500/50">
+        <div class="flex-shrink-0 text-center">
+          <p class="text-2xl font-bold text-emerald-400">4:30</p>
+          <p class="text-sm text-zinc-500">PM</p>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-white">Food & Drinks Ready</h3>
+          <p class="mt-1 text-zinc-400">Wings, sliders, nachos, and cold ones on tap.</p>
+        </div>
+      </div>
+      <div class="flex gap-6 rounded-2xl border border-zinc-800 bg-gradient-to-r from-zinc-900 to-fuchsia-950/30 p-6 transition hover:border-fuchsia-500/50 border border-zinc-800">
+        <div class="flex-shrink-0 text-center">
+          <p class="text-2xl font-bold text-fuchsia-400">Half</p>
+          <p class="text-sm text-zinc-500">time</p>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-white">Halftime Show 🎤</h3>
+          <p class="mt-1 text-zinc-400">The main event within the main event. Volume goes UP.</p>
+        </div>
+      </div>
+      <div class="flex gap-6 rounded-2xl border border-zinc-800 bg-zinc-900 p-6 transition hover:border-blue-500/50">
+        <div class="flex-shrink-0 text-center">
+          <p class="text-2xl font-bold text-blue-400">Post</p>
+          <p class="text-sm text-zinc-500">game</p>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-white">Celebration (or Commiseration)</h3>
+          <p class="mt-1 text-zinc-400">Either way, we're finishing the nachos.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>`,
+  },
+  {
+    id: "features-playful-emoji-cards",
+    type: "features",
+    label: "Playful Cards with Emoji Icons",
+    bestFor: "Fun/Casual/Events",
+    html: `<section class="bg-amber-50 py-24">
+  <div class="mx-auto max-w-7xl px-6">
+    <h2 class="text-center text-4xl font-extrabold text-gray-900">What to Expect</h2>
+    <p class="mt-4 text-center text-lg text-gray-600">Everything you need for a perfect day</p>
+    <div class="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="rounded-3xl bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+        <div class="text-5xl">🍕</div>
+        <h3 class="mt-4 text-lg font-bold text-gray-900">Epic Food Spread</h3>
+        <p class="mt-2 text-gray-600">From wings to nachos to a dessert table that won't quit.</p>
+      </div>
+      <div class="rounded-3xl bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+        <div class="text-5xl">📺</div>
+        <h3 class="mt-4 text-lg font-bold text-gray-900">Big Screen Setup</h3>
+        <p class="mt-2 text-gray-600">85-inch display with surround sound. Better than being there.</p>
+      </div>
+      <div class="rounded-3xl bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+        <div class="text-5xl">🎲</div>
+        <h3 class="mt-4 text-lg font-bold text-gray-900">Prop Bets & Games</h3>
+        <p class="mt-2 text-gray-600">Squares board, prediction cards, and halftime trivia.</p>
+      </div>
+      <div class="rounded-3xl bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+        <div class="text-5xl">🏆</div>
+        <h3 class="mt-4 text-lg font-bold text-gray-900">Prizes</h3>
+        <p class="mt-2 text-gray-600">Best dressed, best dip, and squares winner take home glory.</p>
+      </div>
+    </div>
+  </div>
+</section>`,
+  },
+  {
+    id: "cta-rsvp-bold",
+    type: "cta",
+    label: "Bold RSVP with Details",
+    bestFor: "Events/Parties/Invitations",
+    html: `<section class="bg-gradient-to-br from-emerald-600 to-teal-700 py-24">
+  <div class="mx-auto max-w-3xl px-6 text-center">
+    <p class="text-6xl">🏈</p>
+    <h2 class="mt-6 text-4xl font-extrabold text-white md:text-5xl">Don't Just Watch.<br>Watch With Us.</h2>
+    <p class="mt-6 text-xl text-emerald-100">Space is limited. Snacks are not. Lock in your spot before it's gone.</p>
+    <div class="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+      <a href="#" class="rounded-full bg-white px-10 py-4 text-lg font-bold text-emerald-700 transition hover:bg-emerald-50 hover:scale-105">
+        Count Me In
+      </a>
+      <a href="#" class="rounded-full border-2 border-white/50 px-10 py-4 text-lg font-semibold text-white transition hover:border-white hover:bg-white/10">
+        Maybe / +1
+      </a>
+    </div>
+    <div class="mt-12 grid grid-cols-3 gap-4 text-center">
+      <div>
+        <p class="text-3xl font-bold text-white">24</p>
+        <p class="text-sm text-emerald-200">Spots Left</p>
+      </div>
+      <div>
+        <p class="text-3xl font-bold text-white">18</p>
+        <p class="text-sm text-emerald-200">Confirmed</p>
+      </div>
+      <div>
+        <p class="text-3xl font-bold text-white">BYOB</p>
+        <p class="text-sm text-emerald-200">Bring Your Own</p>
+      </div>
+    </div>
+  </div>
+</section>`,
+  },
+  {
+    id: "menu-food-drink-grid",
+    type: "menu",
+    label: "Food & Drink Grid",
+    bestFor: "Restaurants/Cafes/Events",
+    html: `<section class="bg-stone-50 py-24">
+  <div class="mx-auto max-w-5xl px-6">
+    <h2 class="text-center font-serif text-4xl font-bold text-stone-900">The Menu</h2>
+    <p class="mt-4 text-center text-lg text-stone-500">Made with love, served with style</p>
+    <div class="mt-16 grid gap-12 md:grid-cols-2">
+      <div>
+        <h3 class="border-b-2 border-stone-900 pb-2 text-xl font-bold uppercase tracking-wider text-stone-900">Mains</h3>
+        <div class="mt-6 space-y-6">
+          <div class="flex items-baseline justify-between gap-4">
+            <div>
+              <p class="font-semibold text-stone-900">Smoked Brisket Sliders</p>
+              <p class="text-sm text-stone-500">12-hour smoked, pickled slaw, brioche buns</p>
+            </div>
+            <p class="flex-shrink-0 font-mono text-stone-600">$14</p>
+          </div>
+          <div class="flex items-baseline justify-between gap-4">
+            <div>
+              <p class="font-semibold text-stone-900">Truffle Mushroom Flatbread</p>
+              <p class="text-sm text-stone-500">Wild mushrooms, gruyère, arugula, truffle oil</p>
+            </div>
+            <p class="flex-shrink-0 font-mono text-stone-600">$16</p>
+          </div>
+          <div class="flex items-baseline justify-between gap-4">
+            <div>
+              <p class="font-semibold text-stone-900">Crispy Fish Tacos</p>
+              <p class="text-sm text-stone-500">Beer-battered cod, mango salsa, chipotle crema</p>
+            </div>
+            <p class="flex-shrink-0 font-mono text-stone-600">$13</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h3 class="border-b-2 border-stone-900 pb-2 text-xl font-bold uppercase tracking-wider text-stone-900">Drinks</h3>
+        <div class="mt-6 space-y-6">
+          <div class="flex items-baseline justify-between gap-4">
+            <div>
+              <p class="font-semibold text-stone-900">House Old Fashioned</p>
+              <p class="text-sm text-stone-500">Bourbon, demerara, angostura, orange peel</p>
+            </div>
+            <p class="flex-shrink-0 font-mono text-stone-600">$12</p>
+          </div>
+          <div class="flex items-baseline justify-between gap-4">
+            <div>
+              <p class="font-semibold text-stone-900">Spicy Margarita</p>
+              <p class="text-sm text-stone-500">Tequila, lime, jalapeño, agave, tajín rim</p>
+            </div>
+            <p class="flex-shrink-0 font-mono text-stone-600">$11</p>
+          </div>
+          <div class="flex items-baseline justify-between gap-4">
+            <div>
+              <p class="font-semibold text-stone-900">Local IPA Draft</p>
+              <p class="text-sm text-stone-500">Rotating selection from regional breweries</p>
+            </div>
+            <p class="flex-shrink-0 font-mono text-stone-600">$8</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>`,
+  },
+  {
+    id: "navbar-dark-transparent",
+    type: "navbar",
+    label: "Dark Transparent with Accent",
+    bestFor: "Events/Bold Brands/Nightlife",
+    html: `<nav class="fixed top-0 z-50 w-full bg-black/60 backdrop-blur-xl border-b border-white/10" x-data="{ open: false }">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="flex h-16 items-center justify-between">
+      <a href="/" class="flex items-center gap-2">
+        <span class="text-2xl">🏈</span>
+        <span class="text-lg font-bold text-white">SB Watch Party</span>
+      </a>
+      <div class="hidden items-center gap-8 md:flex">
+        <a href="#schedule" class="text-sm text-white/70 transition hover:text-white">Schedule</a>
+        <a href="#menu" class="text-sm text-white/70 transition hover:text-white">Food & Drinks</a>
+        <a href="#location" class="text-sm text-white/70 transition hover:text-white">Location</a>
+        <a href="#rsvp" class="rounded-full bg-amber-400 px-5 py-2 text-sm font-bold text-amber-950 transition hover:bg-amber-300">RSVP</a>
+      </div>
+      <button @click="open = !open" class="text-white md:hidden">
+        <svg x-show="!open" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <svg x-show="open" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </div>
+  <div x-show="open" x-transition class="border-t border-white/10 bg-black/90 md:hidden">
+    <div class="space-y-1 px-6 py-4">
+      <a href="#schedule" class="block py-2 text-white/70">Schedule</a>
+      <a href="#menu" class="block py-2 text-white/70">Food & Drinks</a>
+      <a href="#location" class="block py-2 text-white/70">Location</a>
+      <a href="#rsvp" class="mt-4 block rounded-full bg-amber-400 py-3 text-center font-bold text-amber-950">RSVP</a>
+    </div>
+  </div>
+</nav>`,
+  },
+  {
+    id: "hero-warm-organic",
+    type: "hero",
+    label: "Warm Organic with Soft Shapes",
+    bestFor: "Wellness/Food/Lifestyle",
+    html: `<section class="relative overflow-hidden bg-orange-50 py-32">
+  <div class="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-orange-200/50" style="border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;"></div>
+  <div class="absolute -left-16 bottom-0 h-64 w-64 rounded-full bg-rose-200/40" style="border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;"></div>
+  <div class="relative mx-auto max-w-4xl px-6 text-center">
+    <p class="font-serif text-lg italic text-orange-600">Nourish your body, feed your soul</p>
+    <h1 class="mt-6 font-serif text-5xl font-bold leading-tight text-stone-900 md:text-7xl">
+      Handcrafted with<br>
+      <span class="text-orange-600">real ingredients</span>
+    </h1>
+    <p class="mx-auto mt-8 max-w-xl text-xl leading-relaxed text-stone-600">
+      From our kitchen to your table — seasonal menus, locally sourced, and made fresh every morning.
+    </p>
+    <div class="mt-12 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+      <a href="#menu" class="rounded-full bg-stone-900 px-8 py-4 font-semibold text-white transition hover:bg-stone-800">
+        See Today's Menu
+      </a>
+      <a href="#story" class="rounded-full border-2 border-stone-300 px-8 py-4 font-semibold text-stone-700 transition hover:border-stone-900">
+        Our Story
+      </a>
+    </div>
+  </div>
+</section>`,
+  },
+  {
+    id: "features-numbered-steps-horizontal",
+    type: "features",
+    label: "Numbered Horizontal Steps",
+    bestFor: "Onboarding/How-it-works",
+    html: `<section class="bg-white py-24">
+  <div class="mx-auto max-w-7xl px-6">
+    <h2 class="text-3xl font-bold text-gray-900">How It Works</h2>
+    <p class="mt-4 text-lg text-gray-500">Three steps. Zero friction.</p>
+    <div class="mt-16 grid gap-12 md:grid-cols-3">
+      <div class="relative">
+        <span class="absolute -top-6 font-mono text-8xl font-black text-gray-100">01</span>
+        <div class="relative pt-8">
+          <div class="h-1 w-12 rounded bg-indigo-500"></div>
+          <h3 class="mt-4 text-xl font-bold text-gray-900">Describe your vision</h3>
+          <p class="mt-3 text-gray-600">Tell us what you're building in plain English. No templates, no forms — just your idea.</p>
+        </div>
+      </div>
+      <div class="relative">
+        <span class="absolute -top-6 font-mono text-8xl font-black text-gray-100">02</span>
+        <div class="relative pt-8">
+          <div class="h-1 w-12 rounded bg-indigo-500"></div>
+          <h3 class="mt-4 text-xl font-bold text-gray-900">Watch it come to life</h3>
+          <p class="mt-3 text-gray-600">Our AI crafts a unique design in real-time. Review, refine, and iterate instantly.</p>
+        </div>
+      </div>
+      <div class="relative">
+        <span class="absolute -top-6 font-mono text-8xl font-black text-gray-100">03</span>
+        <div class="relative pt-8">
+          <div class="h-1 w-12 rounded bg-indigo-500"></div>
+          <h3 class="mt-4 text-xl font-bold text-gray-900">Ship it</h3>
+          <p class="mt-3 text-gray-600">One click to publish. Custom domain, SSL, and analytics included. You're live.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>`,
+  },
+  {
+    id: "contact-map-and-form",
+    type: "contact",
+    label: "Split Form with Location Details",
+    bestFor: "Local Businesses/Events",
+    html: `<section class="bg-white py-24">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="lg:flex lg:gap-16">
+      <div class="lg:w-1/2">
+        <h2 class="text-3xl font-bold text-gray-900">Find Us</h2>
+        <p class="mt-4 text-lg text-gray-600">Come say hi — we'd love to meet you in person.</p>
+        <div class="mt-8 space-y-6">
+          <div class="flex items-start gap-4">
+            <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+            <div>
+              <p class="font-semibold text-gray-900">Address</p>
+              <p class="text-gray-600">123 Pike Place, Seattle, WA 98101</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-4">
+            <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div>
+              <p class="font-semibold text-gray-900">Hours</p>
+              <p class="text-gray-600">Mon–Fri: 7am – 9pm</p>
+              <p class="text-gray-600">Sat–Sun: 8am – 10pm</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-4">
+            <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+            </div>
+            <div>
+              <p class="font-semibold text-gray-900">Phone</p>
+              <p class="text-gray-600">(206) 555-0142</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-12 lg:mt-0 lg:w-1/2">
+        <form class="rounded-2xl bg-gray-50 p-8">
+          <h3 class="text-xl font-semibold text-gray-900">Send a Message</h3>
+          <div class="mt-6 space-y-4">
+            <input type="text" placeholder="Your Name" class="w-full rounded-lg border border-gray-300 px-4 py-3 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+            <input type="email" placeholder="Email Address" class="w-full rounded-lg border border-gray-300 px-4 py-3 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+            <textarea rows="4" placeholder="Your message..." class="w-full rounded-lg border border-gray-300 px-4 py-3 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"></textarea>
+            <button type="submit" class="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700">Send Message</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>`,
+  },
+  {
+    id: "footer-colorful-stacked",
+    type: "footer",
+    label: "Colorful Stacked with Social",
+    bestFor: "Events/Creative/Fun Brands",
+    html: `<footer class="bg-gradient-to-b from-fuchsia-950 to-black py-16">
+  <div class="mx-auto max-w-4xl px-6 text-center">
+    <p class="text-4xl">🎉</p>
+    <p class="mt-4 text-2xl font-bold text-white">See you on game day!</p>
+    <p class="mt-2 text-fuchsia-300">February 8, 2026 · Doors at 3 PM</p>
+    <div class="mt-8 flex justify-center gap-6">
+      <a href="#" class="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20">
+        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      </a>
+      <a href="#" class="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20">
+        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
+      </a>
+    </div>
+    <div class="mt-8 border-t border-white/10 pt-8">
+      <p class="text-sm text-fuchsia-400/60">Made with ❤️ for the best watch party ever</p>
+    </div>
+  </div>
+</footer>`,
+  },
+  {
+    id: "hero-emoji-minimal",
+    type: "hero",
+    label: "Giant Emoji Minimal",
+    bestFor: "Joke Sites/Meme Pages/Party Invites",
+    html: `<section class="flex min-h-screen items-center justify-center bg-gradient-to-b from-yellow-300 to-orange-400">
+  <div class="mx-auto max-w-2xl px-6 text-center">
+    <p class="text-9xl md:text-[12rem] leading-none">🎉</p>
+    <h1 class="mt-6 text-5xl font-black uppercase text-black md:text-7xl">
+      YOU'RE INVITED
+    </h1>
+    <p class="mt-4 text-2xl font-medium text-black/70">
+      Saturday, March 15 · 7 PM · Jake's Place
+    </p>
+    <a href="#rsvp" class="mt-10 inline-block rounded-full bg-black px-12 py-5 text-xl font-bold text-yellow-300 transition hover:scale-110">
+      I'M COMING 🙌
+    </a>
+    <p class="mt-6 text-lg text-black/50">Bring snacks or don't come</p>
+  </div>
+</section>`,
+  },
+  {
+    id: "hero-single-joke",
+    type: "hero",
+    label: "Single Purpose Joke Page",
+    bestFor: "Meme/Novelty/One-Joke Sites",
+    html: `<section class="flex min-h-screen flex-col items-center justify-center bg-black px-6 text-center">
+  <h1 class="text-6xl font-black text-white md:text-8xl">
+    IS IT<br>
+    <span class="bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">FRIDAY</span><br>
+    YET?
+  </h1>
+  <div class="mt-12 rounded-3xl bg-zinc-900 px-16 py-10 border border-zinc-800">
+    <p class="text-7xl font-black text-red-500 md:text-9xl">NO.</p>
+  </div>
+  <p class="mt-8 text-xl text-zinc-500">Check back tomorrow.</p>
+  <div class="mt-12 flex gap-4">
+    <a href="#" class="text-zinc-600 transition hover:text-zinc-400">
+      <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
+    </a>
+  </div>
+</section>`,
+  },
+  {
+    id: "cta-simple-fun-rsvp",
+    type: "cta",
+    label: "One-Button Fun RSVP",
+    bestFor: "Casual Events/Parties",
+    html: `<section class="bg-pink-500 py-20">
+  <div class="mx-auto max-w-lg px-6 text-center">
+    <p class="text-6xl">👇</p>
+    <h2 class="mt-4 text-3xl font-black text-white">That's It. That's the Whole Site.</h2>
+    <p class="mt-4 text-xl text-pink-100">Just tell us you're coming.</p>
+    <div class="mt-8 flex flex-col gap-4">
+      <a href="#" class="rounded-full bg-white px-8 py-4 text-lg font-bold text-pink-600 transition hover:scale-105 hover:bg-pink-50">
+        Yes, I'll Be There 🎉
+      </a>
+      <a href="#" class="rounded-full border-2 border-white px-8 py-4 text-lg font-bold text-white transition hover:bg-white hover:text-pink-600">
+        Maybe (I'm Flaky) 🤷
+      </a>
+      <p class="mt-2 text-sm text-pink-200">No is not an option</p>
+    </div>
+  </div>
+</section>`,
+  },
+];
+
+function mulberry32(seed: number): () => number {
+  return () => {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+export function selectComponentExamples(
+  neededTypes: string[],
+  seed?: number,
+  perType = 1,
+  extraCount = 2,
+): ComponentExample[] {
+  const rng = mulberry32(seed ?? Date.now());
+  const selected: ComponentExample[] = [];
+  const usedIds = new Set<string>();
+
+  for (const type of neededTypes) {
+    const candidates = COMPONENT_EXAMPLES_LIST.filter(
+      (e) => e.type === type && !usedIds.has(e.id),
+    );
+    if (candidates.length > 0) {
+      const shuffled = [...candidates].sort(() => rng() - 0.5);
+      for (let i = 0; i < Math.min(perType, shuffled.length); i++) {
+        selected.push(shuffled[i]);
+        usedIds.add(shuffled[i].id);
+      }
+    }
+  }
+
+  const remaining = COMPONENT_EXAMPLES_LIST.filter((e) => !usedIds.has(e.id));
+  const shuffledRemaining = [...remaining].sort(() => rng() - 0.5);
+  for (let i = 0; i < Math.min(extraCount, shuffledRemaining.length); i++) {
+    selected.push(shuffledRemaining[i]);
+    usedIds.add(shuffledRemaining[i].id);
+  }
+
+  return selected;
+}
+
+export function formatComponentExamples(examples: ComponentExample[]): string {
+  const header = `## REFERENCE COMPONENTS
+
+These are a FEW examples of high-quality designs. Study the PRINCIPLES behind them, then create ORIGINAL designs tailored to each project. Do NOT copy these verbatim — they exist only to show the expected level of craft and polish.
+
+IMPORTANT: You will see different examples each time. Do not try to reproduce these specific patterns. Instead, invent new layouts, color combinations, and structural approaches that match the project's unique identity.
+
+---`;
+
+  const fence = "```";
+  const sections = examples.map(
+    (ex) =>
+      `\n### ${ex.type.toUpperCase()}: ${ex.label}${ex.bestFor ? ` (${ex.bestFor})` : ""}\n${fence}html\n${ex.html}\n${fence}`,
+  );
+
+  return `${header}\n${sections.join("\n\n---\n")}`;
+}
+
+export const COMPONENT_EXAMPLES = formatComponentExamples(
+  COMPONENT_EXAMPLES_LIST,
+);

@@ -76,6 +76,12 @@ For visual mood, choose 2-4 keywords that capture the aesthetic:
 - "editorial" - magazine-like, sophisticated layout
 - "playful" - fun, colorful, energetic
 
+For site complexity, assess how serious/complex the site needs to be:
+- "minimal" - Joke sites, meme pages, single-purpose pages. Only 1-3 sections total. Emoji as icons. Humor over polish. Think party invites, inside jokes, novelty pages.
+- "fun" - Casual events, watch parties, birthday pages, hobby projects. Keep it light, colorful, and personality-driven. 3-5 sections max.
+- "standard" - Normal business websites, portfolios, SaaS landing pages. Professional quality with proper structure.
+- "premium" - High-end brands, luxury services, enterprise. Maximum polish, refined typography, sophisticated layouts.
+
 For design effects, choose what enhances the brand:
 - "roundness": "sharp" (luxury, editorial), "subtle" (professional), "rounded" (friendly), "pill" (playful)
 - "shadow": "none" (flat/minimal), "subtle" (clean), "medium" (depth), "dramatic" (bold)
@@ -99,6 +105,7 @@ Output valid JSON matching this schema:
   "industry": "specific industry",
   "audience": "specific target audience description",
   "tone": "professional|casual|playful|luxurious|minimal",
+  "siteComplexity": "minimal|fun|standard|premium",
   "uniqueValueProposition": "1-2 sentences explaining what makes this different from competitors",
   "visualMood": ["keyword1", "keyword2"],
   "colorPalette": {
@@ -168,26 +175,26 @@ Every website should be UNMISTAKABLY unique. Before generating any code, ask you
 7. Initialize AOS with: <script>AOS.init({ duration: 800, once: true });</script> before closing </body>
 8. Initialize Lucide with: <script>lucide.createIcons();</script> after AOS init
 
-## TEXT-FORWARD DESIGN (Critical!)
+## IMAGES AND VISUALS
 
-⚠️ **NO EXTERNAL IMAGES** — Do NOT use Unsplash, Pexels, placeholder.com, picsum, or any other external image URLs. They break and make sites look bad.
+⚠️ **NO STOCK PHOTOS** — Never use Unsplash, Pexels, placeholder.com, or ANY external image URLs. They break and make sites look unprofessional.
 
-Instead, create visual interest with:
-- **Bold typography as the hero** — Large, confident headlines that command attention
-- **SVG illustrations from Popsy** — The ONLY approved external image source
-- **Inline SVG icons** — Draw simple icons directly in the HTML
-- **Abstract patterns** — Geometric shapes, gradients, grain textures via Tailwind
-- **Whitespace** — Let the text breathe; don't fill every gap
-- **Color blocks** — Use background colors to create visual sections
-
-### Approved Image Sources (ONLY these work)
-1. **Popsy illustrations**: https://illustrations.popsy.co/{color}/{name}.svg
+Only these image sources are allowed:
+1. **Popsy SVGs**: https://illustrations.popsy.co/{color}/{name}.svg
    - Colors: amber, blue, gray, green, pink, purple, red, yellow
    - Names: app-launch, working-remotely, designer, developer-activity, success, freelancer, meditation, skateboard, surfer, taking-selfie, trophy, home-office, business-deal, remote-work, productive-work, product-launch, work-from-home, student, teaching, creative-work, cup-of-tea, coffee-break
-2. **Inline SVGs**: Draw icons and shapes directly in HTML
-3. **Tailwind gradients and shapes**: bg-gradient-to-r, rounded shapes, etc.
+2. **Inline SVGs**: Draw icons and decorative elements directly in HTML
+3. **CSS/Tailwind**: Gradients, shapes, patterns, and decorative elements via classes
 
-❌ NEVER use: unsplash.com, pexels.com, placeholder.com, picsum.photos, via.placeholder.com, placehold.co, or any stock photo service
+### Text-Forward Alternatives
+When images aren't the best fit, create visual impact with:
+- **Bold typography as the hero** — Large, confident headlines that command attention
+- **Abstract patterns** — Geometric shapes, gradients, grain textures via Tailwind
+- **Color blocks** — Use background colors to create visual sections
+- **CSS shapes** — Blob shapes using clip-path or creative border-radius
+- **Gradient orbs** — Positioned absolute blurred divs for ambient backgrounds
+
+❌ NEVER use: unsplash.com, pexels.com, placeholder.com, picsum.photos, via.placeholder.com, placehold.co, or any other stock photo service.
 
 ## PATTERNS TO AVOID (These make sites feel generic)
 

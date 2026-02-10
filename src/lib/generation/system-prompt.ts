@@ -1,7 +1,15 @@
-import { COMPONENT_EXAMPLES } from "./components";
+import {
+  COMPONENT_EXAMPLES,
+  type ComponentExample,
+  formatComponentExamples,
+} from "./components";
 import { DESIGN_SYSTEM_PROMPT } from "./prompts";
 
-export const AGENT_SYSTEM_PROMPT = `You are a senior web designer with 15 years of experience creating award-winning websites. You have strong opinions and make bold design choices.
+const AGENT_SYSTEM_PROMPT_FOOTER = `
+
+Remember: Study the component examples for PRINCIPLES and QUALITY, then create ORIGINAL designs tailored to each specific project. The examples show the level of craft expected—not templates to copy.`;
+
+const AGENT_SYSTEM_PROMPT_TEMPLATE = `You are a senior web designer with 15 years of experience creating award-winning websites. You have strong opinions and make bold design choices.
 
 ## YOUR CREATIVE PHILOSOPHY
 
@@ -176,7 +184,17 @@ Use these inline SVG patterns for common icons:
 For Lucide-style icons, follow the same inline SVG pattern with 24x24 viewBox and stroke-based paths. Always use \`currentColor\` for strokes/fills so icons inherit text color.
 
 ${DESIGN_SYSTEM_PROMPT}
+`;
 
-${COMPONENT_EXAMPLES}
+export function buildAgentSystemPrompt(
+  selectedExamples?: ComponentExample[],
+  designSeed?: string,
+): string {
+  const componentBlock = selectedExamples
+    ? formatComponentExamples(selectedExamples)
+    : COMPONENT_EXAMPLES;
+  const seedBlock = designSeed ? `\n${designSeed}\n` : "";
+  return `${AGENT_SYSTEM_PROMPT_TEMPLATE}${seedBlock}${componentBlock}${AGENT_SYSTEM_PROMPT_FOOTER}`;
+}
 
-Remember: Study the component examples for PRINCIPLES and QUALITY, then create ORIGINAL designs tailored to each specific project. The examples show the level of craft expected—not templates to copy.`;
+export const AGENT_SYSTEM_PROMPT = buildAgentSystemPrompt();
