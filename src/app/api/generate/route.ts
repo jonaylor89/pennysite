@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { aggregateSiteQuality } from "@/lib/analytics/html-quality";
 import {
   calculateCreditsFromTokens,
@@ -131,6 +132,10 @@ export async function POST(req: Request) {
           controller.enqueue(encoder.encode(`data: ${chunk}\n\n`));
         }
       } catch (err) {
+        Sentry.captureException(err, {
+          tags: { route: "api/generate" },
+          extra: { projectId, userId: user.id },
+        });
         const errorMsg = err instanceof Error ? err.message : "Unknown error";
         generationError = errorMsg;
         controller.enqueue(
@@ -159,6 +164,10 @@ export async function POST(req: Request) {
             generationError,
           );
         } catch (finalizeErr) {
+          Sentry.captureException(finalizeErr, {
+            tags: { route: "api/generate", step: "finalize_credits" },
+            extra: { generationId, userId: user.id },
+          });
           console.error("Failed to finalize credits:", finalizeErr);
         }
 

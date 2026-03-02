@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { removeCustomDomain } from "@/lib/cloudflare/domains";
 import { deleteProject } from "@/lib/cloudflare/pages";
@@ -56,6 +57,10 @@ export async function DELETE() {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    Sentry.captureException(error, {
+      tags: { route: "api/account" },
+      extra: { userId: user.id },
+    });
     console.error("Delete account error:", error);
     return NextResponse.json(
       {

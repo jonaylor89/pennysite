@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import * as Sentry from "@sentry/nextjs";
 import OpenAI from "openai";
 import {
   calculateCreditsFromTokens,
@@ -169,6 +170,10 @@ Return the complete improved HTML:`;
       { status: 200, headers: { "Content-Type": "application/json" } },
     );
   } catch (err) {
+    Sentry.captureException(err, {
+      tags: { route: "api/enhance" },
+      extra: { skillId, filename, userId: user.id },
+    });
     const errorMessage =
       err instanceof Error ? err.message : "Enhancement failed";
 

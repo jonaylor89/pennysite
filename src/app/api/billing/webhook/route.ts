@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { addCreditsFromPurchase } from "@/lib/billing/credits";
@@ -33,14 +34,10 @@ export async function POST(req: Request) {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
+    Sentry.captureException(err, {
+      tags: { route: "api/billing/webhook", step: "signature_verification" },
+    });
     console.error("Webhook signature verification failed:", message);
-    console.error("Signature header:", `${signature.substring(0, 50)}...`);
-    console.error(
-      "Webhook secret starts with:",
-      `${webhookSecret.substring(0, 10)}...`,
-    );
-    console.error("Body length:", body.length);
-    console.error("Body preview:", body.substring(0, 100));
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
@@ -102,6 +99,10 @@ export async function POST(req: Request) {
           console.log(`Event ${event.id} already processed`);
         }
       } catch (err) {
+        Sentry.captureException(err, {
+          tags: { route: "api/billing/webhook", step: "guest_checkout" },
+          extra: { sessionId: session.id },
+        });
         console.error("Failed to process guest checkout:", err);
         return NextResponse.json(
           { error: "Failed to process guest checkout" },
@@ -141,6 +142,10 @@ export async function POST(req: Request) {
           console.log(`Event ${event.id} already processed`);
         }
       } catch (err) {
+        Sentry.captureException(err, {
+          tags: { route: "api/billing/webhook", step: "add_credits" },
+          extra: { userId, sessionId: session.id },
+        });
         console.error("Failed to add credits:", err);
         return NextResponse.json(
           { error: "Failed to add credits" },
