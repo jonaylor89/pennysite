@@ -1,9 +1,10 @@
 import type { AgentEvent, AgentTool } from "@mariozechner/pi-agent-core";
+import type { ImageContent } from "@mariozechner/pi-ai";
 import type { SiteSpec } from "./types";
 
 export interface AgentLike {
   subscribe(cb: (e: AgentEvent) => void): () => void;
-  prompt(input: string): Promise<void>;
+  prompt(input: string, images?: ImageContent[]): Promise<void>;
 }
 
 export type AgentFactory = (

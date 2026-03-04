@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Script from "next/script";
-import { AutoExpandTextarea } from "./components/AutoExpandTextarea";
 import { HeaderNav } from "./components/HeaderNav";
+import { PromptForm } from "./components/PromptForm";
 
 export const dynamic = "force-dynamic";
 
@@ -63,29 +63,7 @@ export default function Home() {
               Prompt, build, and deploy websites instantly.
             </p>
 
-            <form action="/project/new" method="GET" className="mt-10">
-              <div className="group relative">
-                <AutoExpandTextarea
-                  id="prompt"
-                  name="prompt"
-                  required
-                  rows={3}
-                  placeholder='e.g. "A landing page for my coffee shop with menu and hours"'
-                  className="w-full resize-none rounded-3xl border border-zinc-800 bg-zinc-900/50 p-6 pb-16 text-lg text-white placeholder:text-zinc-500 shadow-2xl outline-none transition focus:border-zinc-700 focus:bg-zinc-900/80"
-                />
-                <div className="absolute bottom-4 right-4 flex items-center gap-3">
-                  <span className="hidden text-xs text-zinc-500 sm:block">
-                    Press Enter
-                  </span>
-                  <button
-                    type="submit"
-                    className="rounded-xl bg-white px-5 py-2 text-sm font-medium text-black transition hover:bg-zinc-200"
-                  >
-                    Generate
-                  </button>
-                </div>
-              </div>
-            </form>
+            <PromptForm />
 
             <div className="mt-10 flex flex-wrap justify-center gap-3">
               <Link

@@ -40,6 +40,7 @@ export async function* generateWebsite(
   existingSpec?: SiteSpec,
   existingPages?: Record<string, string>,
   deps?: GenerationDeps,
+  images?: { data: string; mimeType: string }[],
 ): AsyncGenerator<GenerationEvent> {
   const state: GenerationState = {
     spec: existingSpec || null,
@@ -110,7 +111,11 @@ The site has these pages: ${Object.keys(existingPages as Record<string, string>)
 
 START by calling read_page to inspect the relevant page(s), then apply edits.`;
   } else {
-    prompt = userRequest;
+    const imageHint =
+      images && images.length > 0
+        ? "\n\nThe user has attached reference image(s). Use them as visual inspiration for the design — match layout, color scheme, typography, and overall aesthetic as closely as possible. You MUST still use your tools (plan_site, then write_page) to generate the site. Do NOT output raw HTML as text."
+        : "";
+    prompt = userRequest + imageHint;
   }
 
   const eventQueue: GenerationEvent[] = [];
@@ -321,8 +326,14 @@ START by calling read_page to inspect the relevant page(s), then apply edits.`;
     }
   });
 
+  const imageContent = images?.map((img) => ({
+    type: "image" as const,
+    data: img.data,
+    mimeType: img.mimeType,
+  }));
+
   const runPromise = agent
-    .prompt(prompt)
+    .prompt(prompt, imageContent)
     .catch((err) => {
       runError = err;
       eventQueue.push({

@@ -4,6 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { isFeatureEnabled } from "@/lib/featureflags";
 import { getAllSkills, getSkill, type SkillId } from "@/lib/generation/skills";
 import { captureEvent } from "@/lib/posthog/client";
 import { createClient } from "@/lib/supabase/client";
@@ -15,10 +16,14 @@ import { SetPasswordModal } from "./SetPasswordModal";
 
 type ViewportSize = "desktop" | "tablet" | "mobile";
 
+type ImageAttachment = { data: string; mimeType: string };
+
 type Message =
   | {
       role: "user" | "assistant";
       content: string;
+      images?: ImageAttachment[];
+      imageCount?: number;
     }
   | {
       role: "enhance";
@@ -683,6 +688,13 @@ export function BuilderUI({
   const [editImgAlt, setEditImgAlt] = useState("");
   const [editBgImage, setEditBgImage] = useState("");
 
+  const [attachedImages, setAttachedImages] = useState<
+    { data: string; mimeType: string; preview: string }[]
+  >([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const multimodalEnabled = isFeatureEnabled("multimodal-prompt");
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const didAutoSendRef = useRef(false);
   const isGeneratingRef = useRef(false);
@@ -726,6 +738,25 @@ export function BuilderUI({
         .catch(() => {});
     }
   }, [user]);
+
+  // Pick up images stashed by the landing page PromptForm
+  useEffect(() => {
+    if (!multimodalEnabled) return;
+    try {
+      const raw = sessionStorage.getItem("pennysite:prompt-images");
+      if (!raw) return;
+      sessionStorage.removeItem("pennysite:prompt-images");
+      const imgs: { data: string; mimeType: string }[] = JSON.parse(raw);
+      setAttachedImages(
+        imgs.map((img) => ({
+          ...img,
+          preview: `data:${img.mimeType};base64,${img.data}`,
+        })),
+      );
+    } catch {
+      // ignore
+    }
+  }, [multimodalEnabled]);
 
   // Handle return from Stripe guest checkout
   useEffect(() => {
@@ -911,6 +942,15 @@ export function BuilderUI({
     setEditingElement(null);
   }
 
+  function stripImageData(msgs: Message[]): Message[] {
+    return msgs.map((msg) => {
+      if (msg.role === "enhance") return msg;
+      if (!msg.images || msg.images.length === 0) return msg;
+      const { images, ...rest } = msg;
+      return { ...rest, imageCount: images.length };
+    });
+  }
+
   async function createProjectAndRedirect(
     name: string,
     generatedPages: Pages,
@@ -920,7 +960,11 @@ export function BuilderUI({
     const res = await fetch("/api/projects", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, pages: generatedPages, conversation }),
+      body: JSON.stringify({
+        name,
+        pages: generatedPages,
+        conversation: stripImageData(conversation),
+      }),
     });
     const data = await res.json();
     if (data.project) {
@@ -942,7 +986,7 @@ export function BuilderUI({
   }
 
   async function sendMessage(text: string) {
-    if (!text.trim() || isGenerating) return;
+    if ((!text.trim() && attachedImages.length === 0) || isGenerating) return;
 
     if (!user) {
       // Show guest checkout modal instead of redirecting to login
@@ -951,7 +995,16 @@ export function BuilderUI({
       return;
     }
 
-    const userMessage: Message = { role: "user", content: text.trim() };
+    const images =
+      attachedImages.length > 0
+        ? attachedImages.map(({ data, mimeType }) => ({ data, mimeType }))
+        : undefined;
+    const userMessage: Message = {
+      role: "user",
+      content: text.trim(),
+      ...(images && { images }),
+    };
+    setAttachedImages([]);
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setInput("");
@@ -969,7 +1022,14 @@ export function BuilderUI({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: newMessages,
+          messages: newMessages.map((m) => {
+            if (m.role !== "enhance" && m.images) {
+              return { role: m.role, content: m.content, images: m.images };
+            }
+            return m.role === "enhance"
+              ? m
+              : { role: m.role, content: m.content };
+          }),
           currentPages: Object.keys(pages).length > 0 ? pages : undefined,
           existingSpec: siteSpec,
           idempotencyKey: crypto.randomUUID(),
@@ -1226,7 +1286,7 @@ export function BuilderUI({
           body: JSON.stringify({
             name: finalName,
             pages: finalPages,
-            conversation: finalMessages,
+            conversation: stripImageData(finalMessages),
           }),
         });
       }
@@ -1236,6 +1296,77 @@ export function BuilderUI({
     } finally {
       setIsGenerating(false);
     }
+  }
+
+  function handleImageUpload(files: FileList | null) {
+    if (!files) return;
+    const MAX_IMAGES = 4;
+    const MAX_SIZE = 4 * 1024 * 1024; // 4MB per image
+
+    Array.from(files).forEach((file) => {
+      if (!file.type.startsWith("image/")) return;
+      if (file.size > MAX_SIZE) return;
+
+      setAttachedImages((prev) => {
+        if (prev.length >= MAX_IMAGES) return prev;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const dataUrl = e.target?.result as string;
+          const base64 = dataUrl.split(",")[1];
+          setAttachedImages((current) => {
+            if (current.length >= MAX_IMAGES) return current;
+            return [
+              ...current,
+              { data: base64, mimeType: file.type, preview: dataUrl },
+            ];
+          });
+        };
+        reader.readAsDataURL(file);
+        return prev;
+      });
+    });
+  }
+
+  function handlePaste(e: React.ClipboardEvent) {
+    if (!multimodalEnabled) return;
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    const imageFiles: File[] = [];
+    for (const item of Array.from(items)) {
+      if (item.type.startsWith("image/")) {
+        const file = item.getAsFile();
+        if (file) imageFiles.push(file);
+      }
+    }
+
+    if (imageFiles.length > 0) {
+      const dt = new DataTransfer();
+      for (const f of imageFiles) dt.items.add(f);
+      handleImageUpload(dt.files);
+    }
+  }
+
+  function removeAttachedImage(index: number) {
+    setAttachedImages((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    if (!multimodalEnabled) return;
+    e.preventDefault();
+    setIsDragging(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(false);
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(false);
+    if (!multimodalEnabled) return;
+    handleImageUpload(e.dataTransfer.files);
   }
 
   async function handleSend() {
@@ -1261,7 +1392,7 @@ export function BuilderUI({
           body: JSON.stringify({
             name: projectName,
             pages,
-            conversation: messages,
+            conversation: stripImageData(messages),
           }),
         });
         setSaveStatus("Saved!");
@@ -2265,6 +2396,53 @@ export function BuilderUI({
                           : "mr-4 rounded-lg bg-zinc-800 p-3 text-zinc-300"
                       }`}
                     >
+                      {msg.role === "user" &&
+                        msg.images &&
+                        msg.images.length > 0 && (
+                          <div className="mb-2 flex flex-wrap gap-1">
+                            {msg.images.map((img, imgIdx) => (
+                              // biome-ignore lint/performance/noImgElement: base64 data URLs not supported by next/image
+                              <img
+                                key={`msg-img-${i}-${imgIdx}`}
+                                src={`data:${img.mimeType};base64,${img.data}`}
+                                alt={`Attachment ${imgIdx + 1}`}
+                                className="h-12 w-12 rounded border border-zinc-600 object-cover"
+                              />
+                            ))}
+                          </div>
+                        )}
+                      {msg.role === "user" &&
+                        !msg.images &&
+                        msg.imageCount &&
+                        msg.imageCount > 0 && (
+                          <div className="mb-1.5 inline-flex items-center gap-1 rounded bg-zinc-600/50 px-2 py-0.5 text-xs text-zinc-400">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="12"
+                              height="12"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              aria-hidden="true"
+                            >
+                              <rect
+                                width="18"
+                                height="18"
+                                x="3"
+                                y="3"
+                                rx="2"
+                                ry="2"
+                              />
+                              <circle cx="9" cy="9" r="2" />
+                              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                            </svg>
+                            {msg.imageCount} image
+                            {msg.imageCount > 1 ? "s" : ""} attached
+                          </div>
+                        )}
                       {msg.content}
                     </div>
                   );
@@ -2282,13 +2460,41 @@ export function BuilderUI({
           </div>
 
           {/* Input */}
-          <div className="border-t border-zinc-800 p-4">
+          {/* biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop target */}
+          <div
+            className={`border-t border-zinc-800 p-4 transition ${isDragging ? "ring-2 ring-inset ring-indigo-500/50" : ""}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
             {error && <div className="mb-2 text-xs text-red-400">{error}</div>}
+            {multimodalEnabled && attachedImages.length > 0 && (
+              <div className="mb-2 flex flex-wrap gap-2">
+                {attachedImages.map((img, i) => (
+                  <div key={`attached-${i}`} className="group relative">
+                    {/* biome-ignore lint/performance/noImgElement: blob preview URLs not supported by next/image */}
+                    <img
+                      src={img.preview}
+                      alt={`Attachment ${i + 1}`}
+                      className="h-16 w-16 rounded-lg border border-zinc-700 object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeAttachedImage(i)}
+                      className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-zinc-600 text-[10px] text-white opacity-0 transition-opacity hover:bg-red-500 group-hover:opacity-100"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
             <div className="flex flex-col gap-2">
               <AutoExpandTextarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
+                onPaste={handlePaste}
                 placeholder={
                   messages.length === 0
                     ? "Describe your website..."
@@ -2299,15 +2505,57 @@ export function BuilderUI({
                 className="min-h-[38px] w-full resize-none rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-zinc-600 focus:outline-none"
                 disabled={isGenerating}
               />
-              <button
-                type="button"
-                onClick={handleSend}
-                disabled={isGenerating || !input.trim()}
-                data-testid="send-button"
-                className="w-full rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isGenerating ? "Generating..." : "Send"}
-              </button>
+              <div className="flex items-center justify-between">
+                {multimodalEnabled ? (
+                  <>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => handleImageUpload(e.target.files)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isGenerating || attachedImages.length >= 4}
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-700 text-zinc-400 transition-colors hover:border-zinc-500 hover:text-zinc-200 disabled:opacity-30"
+                      title="Attach image (or paste a screenshot)"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                    </button>
+                  </>
+                ) : (
+                  <div />
+                )}
+                <button
+                  type="button"
+                  onClick={handleSend}
+                  disabled={
+                    isGenerating ||
+                    (!input.trim() && attachedImages.length === 0)
+                  }
+                  data-testid="send-button"
+                  className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isGenerating ? "Generating..." : "Send"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -2579,6 +2827,53 @@ export function BuilderUI({
                             : "mr-4 rounded-lg bg-zinc-800 p-3 text-zinc-300"
                         }`}
                       >
+                        {msg.role === "user" &&
+                          msg.images &&
+                          msg.images.length > 0 && (
+                            <div className="mb-2 flex flex-wrap gap-1">
+                              {msg.images.map((img, imgIdx) => (
+                                // biome-ignore lint/performance/noImgElement: base64 data URLs not supported by next/image
+                                <img
+                                  key={`mobile-msg-img-${i}-${imgIdx}`}
+                                  src={`data:${img.mimeType};base64,${img.data}`}
+                                  alt={`Attachment ${imgIdx + 1}`}
+                                  className="h-10 w-10 rounded border border-zinc-600 object-cover"
+                                />
+                              ))}
+                            </div>
+                          )}
+                        {msg.role === "user" &&
+                          !msg.images &&
+                          msg.imageCount &&
+                          msg.imageCount > 0 && (
+                            <div className="mb-1.5 inline-flex items-center gap-1 rounded bg-zinc-600/50 px-2 py-0.5 text-xs text-zinc-400">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden="true"
+                              >
+                                <rect
+                                  width="18"
+                                  height="18"
+                                  x="3"
+                                  y="3"
+                                  rx="2"
+                                  ry="2"
+                                />
+                                <circle cx="9" cy="9" r="2" />
+                                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                              </svg>
+                              {msg.imageCount} image
+                              {msg.imageCount > 1 ? "s" : ""} attached
+                            </div>
+                          )}
                         {msg.content}
                       </div>
                     );
@@ -2594,15 +2889,46 @@ export function BuilderUI({
               )}
             </div>
             {/* Input */}
-            <div className="border-t border-zinc-800 p-4">
+            {/* biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop target */}
+            <div
+              className={`border-t border-zinc-800 p-4 transition ${isDragging ? "ring-2 ring-inset ring-indigo-500/50" : ""}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
               {error && (
                 <div className="mb-2 text-xs text-red-400">{error}</div>
               )}
-              <div className="flex gap-2">
+              {multimodalEnabled && attachedImages.length > 0 && (
+                <div className="mb-2 flex flex-wrap gap-2">
+                  {attachedImages.map((img, i) => (
+                    <div
+                      key={`mobile-attached-${i}`}
+                      className="group relative"
+                    >
+                      {/* biome-ignore lint/performance/noImgElement: blob preview URLs not supported by next/image */}
+                      <img
+                        src={img.preview}
+                        alt={`Attachment ${i + 1}`}
+                        className="h-12 w-12 rounded-lg border border-zinc-700 object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeAttachedImage(i)}
+                        className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-zinc-600 text-[10px] text-white hover:bg-red-500"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="flex flex-col gap-2">
                 <AutoExpandTextarea
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
+                  onPaste={handlePaste}
                   placeholder={
                     messages.length === 0
                       ? "Describe your website..."
@@ -2610,18 +2936,50 @@ export function BuilderUI({
                   }
                   rows={1}
                   maxHeight={80}
-                  className="min-h-[38px] flex-1 resize-none rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-zinc-600 focus:outline-none"
+                  className="min-h-[38px] w-full resize-none rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-zinc-600 focus:outline-none"
                   disabled={isGenerating}
                 />
-                <button
-                  type="button"
-                  onClick={handleSend}
-                  disabled={isGenerating || !input.trim()}
-                  data-testid="send-button-mobile"
-                  className="shrink-0 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {isGenerating ? "..." : "Send"}
-                </button>
+                <div className="flex items-center justify-between">
+                  {multimodalEnabled ? (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isGenerating || attachedImages.length >= 4}
+                      className="flex h-7 w-7 items-center justify-center rounded-full border border-zinc-700 text-zinc-400 transition-colors hover:border-zinc-500 hover:text-zinc-200 disabled:opacity-30"
+                      title="Attach image (or paste a screenshot)"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                    </button>
+                  ) : (
+                    <div />
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleSend}
+                    disabled={
+                      isGenerating ||
+                      (!input.trim() && attachedImages.length === 0)
+                    }
+                    data-testid="send-button-mobile"
+                    className="shrink-0 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {isGenerating ? "..." : "Send"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

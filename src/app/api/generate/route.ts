@@ -21,6 +21,7 @@ import { createClient } from "@/lib/supabase/server";
 type Message = {
   role: "user" | "assistant";
   content: string;
+  images?: { data: string; mimeType: string }[];
 };
 
 export async function POST(req: Request) {
@@ -48,6 +49,7 @@ export async function POST(req: Request) {
 
   const lastMessage = messages[messages.length - 1];
   const userRequest = lastMessage.content;
+  const userImages = lastMessage.images;
 
   // Generate idempotency key if not provided
   const key = idempotencyKey || crypto.randomUUID();
@@ -114,6 +116,8 @@ export async function POST(req: Request) {
           userRequest,
           existingSpec,
           currentPages,
+          undefined,
+          userImages,
         )) {
           // Track final usage from complete or error events
           if (event.type === "complete") {
