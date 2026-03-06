@@ -685,6 +685,7 @@ export function BuilderUI({
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const didAutoSendRef = useRef(false);
+  const isGeneratingRef = useRef(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
@@ -692,6 +693,10 @@ export function BuilderUI({
   const pageNames = Object.keys(pages);
   const currentHtml = pages[currentPage] || "";
   const displayHtml = currentHtml ? injectNavigationScript(currentHtml) : "";
+
+  useEffect(() => {
+    isGeneratingRef.current = isGenerating;
+  }, [isGenerating]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -817,7 +822,7 @@ export function BuilderUI({
           setCurrentPage(href);
         }
       }
-      if (e.data?.type === "edit-element" && e.data.selector) {
+      if (e.data?.type === "edit-element" && e.data.selector && !isGeneratingRef.current) {
         const isLink = e.data.tagName === "A";
         setEditingElement({
           selector: e.data.selector,
@@ -942,6 +947,7 @@ export function BuilderUI({
     setMessages(newMessages);
     setInput("");
     setIsGenerating(true);
+    setEditingElement(null);
     setError(null);
     setLiveUsage(null);
     setAgentActivities([]);
