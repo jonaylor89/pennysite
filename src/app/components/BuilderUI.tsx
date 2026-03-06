@@ -862,7 +862,11 @@ export function BuilderUI({
           setCurrentPage(href);
         }
       }
-      if (e.data?.type === "edit-element" && e.data.selector && !isGeneratingRef.current) {
+      if (
+        e.data?.type === "edit-element" &&
+        e.data.selector &&
+        !isGeneratingRef.current
+      ) {
         const isLink = e.data.tagName === "A";
         setEditingElement({
           selector: e.data.selector,

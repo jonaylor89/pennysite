@@ -48,7 +48,7 @@ export async function PUT(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { name, pages, conversation } = await req.json();
+  const { name, pages, conversation, is_public } = await req.json();
 
   const updateData: Record<string, unknown> = {
     name,
@@ -57,6 +57,9 @@ export async function PUT(
   };
   if (conversation !== undefined) {
     updateData.conversation = conversation;
+  }
+  if (is_public !== undefined) {
+    updateData.is_public = is_public;
   }
 
   const { data: project, error } = await supabase

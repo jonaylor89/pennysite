@@ -24,6 +24,7 @@ export interface Database {
           custom_domain: string | null;
           custom_domain_status: "pending" | "active" | "error" | null;
           custom_domain_added_at: string | null;
+          is_public: boolean;
         };
         Insert: {
           id?: string;
@@ -39,6 +40,7 @@ export interface Database {
           custom_domain?: string | null;
           custom_domain_status?: "pending" | "active" | "error" | null;
           custom_domain_added_at?: string | null;
+          is_public?: boolean;
         };
         Update: {
           id?: string;
@@ -54,6 +56,7 @@ export interface Database {
           custom_domain?: string | null;
           custom_domain_status?: "pending" | "active" | "error" | null;
           custom_domain_added_at?: string | null;
+          is_public?: boolean;
         };
         Relationships: [];
       };

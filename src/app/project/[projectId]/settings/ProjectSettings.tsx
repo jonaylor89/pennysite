@@ -58,6 +58,38 @@ export function ProjectSettings({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showUnpublishConfirm, setShowUnpublishConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isPublic, setIsPublic] = useState(project.is_public);
+  const [isTogglingPublic, setIsTogglingPublic] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  async function handleTogglePublic() {
+    setIsTogglingPublic(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/projects/${project.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_public: !isPublic }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "Failed to update sharing");
+        return;
+      }
+      setIsPublic(!isPublic);
+    } catch {
+      setError("Failed to update sharing");
+    } finally {
+      setIsTogglingPublic(false);
+    }
+  }
+
+  function copyShareLink() {
+    const url = `${window.location.origin}/project/${project.id}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   async function handleUnpublish() {
     setIsUnpublishing(true);
@@ -212,6 +244,50 @@ export function ProjectSettings({
               {project.deployed_url
                 ? "No custom domain configured. Add one from the editor."
                 : "Publish your project first to add a custom domain."}
+            </div>
+          )}
+        </div>
+
+        {/* Sharing */}
+        <div className="mt-6 rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+          <h2 className="font-semibold">Sharing</h2>
+          <div className="mt-3 flex items-center justify-between">
+            <div>
+              <div className="text-sm text-zinc-300">Make project public</div>
+              <div className="text-xs text-zinc-500">
+                Anyone with the link can view the conversation and preview
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleTogglePublic}
+              disabled={isTogglingPublic}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out disabled:opacity-50 ${
+                isPublic ? "bg-emerald-600" : "bg-zinc-700"
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transition duration-200 ease-in-out ${
+                  isPublic ? "translate-x-5" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </div>
+          {isPublic && (
+            <div className="mt-4 flex items-center gap-2">
+              <input
+                type="text"
+                readOnly
+                value={`${typeof window !== "undefined" ? window.location.origin : ""}/project/${project.id}`}
+                className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-300"
+              />
+              <button
+                type="button"
+                onClick={copyShareLink}
+                className="rounded-lg border border-zinc-700 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800"
+              >
+                {copied ? "Copied!" : "Copy"}
+              </button>
             </div>
           )}
         </div>
