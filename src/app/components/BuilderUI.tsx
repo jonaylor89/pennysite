@@ -699,6 +699,15 @@ export function BuilderUI({
   }, [isGenerating]);
 
   useEffect(() => {
+    if (!isGenerating) return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isGenerating]);
+
+  useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
       setAuthChecked(true);
