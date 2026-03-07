@@ -4,6 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { buttonClass } from "./ui/Button";
 
 export function HeaderNav() {
   const [user, setUser] = useState<User | null>(null);
@@ -18,16 +19,16 @@ export function HeaderNav() {
   }, [supabase.auth]);
 
   return (
-    <nav className="flex items-center gap-4 text-sm text-zinc-300">
-      <Link href={user ? "/billing" : "/pricing"} className="hover:text-white">
+    <nav className="flex items-center gap-4 text-sm text-fg-strong">
+      <Link href={user ? "/billing" : "/pricing"} className="hover:text-fg">
         Pricing
       </Link>
       {user && (
         <>
-          <Link href="/projects" className="hover:text-white">
+          <Link href="/projects" className="hover:text-fg">
             Projects
           </Link>
-          <Link href="/account" className="hover:text-white">
+          <Link href="/account" className="hover:text-fg">
             Account
           </Link>
         </>
@@ -37,14 +38,22 @@ export function HeaderNav() {
       ) : user ? (
         <Link
           href="/project/new"
-          className="rounded-full border border-zinc-800 bg-zinc-900/40 px-3 py-1.5 text-white hover:bg-zinc-900"
+          className={buttonClass(
+            "ghost",
+            "sm",
+            "rounded-pill border-border bg-surface-alt text-fg",
+          )}
         >
           Builder
         </Link>
       ) : (
         <Link
           href="/auth/login"
-          className="rounded-full border border-zinc-800 bg-zinc-900/40 px-3 py-1.5 text-white hover:bg-zinc-900"
+          className={buttonClass(
+            "ghost",
+            "sm",
+            "rounded-pill border-border bg-surface-alt text-fg",
+          )}
         >
           Sign in
         </Link>

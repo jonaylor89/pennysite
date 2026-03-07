@@ -2,6 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { Alert } from "@/app/components/ui/Alert";
+import { Button } from "@/app/components/ui/Button";
+import { Card } from "@/app/components/ui/Card";
+import { Input } from "@/app/components/ui/Input";
 import { createClient } from "@/lib/supabase/client";
 
 export function AccountActions() {
@@ -45,80 +49,78 @@ export function AccountActions() {
   return (
     <>
       <div className="mt-6">
-        <button
-          type="button"
-          onClick={handleSignOut}
-          className="rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800"
-        >
+        <Button variant="ghost" size="md" onClick={handleSignOut}>
           Sign Out
-        </button>
+        </Button>
       </div>
 
-      <div className="mt-8 rounded-xl border border-red-500/30 bg-red-500/5 p-6">
-        <h2 className="font-semibold text-red-400">Danger Zone</h2>
+      <Card variant="danger" className="mt-8">
+        <h2 className="font-semibold text-danger-muted">Danger Zone</h2>
 
-        <div className="mt-4 rounded-lg border border-zinc-800 bg-zinc-900 p-4">
+        <Card variant="default" padding="md" className="mt-4">
           <div className="font-medium">Delete account</div>
-          <div className="mt-1 text-sm text-zinc-400">
+          <div className="mt-1 text-sm text-fg-muted">
             Permanently delete your account and all your projects. This action
             cannot be undone.
           </div>
 
           {error && (
-            <div className="mt-3 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">
+            <Alert variant="danger" className="mt-3">
               {error}
-            </div>
+            </Alert>
           )}
 
           {showDeleteConfirm ? (
             <div className="mt-4">
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-fg-muted">
                 Type{" "}
-                <span className="font-mono text-white">delete my account</span>{" "}
-                to confirm:
+                <span className="font-mono text-fg">delete my account</span> to
+                confirm:
               </p>
-              <input
+              <Input
                 type="text"
                 value={confirmText}
                 onChange={(e) => setConfirmText(e.target.value)}
-                className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-zinc-600 focus:outline-none"
+                className="mt-2"
                 placeholder="delete my account"
                 disabled={isDeleting}
               />
               <div className="mt-3 flex gap-2">
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => {
                     setShowDeleteConfirm(false);
                     setConfirmText("");
                     setError(null);
                   }}
-                  className="rounded-lg border border-zinc-700 px-3 py-1.5 text-sm text-zinc-300 hover:bg-zinc-800"
                   disabled={isDeleting}
                 >
                   Cancel
-                </button>
-                <button
-                  type="button"
+                </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  loading={isDeleting}
                   onClick={handleDeleteAccount}
-                  disabled={isDeleting || confirmText !== "delete my account"}
-                  className="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-50"
+                  disabled={confirmText !== "delete my account"}
                 >
-                  {isDeleting ? "Deleting..." : "Delete My Account"}
-                </button>
+                  Delete My Account
+                </Button>
               </div>
             </div>
           ) : (
-            <button
-              type="button"
+            <Button
+              variant="danger-outline"
+              size="sm"
+              className="mt-4"
               onClick={() => setShowDeleteConfirm(true)}
-              className="mt-4 rounded-lg border border-red-500/50 px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10"
             >
               Delete Account
-            </button>
+            </Button>
           )}
-        </div>
-      </div>
+        </Card>
+      </Card>
     </>
   );
 }

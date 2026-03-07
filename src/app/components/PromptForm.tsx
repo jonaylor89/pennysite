@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { isFeatureEnabled } from "@/lib/featureflags";
+import { useFeatureFlag } from "@/lib/featureflags";
 import { AutoExpandTextarea } from "./AutoExpandTextarea";
+import { Button } from "./ui/Button";
 
 type AttachedImage = { data: string; mimeType: string; preview: string };
 
@@ -13,7 +14,7 @@ const MAX_SIZE = 4 * 1024 * 1024; // 4MB
 export function PromptForm() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const multimodalEnabled = isFeatureEnabled("multimodal-prompt");
+  const multimodalEnabled = useFeatureFlag("multimodal-prompt");
   const [prompt, setPrompt] = useState("");
   const [attachedImages, setAttachedImages] = useState<AttachedImage[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -94,7 +95,7 @@ export function PromptForm() {
     <form onSubmit={handleSubmit} className="mt-10">
       {/* biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop target */}
       <div
-        className={`group relative rounded-3xl transition ${isDragging ? "ring-2 ring-indigo-500/50" : ""}`}
+        className={`group relative rounded-display transition ${isDragging ? "ring-2 ring-accent/50" : ""}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -108,7 +109,7 @@ export function PromptForm() {
           required
           rows={3}
           placeholder='e.g. "A landing page for my coffee shop with menu and hours"'
-          className="w-full resize-none rounded-3xl border border-zinc-800 bg-zinc-900/50 p-6 pb-16 text-lg text-white placeholder:text-zinc-500 shadow-2xl outline-none transition focus:border-zinc-700 focus:bg-zinc-900/80"
+          className="w-full resize-none rounded-display border border-border bg-surface-alt p-6 pb-16 text-lg text-fg placeholder:text-fg-subtle shadow-2xl outline-none transition focus:border-border-hover focus:bg-surface/80"
         />
 
         {multimodalEnabled && attachedImages.length > 0 && (
@@ -119,7 +120,7 @@ export function PromptForm() {
                 <img
                   src={img.preview}
                   alt={`Attachment ${i + 1}`}
-                  className="h-10 w-10 rounded-lg border border-zinc-700 object-cover"
+                  className="h-10 w-10 rounded-control border border-border-hover object-cover"
                 />
                 <button
                   type="button"
@@ -128,7 +129,7 @@ export function PromptForm() {
                       prev.filter((_, idx) => idx !== i),
                     )
                   }
-                  className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-zinc-600 text-[10px] text-white opacity-0 transition-opacity hover:bg-red-500 group-hover/thumb:opacity-100"
+                  className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-pill bg-fg-subtle text-[10px] text-fg opacity-0 transition-opacity hover:bg-danger group-hover/thumb:opacity-100"
                 >
                   ×
                 </button>
@@ -153,7 +154,7 @@ export function PromptForm() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={attachedImages.length >= MAX_IMAGES}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-700 text-zinc-400 transition-colors hover:border-zinc-500 hover:text-zinc-200 disabled:opacity-30"
+                className="flex h-9 w-9 items-center justify-center rounded-pill border border-border-hover text-fg-muted transition-colors hover:border-fg-subtle hover:text-fg-strong disabled:opacity-30"
                 title="Attach an image or paste / drag a screenshot"
               >
                 <svg
@@ -177,15 +178,17 @@ export function PromptForm() {
             <div />
           )}
           <div className="flex items-center gap-3">
-            <span className="hidden text-xs text-zinc-500 sm:block">
+            <span className="hidden text-xs text-fg-subtle sm:block">
               Press Enter
             </span>
-            <button
+            <Button
               type="submit"
-              className="rounded-xl bg-white px-5 py-2 text-sm font-medium text-black transition hover:bg-zinc-200"
+              variant="primary"
+              size="md"
+              className="rounded-card"
             >
               Generate
-            </button>
+            </Button>
           </div>
         </div>
       </div>

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { Button } from "@/app/components/ui/Button";
+import { Modal } from "@/app/components/ui/Modal";
 
 type Project = {
   id: string;
@@ -54,7 +56,7 @@ const ProjectMenu = memo(function ProjectMenu({
           e.stopPropagation();
           setIsOpen(!isOpen);
         }}
-        className="rounded p-1 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
+        className="rounded p-1 text-fg-subtle hover:bg-surface-hover hover:text-fg-strong"
         aria-label="Project menu"
       >
         <svg
@@ -76,10 +78,10 @@ const ProjectMenu = memo(function ProjectMenu({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full z-10 mt-1 w-40 rounded-lg border border-zinc-800 bg-zinc-900 py-1 shadow-xl">
+        <div className="absolute right-0 top-full z-10 mt-1 w-40 rounded-control border border-border bg-surface py-1 shadow-xl">
           <Link
             href={`/project/${project.id}/settings`}
-            className="block px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800"
+            className="block px-3 py-2 text-sm text-fg-strong hover:bg-surface-hover"
             onClick={() => setIsOpen(false)}
           >
             Settings
@@ -89,7 +91,7 @@ const ProjectMenu = memo(function ProjectMenu({
               href={project.deployed_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="block px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800"
+              className="block px-3 py-2 text-sm text-fg-strong hover:bg-surface-hover"
               onClick={() => setIsOpen(false)}
             >
               View Live Site
@@ -103,7 +105,7 @@ const ProjectMenu = memo(function ProjectMenu({
               setIsOpen(false);
               onDelete(project.id);
             }}
-            className="block w-full px-3 py-2 text-left text-sm text-red-400 hover:bg-zinc-800"
+            className="block w-full px-3 py-2 text-left text-sm text-danger-muted hover:bg-surface-hover"
           >
             Delete
           </button>
@@ -137,7 +139,7 @@ function PreviewFrame({ html }: { html: string }) {
   return (
     <div
       ref={containerRef}
-      className="pointer-events-none relative overflow-hidden bg-zinc-950"
+      className="pointer-events-none relative overflow-hidden bg-bg"
       style={{ aspectRatio: `${VIEWPORT_W}/${VIEWPORT_H}` }}
     >
       <iframe
@@ -161,7 +163,7 @@ function PreviewFrame({ html }: { html: string }) {
 function PreviewPlaceholder() {
   return (
     <div
-      className="flex w-full items-center justify-center bg-zinc-900"
+      className="flex w-full items-center justify-center bg-surface"
       style={{ aspectRatio: `${VIEWPORT_W}/${VIEWPORT_H}` }}
     >
       <svg
@@ -174,7 +176,7 @@ function PreviewPlaceholder() {
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="text-zinc-700"
+        className="text-border-hover"
         aria-hidden="true"
       >
         <rect width="18" height="18" x="3" y="3" rx="2" />
@@ -192,9 +194,9 @@ const ProjectCard = memo(function ProjectCard({
   onDelete: (id: string) => void;
 }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900 transition-colors hover:border-zinc-700">
+    <div className="overflow-hidden rounded-card border border-border bg-surface transition-colors hover:border-border-hover">
       <Link href={`/project/${project.id}`} className="block">
-        <div className="border-b border-zinc-800">
+        <div className="border-b border-border">
           {project.previewHtml ? (
             <PreviewFrame html={project.previewHtml} />
           ) : (
@@ -204,13 +206,13 @@ const ProjectCard = memo(function ProjectCard({
       </Link>
       <div className="flex items-center gap-2 px-3 py-2.5">
         <Link href={`/project/${project.id}`} className="min-w-0 flex-1">
-          <h2 className="truncate text-sm font-medium text-white">
+          <h2 className="truncate text-sm font-medium text-fg">
             {project.name}
           </h2>
-          <p className="mt-0.5 truncate text-xs text-zinc-500">
+          <p className="mt-0.5 truncate text-xs text-fg-subtle">
             {dateFmt.format(new Date(project.updated_at))}
             {project.deployed_url && (
-              <span className="ml-1.5 text-emerald-500">• Live</span>
+              <span className="ml-1.5 text-success-muted">• Live</span>
             )}
           </p>
         </Link>
@@ -263,36 +265,31 @@ export function ProjectList({ projects }: { projects: Project[] }) {
       </div>
 
       {confirmDeleteId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-sm rounded-xl border border-zinc-800 bg-zinc-900 p-6">
-            <h3 className="text-lg font-semibold text-white">
-              Delete Project?
-            </h3>
-            <p className="mt-2 text-sm text-zinc-400">
-              This will permanently delete the project and all its data. If the
-              project is published, the live site will also be removed.
-            </p>
-            {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setConfirmDeleteId(null)}
-                className="rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800"
-                disabled={deletingId !== null}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDelete(confirmDeleteId)}
-                disabled={deletingId !== null}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-50"
-              >
-                {deletingId === confirmDeleteId ? "Deleting..." : "Delete"}
-              </button>
-            </div>
+        <Modal size="sm" onClose={() => setConfirmDeleteId(null)}>
+          <h3 className="text-lg font-semibold text-fg">Delete Project?</h3>
+          <p className="mt-2 text-sm text-fg-muted">
+            This will permanently delete the project and all its data. If the
+            project is published, the live site will also be removed.
+          </p>
+          {error && <p className="mt-3 text-sm text-danger-muted">{error}</p>}
+          <div className="mt-6 flex justify-end gap-3">
+            <Button
+              variant="ghost"
+              onClick={() => setConfirmDeleteId(null)}
+              disabled={deletingId !== null}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              loading={deletingId === confirmDeleteId}
+              onClick={() => handleDelete(confirmDeleteId)}
+              disabled={deletingId !== null}
+            >
+              Delete
+            </Button>
           </div>
-        </div>
+        </Modal>
       )}
     </>
   );
