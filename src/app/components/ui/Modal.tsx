@@ -27,6 +27,7 @@ export function Modal({
       aria-modal="true"
     >
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: overlay close */}
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: overlay close */}
       <div className="absolute inset-0" onClick={onClose} />
       <div
         className={cn(

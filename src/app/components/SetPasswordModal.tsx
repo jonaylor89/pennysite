@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { Alert } from "./ui/Alert";
+import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
+import { Modal } from "./ui/Modal";
 
 interface SetPasswordModalProps {
   onComplete: () => void;
@@ -54,77 +58,68 @@ export function SetPasswordModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl">
-        <div className="mb-6 text-center">
-          <div className="mb-3 text-4xl">🎉</div>
-          <h2 className="text-xl font-semibold text-white">
-            Your site is ready!
-          </h2>
-          <p className="mt-2 text-sm text-zinc-400">
-            Set a password to access your projects from any device.
-          </p>
-        </div>
-
-        <form onSubmit={handleSetPassword} className="space-y-4">
-          <div>
-            <label htmlFor="new-password" className="sr-only">
-              Password
-            </label>
-            <input
-              id="new-password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password (min 6 characters)"
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white placeholder-zinc-500 focus:border-zinc-600 focus:outline-none"
-              minLength={6}
-              disabled={loading}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="confirm-password" className="sr-only">
-              Confirm password
-            </label>
-            <input
-              id="confirm-password"
-              type="password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              placeholder="Confirm password"
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white placeholder-zinc-500 focus:border-zinc-600 focus:outline-none"
-              disabled={loading}
-            />
-          </div>
-
-          {error && (
-            <p className="text-sm text-red-400" role="alert">
-              {error}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading || !password || !confirm}
-            className="w-full rounded-lg bg-white py-3 font-medium text-black transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {loading ? "Saving..." : "Set Password"}
-          </button>
-
-          <button
-            type="button"
-            onClick={onSkip}
-            className="w-full text-center text-sm text-zinc-400 hover:text-white"
-          >
-            Skip for now
-          </button>
-        </form>
-
-        <p className="mt-4 text-center text-xs text-zinc-500">
-          You can always set a password later from your account settings.
+    <Modal size="md">
+      <div className="mb-6 text-center">
+        <div className="mb-3 text-4xl">🎉</div>
+        <h2 className="font-serif text-xl text-fg">Your site is ready!</h2>
+        <p className="mt-2 text-sm text-fg-muted">
+          Set a password to access your projects from any device.
         </p>
       </div>
-    </div>
+
+      <form onSubmit={handleSetPassword} className="space-y-4">
+        <div>
+          <label htmlFor="new-password" className="sr-only">
+            Password
+          </label>
+          <Input
+            id="new-password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password (min 6 characters)"
+            minLength={6}
+            disabled={loading}
+            invalid={!!error}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="confirm-password" className="sr-only">
+            Confirm password
+          </label>
+          <Input
+            id="confirm-password"
+            type="password"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            placeholder="Confirm password"
+            disabled={loading}
+            invalid={!!error}
+          />
+        </div>
+
+        {error && <Alert variant="danger">{error}</Alert>}
+
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          fullWidth
+          loading={loading}
+          disabled={!password || !confirm}
+        >
+          Set Password
+        </Button>
+
+        <Button variant="link" size="sm" fullWidth onClick={onSkip}>
+          Skip for now
+        </Button>
+      </form>
+
+      <p className="mt-4 text-center text-xs text-fg-subtle">
+        You can always set a password later from your account settings.
+      </p>
+    </Modal>
   );
 }

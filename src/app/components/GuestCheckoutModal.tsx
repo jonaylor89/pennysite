@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
+import { Modal } from "./ui/Modal";
 
 interface GuestCheckoutModalProps {
   prompt: string;
@@ -48,71 +51,69 @@ export function GuestCheckoutModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl">
-        <div className="mb-6 text-center">
-          <div className="mb-3 text-4xl">🚀</div>
-          <h2 className="text-xl font-semibold text-white">
-            Generate Your Website
-          </h2>
-          <p className="mt-2 text-sm text-zinc-400">
-            Get 100 credits to create your first site. That's enough for a full
-            multi-page website with room to iterate.
-          </p>
+    <Modal onClose={onClose} size="md">
+      <div className="mb-6 text-center">
+        <div className="mb-3 text-4xl">🚀</div>
+        <h2 className="font-serif text-xl text-fg">Generate Your Website</h2>
+        <p className="mt-2 text-sm text-fg-muted">
+          Get 100 credits to create your first site. That's enough for a full
+          multi-page website with room to iterate.
+        </p>
+      </div>
+
+      <form onSubmit={handleCheckout} className="space-y-4">
+        <div>
+          <label htmlFor="guest-email" className="sr-only">
+            Email address
+          </label>
+          <Input
+            id="guest-email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email"
+            disabled={loading}
+            required
+            invalid={!!error}
+          />
         </div>
 
-        <form onSubmit={handleCheckout} className="space-y-4">
-          <div>
-            <label htmlFor="guest-email" className="sr-only">
-              Email address
-            </label>
-            <input
-              id="guest-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white placeholder-zinc-500 focus:border-zinc-600 focus:outline-none"
-              disabled={loading}
-              required
-            />
-          </div>
-
-          {error && (
-            <p className="text-sm text-red-400" role="alert">
-              {error}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading || !email.trim()}
-            className="w-full rounded-lg bg-emerald-600 py-3 font-medium text-white transition-colors hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {loading
-              ? "Redirecting to checkout..."
-              : "Continue to Payment — $5"}
-          </button>
-
-          <p className="text-center text-xs text-zinc-500">
-            Already have an account?{" "}
-            <a
-              href={`/auth/login?redirect=${encodeURIComponent("/project/new")}`}
-              className="text-white underline hover:text-zinc-300"
-            >
-              Sign in
-            </a>
+        {error && (
+          <p className="text-sm text-danger-muted" role="alert">
+            {error}
           </p>
-        </form>
+        )}
 
-        <button
-          type="button"
-          onClick={onClose}
-          className="mt-4 w-full text-center text-sm text-zinc-400 hover:text-white"
+        <Button
+          type="submit"
+          variant="success"
+          size="lg"
+          fullWidth
+          loading={loading}
+          disabled={!email.trim()}
         >
-          Cancel
-        </button>
-      </div>
-    </div>
+          {loading ? "Redirecting to checkout..." : "Continue to Payment — $5"}
+        </Button>
+
+        <p className="text-center text-xs text-fg-subtle">
+          Already have an account?{" "}
+          <a
+            href={`/auth/login?redirect=${encodeURIComponent("/project/new")}`}
+            className="text-fg underline hover:text-fg-muted"
+          >
+            Sign in
+          </a>
+        </p>
+      </form>
+
+      <Button
+        variant="link"
+        fullWidth
+        onClick={onClose}
+        className="mt-4 text-sm"
+      >
+        Cancel
+      </Button>
+    </Modal>
   );
 }

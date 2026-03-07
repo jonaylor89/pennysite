@@ -3,6 +3,8 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import posthog from "posthog-js";
 import { Suspense, useState } from "react";
+import { Button } from "@/app/components/ui/Button";
+import { Input } from "@/app/components/ui/Input";
 import { createClient } from "@/lib/supabase/client";
 
 function LoginContent() {
@@ -101,65 +103,66 @@ function LoginContent() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-950 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-bg px-4">
       <div className="w-full max-w-sm">
-        <h1 className="mb-6 text-center text-2xl font-bold text-white">
+        <h1 className="mb-6 text-center font-serif text-2xl text-fg">
           {isSignUp ? "Create Account" : "Sign In"}
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <input
+            <Input
               type="email"
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white placeholder-zinc-500 focus:border-zinc-600 focus:outline-none"
               required
             />
           </div>
           <div>
-            <input
+            <Input
               type="password"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white placeholder-zinc-500 focus:border-zinc-600 focus:outline-none"
               required
               minLength={6}
             />
           </div>
 
-          {error && <p className="text-sm text-red-400">{error}</p>}
-          {message && <p className="text-sm text-green-400">{message}</p>}
+          {error && <p className="text-sm text-danger-muted">{error}</p>}
+          {message && <p className="text-sm text-success-muted">{message}</p>}
 
-          <button
+          <Button
+            variant="primary"
+            size="lg"
+            fullWidth
+            loading={loading}
             type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-white py-3 font-medium text-black transition-colors hover:bg-zinc-200 disabled:opacity-50"
           >
-            {loading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
-          </button>
+            {isSignUp ? "Sign Up" : "Sign In"}
+          </Button>
         </form>
 
         {/* Magic link option for passwordless users */}
         {!isSignUp && (showMagicLinkOption || !password) && (
-          <div className="mt-4 border-t border-zinc-800 pt-4">
-            <button
-              type="button"
+          <div className="mt-4 border-t border-border pt-4">
+            <Button
+              variant="ghost"
+              size="lg"
+              fullWidth
               onClick={handleMagicLink}
               disabled={loading || !email.trim()}
-              className="w-full rounded-lg border border-zinc-700 py-3 text-sm text-zinc-300 transition-colors hover:bg-zinc-800 disabled:opacity-50"
             >
               {loading ? "Sending..." : "Send me a login link instead"}
-            </button>
-            <p className="mt-2 text-center text-xs text-zinc-500">
+            </Button>
+            <p className="mt-2 text-center text-xs text-fg-subtle">
               We'll email you a link to sign in without a password
             </p>
           </div>
         )}
 
-        <p className="mt-4 text-center text-sm text-zinc-400">
+        <p className="mt-4 text-center text-sm text-fg-muted">
           {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
           <button
             type="button"
@@ -169,7 +172,7 @@ function LoginContent() {
               setMessage(null);
               setShowMagicLinkOption(false);
             }}
-            className="text-white underline"
+            className="text-fg underline"
           >
             {isSignUp ? "Sign in" : "Sign up"}
           </button>
@@ -183,7 +186,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-400">
+        <div className="flex min-h-screen items-center justify-center bg-bg text-fg-muted">
           Loading...
         </div>
       }

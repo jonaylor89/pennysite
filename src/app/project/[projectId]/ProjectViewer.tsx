@@ -43,20 +43,15 @@ export function ProjectViewer({
   const displayHtml = pages[currentPage] || "";
 
   return (
-    <div className="flex h-screen flex-col bg-zinc-950">
+    <div className="flex h-screen flex-col bg-bg">
       {/* ===== HEADER (Desktop) ===== */}
-      <header className="hidden shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4 py-3 lg:flex">
+      <header className="hidden shrink-0 items-center justify-between border-b border-border bg-surface px-4 py-3 lg:flex">
         <div className="flex items-center gap-4">
-          <Link
-            href="/"
-            className="text-lg font-bold text-white hover:text-zinc-200"
-          >
+          <Link href="/" className="text-lg font-bold text-fg hover:text-fg">
             Pennysite
           </Link>
-          <span className="text-zinc-600">·</span>
-          <span className="text-lg font-semibold text-white">
-            {projectName}
-          </span>
+          <span className="text-fg-subtle">·</span>
+          <span className="text-lg font-semibold text-fg">{projectName}</span>
         </div>
         <div className="flex items-center gap-3">
           {deployedUrl && (
@@ -64,7 +59,7 @@ export function ProjectViewer({
               href={deployedUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-500"
+              className="flex items-center gap-2 rounded-control bg-success px-4 py-2 text-sm font-medium text-fg transition-colors hover:bg-success-hover"
             >
               🌐 View Live Site
             </a>
@@ -73,9 +68,9 @@ export function ProjectViewer({
       </header>
 
       {/* ===== HEADER (Mobile) ===== */}
-      <header className="flex shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4 py-3 lg:hidden">
+      <header className="flex shrink-0 items-center justify-between border-b border-border bg-surface px-4 py-3 lg:hidden">
         <div className="flex items-center gap-3">
-          <Link href="/" className="text-zinc-400 hover:text-white">
+          <Link href="/" className="text-fg-muted hover:text-fg">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="20"
@@ -91,7 +86,7 @@ export function ProjectViewer({
               <path d="m15 18-6-6 6-6" />
             </svg>
           </Link>
-          <span className="max-w-[200px] truncate font-medium text-white">
+          <span className="max-w-[200px] truncate font-medium text-fg">
             {projectName}
           </span>
         </div>
@@ -100,7 +95,7 @@ export function ProjectViewer({
             href={deployedUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-emerald-400 hover:text-emerald-300"
+            className="text-sm text-success-muted hover:text-success-muted"
           >
             View Live
           </a>
@@ -110,15 +105,15 @@ export function ProjectViewer({
       {/* ===== MAIN CONTENT AREA ===== */}
       <div className="flex min-h-0 flex-1 flex-row">
         {/* ===== LEFT PANEL - CONVERSATION (Desktop) ===== */}
-        <div className="hidden w-96 shrink-0 flex-col border-r border-zinc-800 bg-zinc-900 lg:flex">
+        <div className="hidden w-96 shrink-0 flex-col border-r border-border bg-surface lg:flex">
           {/* Chat Header */}
-          <div className="border-b border-zinc-800 p-4">
-            <h2 className="font-semibold text-white">Conversation</h2>
+          <div className="border-b border-border p-4">
+            <h2 className="font-semibold text-fg">Conversation</h2>
           </div>
 
           {/* Shared project banner */}
-          <div className="border-b border-zinc-800 bg-zinc-800/50 px-4 py-2.5">
-            <p className="text-xs text-zinc-400">
+          <div className="border-b border-border bg-surface-alt px-4 py-2.5">
+            <p className="text-xs text-fg-muted">
               👁 You&apos;re viewing a shared project
             </p>
           </div>
@@ -131,39 +126,39 @@ export function ProjectViewer({
                   return (
                     <div
                       key={`enhance-${msg.skillId}-${i}`}
-                      className={`mr-4 rounded-lg border p-3 ${
+                      className={`mr-4 rounded-control border p-3 ${
                         msg.status === "pending"
-                          ? "border-zinc-700 bg-zinc-800"
+                          ? "border-border-hover bg-surface-hover"
                           : msg.status === "complete"
-                            ? "border-emerald-500/30 bg-emerald-500/10"
-                            : "border-red-500/30 bg-red-500/10"
+                            ? "border-success/30 bg-success/10"
+                            : "border-danger/30 bg-danger/10"
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <span className="text-xl">{msg.skillIcon}</span>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-medium text-white">
+                            <span className="font-medium text-fg">
                               {msg.skillName}
                             </span>
                             {msg.status === "pending" && (
-                              <span className="inline-flex items-center gap-1.5 text-xs text-zinc-400">
-                                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
+                              <span className="inline-flex items-center gap-1.5 text-xs text-fg-muted">
+                                <span className="h-1.5 w-1.5 animate-pulse rounded-pill bg-warning" />
                                 Enhancing...
                               </span>
                             )}
                             {msg.status === "complete" && (
-                              <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs text-emerald-400">
+                              <span className="rounded-pill bg-success/20 px-2 py-0.5 text-xs text-success-muted">
                                 ✓ Applied
                               </span>
                             )}
                             {msg.status === "error" && (
-                              <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-xs text-red-400">
+                              <span className="rounded-pill bg-danger/20 px-2 py-0.5 text-xs text-danger-muted">
                                 Failed
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-zinc-400">
+                          <p className="text-xs text-fg-muted">
                             {msg.status === "pending" &&
                               `Applying to ${msg.filename}...`}
                             {msg.status === "complete" && (
@@ -187,8 +182,8 @@ export function ProjectViewer({
                     key={`${msg.role}-${i}`}
                     className={`text-sm ${
                       msg.role === "user"
-                        ? "ml-4 rounded-lg bg-zinc-700 p-3 text-white"
-                        : "mr-4 rounded-lg bg-zinc-800 p-3 text-zinc-300"
+                        ? "ml-4 rounded-control bg-surface-hover p-3 text-fg"
+                        : "mr-4 rounded-control bg-surface-hover p-3 text-fg-strong"
                     }`}
                   >
                     {msg.role === "user" &&
@@ -201,7 +196,7 @@ export function ProjectViewer({
                               key={`msg-img-${i}-${imgIdx}`}
                               src={`data:${img.mimeType};base64,${img.data}`}
                               alt={`Attachment ${imgIdx + 1}`}
-                              className="h-12 w-12 rounded border border-zinc-600 object-cover"
+                              className="h-12 w-12 rounded border border-fg-subtle object-cover"
                             />
                           ))}
                         </div>
@@ -210,7 +205,7 @@ export function ProjectViewer({
                       !msg.images &&
                       msg.imageCount &&
                       msg.imageCount > 0 && (
-                        <div className="mb-1.5 inline-flex items-center gap-1 rounded bg-zinc-600/50 px-2 py-0.5 text-xs text-zinc-400">
+                        <div className="mb-1.5 inline-flex items-center gap-1 rounded bg-fg-subtle/50 px-2 py-0.5 text-xs text-fg-muted">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="12"
@@ -252,7 +247,7 @@ export function ProjectViewer({
         >
           {/* Page tabs */}
           {pageNames.length > 1 && (
-            <div className="flex shrink-0 gap-1 overflow-x-auto border-b border-zinc-800 bg-zinc-900 px-4 py-2">
+            <div className="flex shrink-0 gap-1 overflow-x-auto border-b border-border bg-surface px-4 py-2">
               {pageNames.map((name) => (
                 <button
                   key={name}
@@ -260,8 +255,8 @@ export function ProjectViewer({
                   onClick={() => setCurrentPage(name)}
                   className={`shrink-0 rounded px-3 py-1 text-sm transition-colors ${
                     currentPage === name
-                      ? "bg-zinc-700 text-white"
-                      : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                      ? "bg-surface-hover text-fg"
+                      : "text-fg-muted hover:bg-surface-hover hover:text-fg"
                   }`}
                 >
                   {name}
@@ -271,14 +266,14 @@ export function ProjectViewer({
           )}
 
           {/* Preview header (desktop only) */}
-          <div className="hidden shrink-0 items-center border-b border-zinc-800 bg-zinc-900 px-4 py-2 lg:flex">
-            <span className="text-sm text-zinc-400">
+          <div className="hidden shrink-0 items-center border-b border-border bg-surface px-4 py-2 lg:flex">
+            <span className="text-sm text-fg-muted">
               Preview{currentPage ? `: ${currentPage}` : ""}
             </span>
           </div>
 
           {/* Preview iframe */}
-          <div className="relative min-h-0 flex-1 bg-zinc-950">
+          <div className="relative min-h-0 flex-1 bg-bg">
             <div className="h-full w-full">
               {displayHtml ? (
                 <iframe
@@ -288,7 +283,7 @@ export function ProjectViewer({
                   srcDoc={displayHtml}
                 />
               ) : (
-                <div className="flex h-full items-center justify-center p-4 text-zinc-400">
+                <div className="flex h-full items-center justify-center p-4 text-fg-muted">
                   <div className="text-center">
                     <div className="mb-2 text-4xl">🏗️</div>
                     <p className="text-base">No preview available</p>
@@ -301,11 +296,11 @@ export function ProjectViewer({
 
         {/* ===== MOBILE CONVERSATION PANEL ===== */}
         <div
-          className={`min-h-0 flex-1 flex-col bg-zinc-900 ${mobileTab === "chat" ? "flex lg:hidden" : "hidden"}`}
+          className={`min-h-0 flex-1 flex-col bg-surface ${mobileTab === "chat" ? "flex lg:hidden" : "hidden"}`}
         >
           {/* Shared project banner */}
-          <div className="border-b border-zinc-800 bg-zinc-800/50 px-4 py-2.5">
-            <p className="text-xs text-zinc-400">
+          <div className="border-b border-border bg-surface-alt px-4 py-2.5">
+            <p className="text-xs text-fg-muted">
               👁 You&apos;re viewing a shared project
             </p>
           </div>
@@ -318,36 +313,38 @@ export function ProjectViewer({
                   return (
                     <div
                       key={`mobile-enhance-${msg.skillId}-${i}`}
-                      className={`mr-4 rounded-lg border p-3 ${
+                      className={`mr-4 rounded-control border p-3 ${
                         msg.status === "pending"
-                          ? "border-zinc-700 bg-zinc-800"
+                          ? "border-border-hover bg-surface-hover"
                           : msg.status === "complete"
-                            ? "border-emerald-500/30 bg-emerald-500/10"
-                            : "border-red-500/30 bg-red-500/10"
+                            ? "border-success/30 bg-success/10"
+                            : "border-danger/30 bg-danger/10"
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <span className="text-lg">{msg.skillIcon}</span>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-white">
+                            <span className="text-sm font-medium text-fg">
                               {msg.skillName}
                             </span>
                             {msg.status === "pending" && (
-                              <span className="inline-flex items-center gap-1 text-xs text-zinc-400">
-                                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
+                              <span className="inline-flex items-center gap-1 text-xs text-fg-muted">
+                                <span className="h-1.5 w-1.5 animate-pulse rounded-pill bg-warning" />
                               </span>
                             )}
                             {msg.status === "complete" && (
-                              <span className="text-xs text-emerald-400">
+                              <span className="text-xs text-success-muted">
                                 ✓
                               </span>
                             )}
                             {msg.status === "error" && (
-                              <span className="text-xs text-red-400">✗</span>
+                              <span className="text-xs text-danger-muted">
+                                ✗
+                              </span>
                             )}
                           </div>
-                          <p className="text-xs text-zinc-400">
+                          <p className="text-xs text-fg-muted">
                             {msg.status === "pending" && "Enhancing..."}
                             {msg.status === "complete" && msg.filename}
                             {msg.status === "error" && (msg.error || "Failed")}
@@ -362,8 +359,8 @@ export function ProjectViewer({
                     key={`mobile-${msg.role}-${i}`}
                     className={`text-sm ${
                       msg.role === "user"
-                        ? "ml-4 rounded-lg bg-zinc-700 p-3 text-white"
-                        : "mr-4 rounded-lg bg-zinc-800 p-3 text-zinc-300"
+                        ? "ml-4 rounded-control bg-surface-hover p-3 text-fg"
+                        : "mr-4 rounded-control bg-surface-hover p-3 text-fg-strong"
                     }`}
                   >
                     {msg.role === "user" &&
@@ -376,7 +373,7 @@ export function ProjectViewer({
                               key={`mobile-msg-img-${i}-${imgIdx}`}
                               src={`data:${img.mimeType};base64,${img.data}`}
                               alt={`Attachment ${imgIdx + 1}`}
-                              className="h-10 w-10 rounded border border-zinc-600 object-cover"
+                              className="h-10 w-10 rounded border border-fg-subtle object-cover"
                             />
                           ))}
                         </div>
@@ -385,7 +382,7 @@ export function ProjectViewer({
                       !msg.images &&
                       msg.imageCount &&
                       msg.imageCount > 0 && (
-                        <div className="mb-1.5 inline-flex items-center gap-1 rounded bg-zinc-600/50 px-2 py-0.5 text-xs text-zinc-400">
+                        <div className="mb-1.5 inline-flex items-center gap-1 rounded bg-fg-subtle/50 px-2 py-0.5 text-xs text-fg-muted">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="12"
@@ -423,14 +420,12 @@ export function ProjectViewer({
       </div>
 
       {/* ===== MOBILE BOTTOM TAB BAR ===== */}
-      <div className="flex shrink-0 items-center justify-around border-t border-zinc-800 bg-zinc-900 py-2 lg:hidden">
+      <div className="flex shrink-0 items-center justify-around border-t border-border bg-surface py-2 lg:hidden">
         <button
           type="button"
           onClick={() => setMobileTab("chat")}
           className={`flex flex-col items-center gap-1 px-4 py-2 ${
-            mobileTab === "chat"
-              ? "text-white"
-              : "text-zinc-400 hover:text-white"
+            mobileTab === "chat" ? "text-fg" : "text-fg-muted hover:text-fg"
           }`}
         >
           <svg
@@ -453,9 +448,7 @@ export function ProjectViewer({
           type="button"
           onClick={() => setMobileTab("preview")}
           className={`flex flex-col items-center gap-1 px-4 py-2 ${
-            mobileTab === "preview"
-              ? "text-white"
-              : "text-zinc-400 hover:text-white"
+            mobileTab === "preview" ? "text-fg" : "text-fg-muted hover:text-fg"
           }`}
         >
           <svg

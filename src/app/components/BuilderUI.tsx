@@ -4,7 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { isFeatureEnabled } from "@/lib/featureflags";
+import { useFeatureFlag } from "@/lib/featureflags";
 import { getAllSkills, getSkill, type SkillId } from "@/lib/generation/skills";
 import { captureEvent } from "@/lib/posthog/client";
 import { createClient } from "@/lib/supabase/client";
@@ -266,20 +266,20 @@ function BuyCreditsModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay p-4">
+      <div className="w-full max-w-lg rounded-modal border border-border bg-surface p-6 shadow-modal">
         <div className="mb-6 text-center">
           <div className="mb-3 text-4xl">⚡</div>
-          <h2 className="text-xl font-semibold text-white">
+          <h2 className="font-serif text-xl text-fg">
             You need credits to generate
           </h2>
-          <p className="mt-2 text-sm text-zinc-400">
+          <p className="mt-2 text-sm text-fg-muted">
             You have{" "}
-            <span className="font-medium text-white">{availableCredits}</span>{" "}
+            <span className="font-medium text-fg">{availableCredits}</span>{" "}
             credits, but generation requires up to{" "}
-            <span className="font-medium text-white">{requiredCredits}</span>.
+            <span className="font-medium text-fg">{requiredCredits}</span>.
           </p>
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-fg-subtle">
             Typical generation costs ~100 credits. Unused credits are refunded.
           </p>
         </div>
@@ -291,26 +291,26 @@ function BuyCreditsModal({
               type="button"
               onClick={() => buyPack(pack.id)}
               disabled={isLoading !== null}
-              className={`relative rounded-xl border p-4 text-left transition-all ${
+              className={`relative rounded-card border p-4 text-left transition-all ${
                 pack.popular
-                  ? "border-emerald-500/50 bg-emerald-500/10"
-                  : "border-zinc-700 bg-zinc-800/50 hover:border-zinc-600"
+                  ? "border-success/50 bg-success/10"
+                  : "border-border-hover bg-surface-alt hover:border-fg-subtle"
               } ${isLoading === pack.id ? "opacity-70" : ""}`}
             >
               {pack.popular && (
-                <span className="absolute -top-2 right-3 rounded-full bg-emerald-500 px-2 py-0.5 text-xs font-medium text-black">
+                <span className="absolute -top-2 right-3 rounded-pill bg-success-hover px-2 py-0.5 text-xs font-medium text-primary-fg">
                   Popular
                 </span>
               )}
-              <div className="text-lg font-semibold text-white">
+              <div className="text-lg font-semibold text-fg">
                 {pack.credits} credits
               </div>
-              <div className="text-2xl font-bold text-white">${pack.price}</div>
-              <div className="mt-1 text-xs text-zinc-400">
+              <div className="text-2xl font-bold text-fg">${pack.price}</div>
+              <div className="mt-1 text-xs text-fg-muted">
                 ${((pack.price / pack.credits) * 100).toFixed(1)}¢ per credit
               </div>
               {isLoading === pack.id && (
-                <div className="mt-2 text-xs text-zinc-400">Redirecting...</div>
+                <div className="mt-2 text-xs text-fg-muted">Redirecting...</div>
               )}
             </button>
           ))}
@@ -320,7 +320,7 @@ function BuyCreditsModal({
           <button
             type="button"
             onClick={onClose}
-            className="text-sm text-zinc-400 hover:text-white"
+            className="text-sm text-fg-muted hover:text-fg"
           >
             Cancel
           </button>
@@ -437,14 +437,14 @@ function CustomDomainModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="w-full max-w-md rounded-xl bg-zinc-900 p-6 shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay p-4">
+      <div className="w-full max-w-md rounded-card bg-surface p-6 shadow-modal">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">Custom Domain</h2>
+          <h2 className="text-lg font-semibold text-fg">Custom Domain</h2>
           <button
             type="button"
             onClick={onClose}
-            className="text-zinc-400 hover:text-white"
+            className="text-fg-muted hover:text-fg"
           >
             ✕
           </button>
@@ -452,16 +452,16 @@ function CustomDomainModal({
 
         {domainInfo?.customDomain ? (
           <div className="space-y-4">
-            <div className="rounded-lg border border-zinc-700 bg-zinc-800 p-4">
+            <div className="rounded-control border border-border-hover bg-surface-hover p-4">
               <div className="flex items-center justify-between">
-                <span className="font-medium text-white">
+                <span className="font-medium text-fg">
                   {domainInfo.customDomain}
                 </span>
                 <span
-                  className={`rounded-full px-2 py-0.5 text-xs ${
+                  className={`rounded-pill px-2 py-0.5 text-xs ${
                     domainInfo.status === "active"
-                      ? "bg-emerald-500/20 text-emerald-400"
-                      : "bg-amber-500/20 text-amber-400"
+                      ? "bg-success/20 text-success-muted"
+                      : "bg-warning/20 text-warning-muted"
                   }`}
                 >
                   {domainInfo.status === "active" ? "Active" : "Pending"}
@@ -473,7 +473,7 @@ function CustomDomainModal({
                   href={domainInfo.customDomainUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-2 block text-sm text-emerald-400 hover:underline"
+                  className="mt-2 block text-sm text-success-muted hover:underline"
                 >
                   {domainInfo.customDomainUrl}
                 </a>
@@ -481,31 +481,31 @@ function CustomDomainModal({
             </div>
 
             {domainInfo.status === "pending" && domainInfo.instructions && (
-              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
-                <p className="mb-2 text-sm font-medium text-amber-200">
+              <div className="rounded-control border border-warning/30 bg-warning/10 p-4">
+                <p className="mb-2 text-sm font-medium text-warning-muted">
                   Configure your DNS:
                 </p>
-                <div className="space-y-2 text-sm text-zinc-300">
+                <div className="space-y-2 text-sm text-fg-strong">
                   <div className="flex items-center gap-2">
-                    <span className="text-zinc-500">Type:</span>
-                    <code className="rounded bg-zinc-800 px-2 py-0.5 text-amber-300">
+                    <span className="text-fg-subtle">Type:</span>
+                    <code className="rounded bg-surface-hover px-2 py-0.5 text-warning-muted">
                       {domainInfo.instructions.type}
                     </code>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-zinc-500">Name:</span>
-                    <code className="rounded bg-zinc-800 px-2 py-0.5 text-amber-300">
+                    <span className="text-fg-subtle">Name:</span>
+                    <code className="rounded bg-surface-hover px-2 py-0.5 text-warning-muted">
                       {domainInfo.instructions.host}
                     </code>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-zinc-500">Target:</span>
-                    <code className="rounded bg-zinc-800 px-2 py-0.5 text-amber-300">
+                    <span className="text-fg-subtle">Target:</span>
+                    <code className="rounded bg-surface-hover px-2 py-0.5 text-warning-muted">
                       {domainInfo.instructions.target}
                     </code>
                   </div>
                 </div>
-                <p className="mt-3 text-xs text-zinc-400">
+                <p className="mt-3 text-xs text-fg-muted">
                   {domainInfo.instructions.instructions}
                 </p>
               </div>
@@ -517,7 +517,7 @@ function CustomDomainModal({
                   type="button"
                   onClick={handleCheckStatus}
                   disabled={isLoading}
-                  className="flex-1 rounded-lg bg-zinc-700 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-600 disabled:opacity-50"
+                  className="flex-1 rounded-control bg-surface-hover px-4 py-2 text-sm font-medium text-fg hover:bg-fg-subtle disabled:opacity-50"
                 >
                   {isLoading ? "Checking..." : "Check Status"}
                 </button>
@@ -526,7 +526,7 @@ function CustomDomainModal({
                 type="button"
                 onClick={handleRemoveDomain}
                 disabled={isLoading}
-                className="rounded-lg border border-red-500/30 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 disabled:opacity-50"
+                className="rounded-control border border-danger/30 px-4 py-2 text-sm text-danger-muted hover:bg-danger/10 disabled:opacity-50"
               >
                 Remove
               </button>
@@ -537,7 +537,7 @@ function CustomDomainModal({
             <div>
               <label
                 htmlFor="domain"
-                className="mb-1 block text-sm text-zinc-400"
+                className="mb-1 block text-sm text-fg-muted"
               >
                 Enter your domain
               </label>
@@ -547,21 +547,21 @@ function CustomDomainModal({
                 value={domain}
                 onChange={(e) => setDomain(e.target.value)}
                 placeholder="blog.example.com"
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white placeholder-zinc-500 focus:border-zinc-500 focus:outline-none"
+                className="w-full rounded-control border border-border-hover bg-surface-hover px-3 py-2 text-fg placeholder-fg-subtle focus:border-fg-subtle focus:outline-none"
               />
-              <p className="mt-1 text-xs text-zinc-500">
+              <p className="mt-1 text-xs text-fg-subtle">
                 Your project will be accessible at https://
                 {domain || "your-domain.com"}
               </p>
             </div>
 
-            {error && <p className="text-sm text-red-400">{error}</p>}
+            {error && <p className="text-sm text-danger-muted">{error}</p>}
 
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800"
+                className="flex-1 rounded-control border border-border-hover px-4 py-2 text-sm text-fg-strong hover:bg-surface-hover"
               >
                 Cancel
               </button>
@@ -569,16 +569,16 @@ function CustomDomainModal({
                 type="button"
                 onClick={handleAddDomain}
                 disabled={isLoading || !domain.trim()}
-                className="flex-1 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50"
+                className="flex-1 rounded-control bg-success px-4 py-2 text-sm font-medium text-fg hover:bg-success-hover disabled:opacity-50"
               >
                 {isLoading ? "Adding..." : "Add Domain"}
               </button>
             </div>
 
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-fg-subtle">
               After adding, you&apos;ll need to configure a CNAME record with
               your DNS provider pointing to{" "}
-              <code className="text-zinc-400">{cfProjectName}.pages.dev</code>
+              <code className="text-fg-muted">{cfProjectName}.pages.dev</code>
             </p>
           </div>
         )}
@@ -693,7 +693,7 @@ export function BuilderUI({
   >([]);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const multimodalEnabled = isFeatureEnabled("multimodal-prompt");
+  const multimodalEnabled = useFeatureFlag("multimodal-prompt");
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const didAutoSendRef = useRef(false);
@@ -1654,13 +1654,13 @@ export function BuilderUI({
   };
 
   return (
-    <div className="flex h-screen flex-col bg-zinc-950">
+    <div className="flex h-screen flex-col bg-bg">
       {/* ===== TOP NAVBAR (Desktop) ===== */}
-      <header className="hidden shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4 py-3 lg:flex">
+      <header className="hidden shrink-0 items-center justify-between border-b border-border bg-surface px-4 py-3 lg:flex">
         <div className="flex items-center gap-4">
           <Link
             href="/projects"
-            className="flex items-center gap-2 text-zinc-400 hover:text-white"
+            className="flex items-center gap-2 text-fg-muted hover:text-fg"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -1682,11 +1682,11 @@ export function BuilderUI({
               type="text"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
-              className="bg-transparent text-lg font-semibold text-white focus:outline-none"
+              className="bg-transparent text-lg font-semibold text-fg focus:outline-none"
               placeholder="Untitled"
             />
             {siteSpec && (
-              <span className="rounded bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">
+              <span className="rounded bg-surface-hover px-2 py-0.5 text-xs text-fg-muted">
                 {siteSpec.type}
               </span>
             )}
@@ -1697,16 +1697,16 @@ export function BuilderUI({
           {user && creditBalance && (
             <Link
               href="/billing"
-              className="flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm text-zinc-300 hover:border-zinc-600"
+              className="flex items-center gap-1.5 rounded-pill border border-border-hover bg-surface-hover px-3 py-1.5 text-sm text-fg-strong hover:border-fg-subtle"
             >
-              <span className="text-emerald-400">⚡</span>
+              <span className="text-success-muted">⚡</span>
               {creditBalance.availableCredits} credits
             </Link>
           )}
           {!user && (
             <Link
               href="/auth/login"
-              className="text-sm text-zinc-400 hover:text-white"
+              className="text-sm text-fg-muted hover:text-fg"
             >
               Sign in
             </Link>
@@ -1716,7 +1716,7 @@ export function BuilderUI({
             type="button"
             onClick={() => setShowEnhancePanel(true)}
             disabled={pageNames.length === 0}
-            className="flex items-center gap-2 rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex items-center gap-2 rounded-control border border-border-hover px-4 py-2 text-sm text-fg-strong transition-colors hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
             <span>✨</span>
             Enhance
@@ -1726,7 +1726,7 @@ export function BuilderUI({
             type="button"
             onClick={handleSave}
             disabled={isSaving || pageNames.length === 0}
-            className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-control bg-primary px-4 py-2 text-sm font-medium text-primary-fg transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSaving ? "Saving..." : saveStatus || "Save"}
           </button>
@@ -1736,7 +1736,7 @@ export function BuilderUI({
               type="button"
               onClick={() => setShowDeployMenu(!showDeployMenu)}
               disabled={!projectId || pageNames.length === 0}
-              className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center gap-2 rounded-control bg-success px-4 py-2 text-sm font-medium text-fg transition-colors hover:bg-success-hover disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isPublishing ? "Publishing..." : publishStatus || "Deploy"}
               <svg
@@ -1755,14 +1755,14 @@ export function BuilderUI({
               </svg>
             </button>
             {showDeployMenu && (
-              <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg border border-zinc-700 bg-zinc-900 py-1 shadow-xl">
+              <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-control border border-border-hover bg-surface py-1 shadow-xl">
                 <button
                   type="button"
                   onClick={() => {
                     handlePublish();
                     setShowDeployMenu(false);
                   }}
-                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800"
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-fg-strong hover:bg-surface-hover"
                 >
                   🚀 Publish to Web
                 </button>
@@ -1772,18 +1772,18 @@ export function BuilderUI({
                     downloadAll();
                     setShowDeployMenu(false);
                   }}
-                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800"
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-fg-strong hover:bg-surface-hover"
                 >
                   📥 Download ZIP
                 </button>
                 {deployedUrl && (
                   <>
-                    <div className="my-1 border-t border-zinc-700" />
+                    <div className="my-1 border-t border-border-hover" />
                     <a
                       href={deployedUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-emerald-400 hover:bg-zinc-800"
+                      className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-success-muted hover:bg-surface-hover"
                       onClick={() => setShowDeployMenu(false)}
                     >
                       🌐 View Live Site
@@ -1797,7 +1797,7 @@ export function BuilderUI({
                       setShowDomainModal(true);
                       setShowDeployMenu(false);
                     }}
-                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800"
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-fg-strong hover:bg-surface-hover"
                   >
                     🔗 Custom Domain
                   </button>
@@ -1810,7 +1810,7 @@ export function BuilderUI({
             <button
               type="button"
               onClick={handleSignOut}
-              className="text-sm text-zinc-500 hover:text-zinc-300"
+              className="text-sm text-fg-subtle hover:text-fg-strong"
             >
               Sign out
             </button>
@@ -1819,9 +1819,9 @@ export function BuilderUI({
       </header>
 
       {/* ===== MOBILE TOP BAR ===== */}
-      <header className="flex shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4 py-3 lg:hidden">
+      <header className="flex shrink-0 items-center justify-between border-b border-border bg-surface px-4 py-3 lg:hidden">
         <div className="flex items-center gap-3">
-          <Link href="/projects" className="text-zinc-400 hover:text-white">
+          <Link href="/projects" className="text-fg-muted hover:text-fg">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="20"
@@ -1837,7 +1837,7 @@ export function BuilderUI({
               <path d="m15 18-6-6 6-6" />
             </svg>
           </Link>
-          <span className="max-w-[200px] truncate font-medium text-white">
+          <span className="max-w-[200px] truncate font-medium text-fg">
             {projectName}
           </span>
         </div>
@@ -1845,7 +1845,7 @@ export function BuilderUI({
           <button
             type="button"
             onClick={() => setShowMoreMenu(!showMoreMenu)}
-            className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+            className="rounded-control p-2 text-fg-muted hover:bg-surface-hover hover:text-fg"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -1865,14 +1865,14 @@ export function BuilderUI({
             </svg>
           </button>
           {showMoreMenu && (
-            <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg border border-zinc-700 bg-zinc-900 py-1 shadow-xl">
+            <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-control border border-border-hover bg-surface py-1 shadow-xl">
               {user && creditBalance && (
                 <Link
                   href="/billing"
-                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800"
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-fg-strong hover:bg-surface-hover"
                   onClick={() => setShowMoreMenu(false)}
                 >
-                  <span className="text-emerald-400">⚡</span>
+                  <span className="text-success-muted">⚡</span>
                   {creditBalance.availableCredits} credits
                 </Link>
               )}
@@ -1883,7 +1883,7 @@ export function BuilderUI({
                   setShowMoreMenu(false);
                 }}
                 disabled={isSaving}
-                className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800 disabled:opacity-50"
+                className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-fg-strong hover:bg-surface-hover disabled:opacity-50"
               >
                 💾 {isSaving ? "Saving..." : "Save"}
               </button>
@@ -1893,7 +1893,7 @@ export function BuilderUI({
                   downloadAll();
                   setShowMoreMenu(false);
                 }}
-                className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800"
+                className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-fg-strong hover:bg-surface-hover"
               >
                 📥 Download
               </button>
@@ -1902,7 +1902,7 @@ export function BuilderUI({
                   href={deployedUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-emerald-400 hover:bg-zinc-800"
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-success-muted hover:bg-surface-hover"
                   onClick={() => setShowMoreMenu(false)}
                 >
                   🌐 View Live
@@ -1915,12 +1915,12 @@ export function BuilderUI({
                     setShowDomainModal(true);
                     setShowMoreMenu(false);
                   }}
-                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800"
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-fg-strong hover:bg-surface-hover"
                 >
                   🔗 Custom Domain
                 </button>
               )}
-              <div className="my-1 border-t border-zinc-700" />
+              <div className="my-1 border-t border-border-hover" />
               {user ? (
                 <button
                   type="button"
@@ -1928,14 +1928,14 @@ export function BuilderUI({
                     handleSignOut();
                     setShowMoreMenu(false);
                   }}
-                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800"
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-fg-strong hover:bg-surface-hover"
                 >
                   Sign out
                 </button>
               ) : (
                 <Link
                   href="/auth/login"
-                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800"
+                  className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-fg-strong hover:bg-surface-hover"
                   onClick={() => setShowMoreMenu(false)}
                 >
                   Sign in
@@ -2007,9 +2007,9 @@ export function BuilderUI({
 
       {/* Click-to-Edit Modal */}
       {editingElement && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-md rounded-lg border border-zinc-700 bg-zinc-900 p-6 shadow-2xl">
-            <h3 className="mb-4 text-lg font-semibold text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay p-4">
+          <div className="w-full max-w-md rounded-control border border-border-hover bg-surface p-6 shadow-modal">
+            <h3 className="mb-4 text-lg font-semibold text-fg">
               Edit {editingElement.tagName.toLowerCase()}
             </h3>
 
@@ -2017,19 +2017,19 @@ export function BuilderUI({
               <>
                 <label
                   htmlFor="edit-img-src"
-                  className="mb-1 block text-sm text-zinc-400"
+                  className="mb-1 block text-sm text-fg-muted"
                 >
                   Image URL
                 </label>
                 <input
                   id="edit-img-src"
                   type="text"
-                  className="mb-2 w-full rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
+                  className="mb-2 w-full rounded border border-border-hover bg-surface-hover px-3 py-2 text-fg focus:border-blue-500 focus:outline-none"
                   value={editImgSrc}
                   onChange={(e) => setEditImgSrc(e.target.value)}
                   placeholder="https://images.unsplash.com/photo-1519389950473-47ba0277781c"
                 />
-                <p className="mb-4 text-xs text-zinc-500 leading-relaxed">
+                <p className="mb-4 text-xs text-fg-subtle leading-relaxed">
                   Tip: We recommend hosting images on{" "}
                   <a
                     href="https://cloudinary.com"
@@ -2052,14 +2052,14 @@ export function BuilderUI({
                 </p>
                 <label
                   htmlFor="edit-img-alt"
-                  className="mb-1 block text-sm text-zinc-400"
+                  className="mb-1 block text-sm text-fg-muted"
                 >
                   Alt Text (Description)
                 </label>
                 <input
                   id="edit-img-alt"
                   type="text"
-                  className="mb-4 w-full rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
+                  className="mb-4 w-full rounded border border-border-hover bg-surface-hover px-3 py-2 text-fg focus:border-blue-500 focus:outline-none"
                   value={editImgAlt}
                   onChange={(e) => setEditImgAlt(e.target.value)}
                   placeholder="A descriptive caption"
@@ -2068,14 +2068,14 @@ export function BuilderUI({
             ) : (
               <>
                 <label
-                  className="mb-1 block text-sm text-zinc-400"
+                  className="mb-1 block text-sm text-fg-muted"
                   htmlFor={editTextId}
                 >
                   Text
                 </label>
                 <textarea
                   id={editTextId}
-                  className="mb-4 w-full rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
+                  className="mb-4 w-full rounded border border-border-hover bg-surface-hover px-3 py-2 text-fg focus:border-blue-500 focus:outline-none"
                   rows={3}
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
@@ -2085,19 +2085,19 @@ export function BuilderUI({
                   <>
                     <label
                       htmlFor="edit-bg-image"
-                      className="mb-1 block text-sm text-zinc-400"
+                      className="mb-1 block text-sm text-fg-muted"
                     >
                       Background Image URL
                     </label>
                     <input
                       id="edit-bg-image"
                       type="text"
-                      className="mb-2 w-full rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
+                      className="mb-2 w-full rounded border border-border-hover bg-surface-hover px-3 py-2 text-fg focus:border-blue-500 focus:outline-none"
                       value={editBgImage}
                       onChange={(e) => setEditBgImage(e.target.value)}
                       placeholder="https://example.com/image.jpg"
                     />
-                    <p className="mb-4 text-xs text-zinc-500 leading-relaxed">
+                    <p className="mb-4 text-xs text-fg-subtle leading-relaxed">
                       Tip: We recommend hosting images on{" "}
                       <a
                         href="https://cloudinary.com"
@@ -2131,16 +2131,16 @@ export function BuilderUI({
                         setEditHref("#");
                       }
                     }}
-                    className="h-4 w-4 rounded border-zinc-600 bg-zinc-800 text-blue-500 focus:ring-blue-500"
+                    className="h-4 w-4 rounded border-fg-subtle bg-surface-hover text-blue-500 focus:ring-blue-500"
                   />
-                  <span className="text-sm text-zinc-300">
+                  <span className="text-sm text-fg-strong">
                     Make this a link
                   </span>
                 </label>
                 {editAsLink && (
                   <>
                     <label
-                      className="mb-1 block text-sm text-zinc-400"
+                      className="mb-1 block text-sm text-fg-muted"
                       htmlFor={editLinkUrlId}
                     >
                       Link URL
@@ -2148,7 +2148,7 @@ export function BuilderUI({
                     <input
                       type="text"
                       id={editLinkUrlId}
-                      className="mb-4 w-full rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
+                      className="mb-4 w-full rounded border border-border-hover bg-surface-hover px-3 py-2 text-fg focus:border-blue-500 focus:outline-none"
                       value={editHref}
                       onChange={(e) => setEditHref(e.target.value)}
                       placeholder="https://example.com or #section"
@@ -2162,14 +2162,14 @@ export function BuilderUI({
               <button
                 type="button"
                 onClick={() => setEditingElement(null)}
-                className="rounded bg-zinc-700 px-4 py-2 text-sm text-white hover:bg-zinc-600"
+                className="rounded bg-surface-hover px-4 py-2 text-sm text-fg hover:bg-fg-subtle"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={applyElementEdit}
-                className="rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-500"
+                className="rounded bg-blue-600 px-4 py-2 text-sm text-fg hover:bg-blue-500"
               >
                 Save
               </button>
@@ -2180,21 +2180,21 @@ export function BuilderUI({
 
       {/* Enhance Panel Modal */}
       {showEnhancePanel && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-md rounded-xl border border-zinc-700 bg-zinc-900 p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay p-4">
+          <div className="w-full max-w-md rounded-card border border-border-hover bg-surface p-6 shadow-modal">
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-white">
+                <h2 className="font-serif text-xl text-fg">
                   ✨ Enhance Your Site
                 </h2>
-                <p className="mt-1 text-sm text-zinc-400">
+                <p className="mt-1 text-sm text-fg-muted">
                   Apply improvements to {currentPage}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowEnhancePanel(false)}
-                className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+                className="rounded-control p-2 text-fg-muted hover:bg-surface-hover hover:text-fg"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -2224,34 +2224,34 @@ export function BuilderUI({
                     type="button"
                     onClick={() => handleEnhance(skill.id)}
                     disabled={isEnhancing || enhancingSkill !== null}
-                    className={`flex w-full items-center gap-4 rounded-lg border p-4 text-left transition-all ${
+                    className={`flex w-full items-center gap-4 rounded-control border p-4 text-left transition-all ${
                       isApplied
-                        ? "border-emerald-500/50 bg-emerald-500/10"
-                        : "border-zinc-700 bg-zinc-800/50 hover:border-zinc-600 hover:bg-zinc-800"
+                        ? "border-success/50 bg-success/10"
+                        : "border-border-hover bg-surface-alt hover:border-fg-subtle hover:bg-surface-hover"
                     } ${isEnhancing || enhancingSkill !== null ? "opacity-70" : ""}`}
                   >
                     <span className="text-2xl">{skill.icon}</span>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-white">
+                        <span className="font-medium text-fg">
                           {skill.name}
                         </span>
                         {isApplied && (
-                          <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs text-emerald-400">
+                          <span className="rounded-pill bg-success/20 px-2 py-0.5 text-xs text-success-muted">
                             Applied
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-zinc-400">
+                      <p className="text-sm text-fg-muted">
                         {skill.description}
                       </p>
                     </div>
                     {isEnhancing ? (
-                      <span className="shrink-0 text-sm text-zinc-400">
+                      <span className="shrink-0 text-sm text-fg-muted">
                         Enhancing...
                       </span>
                     ) : (
-                      <span className="shrink-0 rounded bg-zinc-700 px-2 py-1 text-xs text-zinc-300">
+                      <span className="shrink-0 rounded bg-surface-hover px-2 py-1 text-xs text-fg-strong">
                         ~30 credits
                       </span>
                     )}
@@ -2261,12 +2261,12 @@ export function BuilderUI({
             </div>
 
             {error && (
-              <div className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
+              <div className="mt-4 rounded-control border border-danger/30 bg-danger/10 p-3 text-sm text-danger-muted">
                 {error}
               </div>
             )}
 
-            <p className="mt-4 text-center text-xs text-zinc-500">
+            <p className="mt-4 text-center text-xs text-fg-subtle">
               Enhancements modify {currentPage}. You can apply multiple skills.
             </p>
           </div>
@@ -2276,15 +2276,15 @@ export function BuilderUI({
       {/* ===== MAIN CONTENT AREA ===== */}
       <div className="flex min-h-0 flex-1 flex-row">
         {/* ===== LEFT PANEL - CHAT (Desktop only) ===== */}
-        <div className="hidden w-96 shrink-0 flex-col border-r border-zinc-800 bg-zinc-900 lg:flex">
+        <div className="hidden w-96 shrink-0 flex-col border-r border-border bg-surface lg:flex">
           {/* Chat Header */}
-          <div className="flex items-center justify-between border-b border-zinc-800 p-4">
+          <div className="flex items-center justify-between border-b border-border p-4">
             <div>
-              <h2 className="font-semibold text-white">Chat</h2>
-              <p className="text-sm text-zinc-400">Describe your changes</p>
+              <h2 className="font-semibold text-fg">Chat</h2>
+              <p className="text-sm text-fg-muted">Describe your changes</p>
             </div>
             {isGenerating && liveUsage && (
-              <span className="text-xs text-amber-400">
+              <span className="text-xs text-warning-muted">
                 ~{liveUsage.estimatedCredits} credits used
               </span>
             )}
@@ -2293,18 +2293,18 @@ export function BuilderUI({
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4">
             {messages.length === 0 ? (
-              <div className="text-sm text-zinc-500">
+              <div className="text-sm text-fg-subtle">
                 <p className="mb-3">Describe the website you want to create:</p>
                 <div className="space-y-2 text-xs">
-                  <p className="rounded bg-zinc-800 p-2">
+                  <p className="rounded bg-surface-hover p-2">
                     "A landing page for a developer tools startup with features,
                     pricing, and documentation"
                   </p>
-                  <p className="rounded bg-zinc-800 p-2">
+                  <p className="rounded bg-surface-hover p-2">
                     "Personal site for an executive coach with about, services,
                     and booking page"
                   </p>
-                  <p className="rounded bg-zinc-800 p-2">
+                  <p className="rounded bg-surface-hover p-2">
                     "A consulting agency website with case studies and contact
                     form"
                   </p>
@@ -2312,8 +2312,8 @@ export function BuilderUI({
                 {user &&
                   creditBalance &&
                   creditBalance.availableCredits < 150 && (
-                    <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
-                      <p className="text-xs text-amber-200">
+                    <div className="mt-4 rounded-control border border-warning/30 bg-warning/10 p-3">
+                      <p className="text-xs text-warning-muted">
                         You have {creditBalance.availableCredits} credits. Buy
                         more to start generating.
                       </p>
@@ -2326,7 +2326,7 @@ export function BuilderUI({
                           });
                           setShowBuyCredits(true);
                         }}
-                        className="mt-2 rounded bg-amber-500 px-3 py-1 text-xs font-medium text-black hover:bg-amber-400"
+                        className="mt-2 rounded bg-warning px-3 py-1 text-xs font-medium text-primary-fg hover:bg-warning-muted"
                       >
                         Buy Credits
                       </button>
@@ -2340,39 +2340,39 @@ export function BuilderUI({
                     return (
                       <div
                         key={`enhance-${msg.skillId}-${i}`}
-                        className={`mr-4 rounded-lg border p-3 ${
+                        className={`mr-4 rounded-control border p-3 ${
                           msg.status === "pending"
-                            ? "border-zinc-700 bg-zinc-800"
+                            ? "border-border-hover bg-surface-hover"
                             : msg.status === "complete"
-                              ? "border-emerald-500/30 bg-emerald-500/10"
-                              : "border-red-500/30 bg-red-500/10"
+                              ? "border-success/30 bg-success/10"
+                              : "border-danger/30 bg-danger/10"
                         }`}
                       >
                         <div className="flex items-center gap-3">
                           <span className="text-xl">{msg.skillIcon}</span>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
-                              <span className="font-medium text-white">
+                              <span className="font-medium text-fg">
                                 {msg.skillName}
                               </span>
                               {msg.status === "pending" && (
-                                <span className="inline-flex items-center gap-1.5 text-xs text-zinc-400">
-                                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
+                                <span className="inline-flex items-center gap-1.5 text-xs text-fg-muted">
+                                  <span className="h-1.5 w-1.5 animate-pulse rounded-pill bg-warning" />
                                   Enhancing...
                                 </span>
                               )}
                               {msg.status === "complete" && (
-                                <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs text-emerald-400">
+                                <span className="rounded-pill bg-success/20 px-2 py-0.5 text-xs text-success-muted">
                                   ✓ Applied
                                 </span>
                               )}
                               {msg.status === "error" && (
-                                <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-xs text-red-400">
+                                <span className="rounded-pill bg-danger/20 px-2 py-0.5 text-xs text-danger-muted">
                                   Failed
                                 </span>
                               )}
                             </div>
-                            <p className="text-xs text-zinc-400">
+                            <p className="text-xs text-fg-muted">
                               {msg.status === "pending" &&
                                 `Applying to ${msg.filename}...`}
                               {msg.status === "complete" && (
@@ -2396,8 +2396,8 @@ export function BuilderUI({
                       key={`${msg.role}-${i}`}
                       className={`text-sm ${
                         msg.role === "user"
-                          ? "ml-4 rounded-lg bg-zinc-700 p-3 text-white"
-                          : "mr-4 rounded-lg bg-zinc-800 p-3 text-zinc-300"
+                          ? "ml-4 rounded-control bg-surface-hover p-3 text-fg"
+                          : "mr-4 rounded-control bg-surface-hover p-3 text-fg-strong"
                       }`}
                     >
                       {msg.role === "user" &&
@@ -2410,7 +2410,7 @@ export function BuilderUI({
                                 key={`msg-img-${i}-${imgIdx}`}
                                 src={`data:${img.mimeType};base64,${img.data}`}
                                 alt={`Attachment ${imgIdx + 1}`}
-                                className="h-12 w-12 rounded border border-zinc-600 object-cover"
+                                className="h-12 w-12 rounded border border-fg-subtle object-cover"
                               />
                             ))}
                           </div>
@@ -2419,7 +2419,7 @@ export function BuilderUI({
                         !msg.images &&
                         msg.imageCount &&
                         msg.imageCount > 0 && (
-                          <div className="mb-1.5 inline-flex items-center gap-1 rounded bg-zinc-600/50 px-2 py-0.5 text-xs text-zinc-400">
+                          <div className="mb-1.5 inline-flex items-center gap-1 rounded bg-fg-subtle/50 px-2 py-0.5 text-xs text-fg-muted">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               width="12"
@@ -2466,12 +2466,14 @@ export function BuilderUI({
           {/* Input */}
           {/* biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop target */}
           <div
-            className={`border-t border-zinc-800 p-4 transition ${isDragging ? "ring-2 ring-inset ring-indigo-500/50" : ""}`}
+            className={`border-t border-border p-4 transition ${isDragging ? "ring-2 ring-inset ring-accent/50" : ""}`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
           >
-            {error && <div className="mb-2 text-xs text-red-400">{error}</div>}
+            {error && (
+              <div className="mb-2 text-xs text-danger-muted">{error}</div>
+            )}
             {multimodalEnabled && attachedImages.length > 0 && (
               <div className="mb-2 flex flex-wrap gap-2">
                 {attachedImages.map((img, i) => (
@@ -2480,12 +2482,12 @@ export function BuilderUI({
                     <img
                       src={img.preview}
                       alt={`Attachment ${i + 1}`}
-                      className="h-16 w-16 rounded-lg border border-zinc-700 object-cover"
+                      className="h-16 w-16 rounded-control border border-border-hover object-cover"
                     />
                     <button
                       type="button"
                       onClick={() => removeAttachedImage(i)}
-                      className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-zinc-600 text-[10px] text-white opacity-0 transition-opacity hover:bg-red-500 group-hover:opacity-100"
+                      className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-pill bg-fg-subtle text-[10px] text-fg opacity-0 transition-opacity hover:bg-danger-hover group-hover:opacity-100"
                     >
                       ×
                     </button>
@@ -2506,7 +2508,7 @@ export function BuilderUI({
                 }
                 rows={1}
                 maxHeight={120}
-                className="min-h-[38px] w-full resize-none rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-zinc-600 focus:outline-none"
+                className="min-h-[38px] w-full resize-none rounded-control border border-border-hover bg-surface-hover px-3 py-2 font-mono text-sm text-fg placeholder-fg-subtle focus:border-fg-subtle focus:outline-none"
                 disabled={isGenerating}
               />
               <div className="flex items-center justify-between">
@@ -2524,7 +2526,7 @@ export function BuilderUI({
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isGenerating || attachedImages.length >= 4}
-                      className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-700 text-zinc-400 transition-colors hover:border-zinc-500 hover:text-zinc-200 disabled:opacity-30"
+                      className="flex h-8 w-8 items-center justify-center rounded-pill border border-border-hover text-fg-muted transition-colors hover:border-fg-subtle hover:text-fg disabled:opacity-30"
                       title="Attach image (or paste a screenshot)"
                     >
                       <svg
@@ -2555,7 +2557,7 @@ export function BuilderUI({
                     (!input.trim() && attachedImages.length === 0)
                   }
                   data-testid="send-button"
-                  className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-control bg-primary px-4 py-2 text-sm font-medium text-primary-fg transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isGenerating ? "Generating..." : "Send"}
                 </button>
@@ -2568,7 +2570,7 @@ export function BuilderUI({
         <div className="flex min-h-0 flex-1 flex-col">
           {/* Page tabs */}
           {pageNames.length > 1 && (
-            <div className="flex shrink-0 gap-1 overflow-x-auto border-b border-zinc-800 bg-zinc-900 px-4 py-2">
+            <div className="flex shrink-0 gap-1 overflow-x-auto border-b border-border bg-surface px-4 py-2">
               {pageNames.map((name) => (
                 <button
                   key={name}
@@ -2576,8 +2578,8 @@ export function BuilderUI({
                   onClick={() => setCurrentPage(name)}
                   className={`shrink-0 rounded px-3 py-1 text-sm transition-colors ${
                     currentPage === name
-                      ? "bg-zinc-700 text-white"
-                      : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                      ? "bg-surface-hover text-fg"
+                      : "text-fg-muted hover:bg-surface-hover hover:text-fg"
                   }`}
                 >
                   {name}
@@ -2587,33 +2589,33 @@ export function BuilderUI({
           )}
 
           {/* Preview header with viewport toggles (desktop only) */}
-          <div className="hidden shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4 py-2 lg:flex">
+          <div className="hidden shrink-0 items-center justify-between border-b border-border bg-surface px-4 py-2 lg:flex">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-zinc-400">
+              <span className="text-sm text-fg-muted">
                 Preview{currentPage ? `: ${currentPage}` : ""}
               </span>
               {displayHtml && (
-                <span className="text-xs text-zinc-500">
+                <span className="text-xs text-fg-subtle">
                   (double-click text to edit)
                 </span>
               )}
             </div>
             <div className="flex items-center gap-2">
               {isGenerating && (
-                <span className="flex items-center gap-2 text-sm text-zinc-500">
-                  <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
+                <span className="flex items-center gap-2 text-sm text-fg-subtle">
+                  <span className="h-2 w-2 animate-pulse rounded-pill bg-success" />
                   Streaming...
                 </span>
               )}
               {/* Viewport size toggles */}
-              <div className="flex rounded-lg border border-zinc-700 p-0.5">
+              <div className="flex rounded-control border border-border-hover p-0.5">
                 <button
                   type="button"
                   onClick={() => setViewportSize("desktop")}
                   className={`rounded px-2 py-1 text-xs transition-colors ${
                     viewportSize === "desktop"
-                      ? "bg-zinc-700 text-white"
-                      : "text-zinc-400 hover:text-white"
+                      ? "bg-surface-hover text-fg"
+                      : "text-fg-muted hover:text-fg"
                   }`}
                   title="Desktop"
                 >
@@ -2624,8 +2626,8 @@ export function BuilderUI({
                   onClick={() => setViewportSize("tablet")}
                   className={`rounded px-2 py-1 text-xs transition-colors ${
                     viewportSize === "tablet"
-                      ? "bg-zinc-700 text-white"
-                      : "text-zinc-400 hover:text-white"
+                      ? "bg-surface-hover text-fg"
+                      : "text-fg-muted hover:text-fg"
                   }`}
                   title="Tablet"
                 >
@@ -2636,8 +2638,8 @@ export function BuilderUI({
                   onClick={() => setViewportSize("mobile")}
                   className={`rounded px-2 py-1 text-xs transition-colors ${
                     viewportSize === "mobile"
-                      ? "bg-zinc-700 text-white"
-                      : "text-zinc-400 hover:text-white"
+                      ? "bg-surface-hover text-fg"
+                      : "text-fg-muted hover:text-fg"
                   }`}
                   title="Mobile"
                 >
@@ -2648,21 +2650,21 @@ export function BuilderUI({
           </div>
 
           {/* Preview iframe */}
-          <div className="relative min-h-0 flex-1 bg-zinc-950">
+          <div className="relative min-h-0 flex-1 bg-bg">
             <div className={`h-full ${viewportClasses[viewportSize]}`}>
               {displayHtml ? (
                 <iframe
-                  className="h-full w-full border-0 bg-white"
+                  className="h-full w-full border-0 bg-primary"
                   title="Preview"
                   sandbox="allow-scripts allow-same-origin"
                   srcDoc={displayHtml}
                 />
               ) : (
-                <div className="flex h-full items-center justify-center p-4 text-zinc-400">
+                <div className="flex h-full items-center justify-center p-4 text-fg-muted">
                   <div className="text-center">
                     <div className="mb-2 text-4xl">🏗️</div>
                     <p className="text-base">Your website will appear here</p>
-                    <p className="mt-2 text-xs text-zinc-500">
+                    <p className="mt-2 text-xs text-fg-subtle">
                       Describe your website in the chat to get started
                     </p>
                   </div>
@@ -2674,11 +2676,11 @@ export function BuilderUI({
       </div>
 
       {/* ===== MOBILE BOTTOM BAR ===== */}
-      <div className="flex shrink-0 items-center justify-around border-t border-zinc-800 bg-zinc-900 py-2 lg:hidden">
+      <div className="flex shrink-0 items-center justify-around border-t border-border bg-surface py-2 lg:hidden">
         <button
           type="button"
           onClick={() => setShowChatSheet(true)}
-          className="flex flex-col items-center gap-1 px-4 py-2 text-zinc-400 hover:text-white"
+          className="flex flex-col items-center gap-1 px-4 py-2 text-fg-muted hover:text-fg"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -2700,7 +2702,7 @@ export function BuilderUI({
           type="button"
           onClick={() => setShowEnhancePanel(true)}
           disabled={pageNames.length === 0}
-          className="flex flex-col items-center gap-1 px-4 py-2 text-zinc-400 hover:text-white disabled:text-zinc-600"
+          className="flex flex-col items-center gap-1 px-4 py-2 text-fg-muted hover:text-fg disabled:text-fg-subtle"
         >
           <span className="text-xl">✨</span>
           <span className="text-xs">Enhance</span>
@@ -2709,7 +2711,7 @@ export function BuilderUI({
           type="button"
           onClick={handlePublish}
           disabled={!projectId || isPublishing}
-          className="flex flex-col items-center gap-1 px-4 py-2 text-emerald-400 hover:text-emerald-300 disabled:text-zinc-600"
+          className="flex flex-col items-center gap-1 px-4 py-2 text-success-muted hover:text-success-muted disabled:text-fg-subtle"
         >
           <span className="text-xl">🚀</span>
           <span className="text-xs">{isPublishing ? "..." : "Deploy"}</span>
@@ -2722,23 +2724,23 @@ export function BuilderUI({
           {/* Backdrop */}
           <button
             type="button"
-            className="absolute inset-0 bg-black/60"
+            className="absolute inset-0 bg-overlay"
             onClick={() => setShowChatSheet(false)}
             aria-label="Close chat"
           />
           {/* Sheet */}
-          <div className="absolute inset-x-0 bottom-0 flex max-h-[85vh] flex-col rounded-t-2xl border-t border-zinc-700 bg-zinc-900">
+          <div className="absolute inset-x-0 bottom-0 flex max-h-[85vh] flex-col rounded-t-2xl border-t border-border-hover bg-surface">
             {/* Drag handle */}
             <div className="flex justify-center py-3">
-              <div className="h-1 w-12 rounded-full bg-zinc-600" />
+              <div className="h-1 w-12 rounded-pill bg-fg-subtle" />
             </div>
             {/* Chat header */}
-            <div className="flex items-center justify-between border-b border-zinc-800 px-4 pb-3">
-              <h2 className="font-semibold text-white">Chat</h2>
+            <div className="flex items-center justify-between border-b border-border px-4 pb-3">
+              <h2 className="font-semibold text-fg">Chat</h2>
               <button
                 type="button"
                 onClick={() => setShowChatSheet(false)}
-                className="rounded-lg p-1 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+                className="rounded-control p-1 text-fg-muted hover:bg-surface-hover hover:text-fg"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -2760,15 +2762,15 @@ export function BuilderUI({
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4">
               {messages.length === 0 ? (
-                <div className="text-sm text-zinc-500">
+                <div className="text-sm text-fg-subtle">
                   <p className="mb-3">
                     Describe the website you want to create:
                   </p>
                   <div className="space-y-2 text-xs">
-                    <p className="rounded bg-zinc-800 p-2">
+                    <p className="rounded bg-surface-hover p-2">
                       "A landing page for a startup"
                     </p>
-                    <p className="rounded bg-zinc-800 p-2">
+                    <p className="rounded bg-surface-hover p-2">
                       "A portfolio for a photographer"
                     </p>
                   </div>
@@ -2780,38 +2782,38 @@ export function BuilderUI({
                       return (
                         <div
                           key={`mobile-enhance-${msg.skillId}-${i}`}
-                          className={`mr-4 rounded-lg border p-3 ${
+                          className={`mr-4 rounded-control border p-3 ${
                             msg.status === "pending"
-                              ? "border-zinc-700 bg-zinc-800"
+                              ? "border-border-hover bg-surface-hover"
                               : msg.status === "complete"
-                                ? "border-emerald-500/30 bg-emerald-500/10"
-                                : "border-red-500/30 bg-red-500/10"
+                                ? "border-success/30 bg-success/10"
+                                : "border-danger/30 bg-danger/10"
                           }`}
                         >
                           <div className="flex items-center gap-3">
                             <span className="text-lg">{msg.skillIcon}</span>
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium text-white">
+                                <span className="text-sm font-medium text-fg">
                                   {msg.skillName}
                                 </span>
                                 {msg.status === "pending" && (
-                                  <span className="inline-flex items-center gap-1 text-xs text-zinc-400">
-                                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
+                                  <span className="inline-flex items-center gap-1 text-xs text-fg-muted">
+                                    <span className="h-1.5 w-1.5 animate-pulse rounded-pill bg-warning" />
                                   </span>
                                 )}
                                 {msg.status === "complete" && (
-                                  <span className="text-xs text-emerald-400">
+                                  <span className="text-xs text-success-muted">
                                     ✓
                                   </span>
                                 )}
                                 {msg.status === "error" && (
-                                  <span className="text-xs text-red-400">
+                                  <span className="text-xs text-danger-muted">
                                     ✗
                                   </span>
                                 )}
                               </div>
-                              <p className="text-xs text-zinc-400">
+                              <p className="text-xs text-fg-muted">
                                 {msg.status === "pending" && "Enhancing..."}
                                 {msg.status === "complete" && msg.filename}
                                 {msg.status === "error" &&
@@ -2827,8 +2829,8 @@ export function BuilderUI({
                         key={`mobile-${msg.role}-${i}`}
                         className={`text-sm ${
                           msg.role === "user"
-                            ? "ml-4 rounded-lg bg-zinc-700 p-3 text-white"
-                            : "mr-4 rounded-lg bg-zinc-800 p-3 text-zinc-300"
+                            ? "ml-4 rounded-control bg-surface-hover p-3 text-fg"
+                            : "mr-4 rounded-control bg-surface-hover p-3 text-fg-strong"
                         }`}
                       >
                         {msg.role === "user" &&
@@ -2841,7 +2843,7 @@ export function BuilderUI({
                                   key={`mobile-msg-img-${i}-${imgIdx}`}
                                   src={`data:${img.mimeType};base64,${img.data}`}
                                   alt={`Attachment ${imgIdx + 1}`}
-                                  className="h-10 w-10 rounded border border-zinc-600 object-cover"
+                                  className="h-10 w-10 rounded border border-fg-subtle object-cover"
                                 />
                               ))}
                             </div>
@@ -2850,7 +2852,7 @@ export function BuilderUI({
                           !msg.images &&
                           msg.imageCount &&
                           msg.imageCount > 0 && (
-                            <div className="mb-1.5 inline-flex items-center gap-1 rounded bg-zinc-600/50 px-2 py-0.5 text-xs text-zinc-400">
+                            <div className="mb-1.5 inline-flex items-center gap-1 rounded bg-fg-subtle/50 px-2 py-0.5 text-xs text-fg-muted">
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="12"
@@ -2895,13 +2897,13 @@ export function BuilderUI({
             {/* Input */}
             {/* biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop target */}
             <div
-              className={`border-t border-zinc-800 p-4 transition ${isDragging ? "ring-2 ring-inset ring-indigo-500/50" : ""}`}
+              className={`border-t border-border p-4 transition ${isDragging ? "ring-2 ring-inset ring-accent/50" : ""}`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
             >
               {error && (
-                <div className="mb-2 text-xs text-red-400">{error}</div>
+                <div className="mb-2 text-xs text-danger-muted">{error}</div>
               )}
               {multimodalEnabled && attachedImages.length > 0 && (
                 <div className="mb-2 flex flex-wrap gap-2">
@@ -2914,12 +2916,12 @@ export function BuilderUI({
                       <img
                         src={img.preview}
                         alt={`Attachment ${i + 1}`}
-                        className="h-12 w-12 rounded-lg border border-zinc-700 object-cover"
+                        className="h-12 w-12 rounded-control border border-border-hover object-cover"
                       />
                       <button
                         type="button"
                         onClick={() => removeAttachedImage(i)}
-                        className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-zinc-600 text-[10px] text-white hover:bg-red-500"
+                        className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-pill bg-fg-subtle text-[10px] text-fg hover:bg-danger-hover"
                       >
                         ×
                       </button>
@@ -2940,7 +2942,7 @@ export function BuilderUI({
                   }
                   rows={1}
                   maxHeight={80}
-                  className="min-h-[38px] w-full resize-none rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-zinc-600 focus:outline-none"
+                  className="min-h-[38px] w-full resize-none rounded-control border border-border-hover bg-surface-hover px-3 py-2 font-mono text-sm text-fg placeholder-fg-subtle focus:border-fg-subtle focus:outline-none"
                   disabled={isGenerating}
                 />
                 <div className="flex items-center justify-between">
@@ -2949,7 +2951,7 @@ export function BuilderUI({
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isGenerating || attachedImages.length >= 4}
-                      className="flex h-7 w-7 items-center justify-center rounded-full border border-zinc-700 text-zinc-400 transition-colors hover:border-zinc-500 hover:text-zinc-200 disabled:opacity-30"
+                      className="flex h-7 w-7 items-center justify-center rounded-pill border border-border-hover text-fg-muted transition-colors hover:border-fg-subtle hover:text-fg disabled:opacity-30"
                       title="Attach image (or paste a screenshot)"
                     >
                       <svg
@@ -2979,7 +2981,7 @@ export function BuilderUI({
                       (!input.trim() && attachedImages.length === 0)
                     }
                     data-testid="send-button-mobile"
-                    className="shrink-0 rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="shrink-0 rounded-control bg-primary px-4 py-2 text-sm font-medium text-primary-fg transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {isGenerating ? "..." : "Send"}
                   </button>
