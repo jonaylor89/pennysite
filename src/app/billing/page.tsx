@@ -23,16 +23,16 @@ export default async function BillingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg text-fg">
+    <div className="min-h-screen bg-canvas text-ink-900">
       <header className="mx-auto flex w-full max-w-4xl items-center justify-between px-6 py-6">
         <Link href="/" className="text-sm font-semibold tracking-wide">
           Pennysite
         </Link>
-        <nav className="flex items-center gap-4 text-sm text-fg-strong">
-          <Link href="/project/new" className="hover:text-fg">
+        <nav className="flex items-center gap-4 text-sm text-ink-600">
+          <Link href="/project/new" className="hover:text-ink-900">
             Builder
           </Link>
-          <Link href="/projects" className="hover:text-fg">
+          <Link href="/projects" className="hover:text-ink-900">
             Projects
           </Link>
         </nav>
@@ -40,7 +40,7 @@ export default async function BillingPage() {
 
       <main className="mx-auto max-w-4xl px-6 py-12">
         <h1 className="font-serif text-3xl tracking-[-0.02em]">Credits</h1>
-        <p className="mt-2 text-fg-muted">
+        <p className="mt-2 text-ink-600">
           Buy credits to generate websites. Pay only for what you use.
         </p>
 

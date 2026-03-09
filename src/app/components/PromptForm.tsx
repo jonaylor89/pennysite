@@ -95,7 +95,7 @@ export function PromptForm() {
     <form onSubmit={handleSubmit} className="mt-10">
       {/* biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop target */}
       <div
-        className={`group relative rounded-display transition ${isDragging ? "ring-2 ring-accent/50" : ""}`}
+        className={`group relative rounded-xl transition ${isDragging ? "ring-2 ring-accent/50" : ""}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -108,8 +108,8 @@ export function PromptForm() {
           onPaste={handlePaste}
           required
           rows={3}
-          placeholder='e.g. "A landing page for my coffee shop with menu and hours"'
-          className="w-full resize-none rounded-display border border-border bg-surface-alt p-6 pb-16 text-lg text-fg placeholder:text-fg-subtle shadow-2xl outline-none transition focus:border-border-hover focus:bg-surface/80"
+          placeholder='e.g. "A landing page for my ceramic studio..."'
+          className="w-full resize-none rounded-xl border border-border-strong bg-white p-6 pb-16 text-lg text-ink-900 placeholder:text-ink-400 shadow-2xl outline-none transition focus:border-accent focus:shadow-[0_4px_16px_rgba(26,25,22,0.10),0_0_0_3px_rgba(45,106,79,0.12)]"
         />
 
         {multimodalEnabled && attachedImages.length > 0 && (
@@ -120,7 +120,7 @@ export function PromptForm() {
                 <img
                   src={img.preview}
                   alt={`Attachment ${i + 1}`}
-                  className="h-10 w-10 rounded-control border border-border-hover object-cover"
+                  className="h-10 w-10 rounded-md border border-border-strong object-cover"
                 />
                 <button
                   type="button"
@@ -129,7 +129,7 @@ export function PromptForm() {
                       prev.filter((_, idx) => idx !== i),
                     )
                   }
-                  className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-pill bg-fg-subtle text-[10px] text-fg opacity-0 transition-opacity hover:bg-danger group-hover/thumb:opacity-100"
+                  className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-ink-400 text-[10px] text-white opacity-0 transition-opacity hover:bg-error group-hover/thumb:opacity-100"
                 >
                   ×
                 </button>
@@ -154,7 +154,7 @@ export function PromptForm() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={attachedImages.length >= MAX_IMAGES}
-                className="flex h-9 w-9 items-center justify-center rounded-pill border border-border-hover text-fg-muted transition-colors hover:border-fg-subtle hover:text-fg-strong disabled:opacity-30"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-border-strong text-ink-600 transition-colors hover:border-ink-400 hover:text-ink-900 disabled:opacity-30"
                 title="Attach an image or paste / drag a screenshot"
               >
                 <svg
@@ -178,14 +178,14 @@ export function PromptForm() {
             <div />
           )}
           <div className="flex items-center gap-3">
-            <span className="hidden text-xs text-fg-subtle sm:block">
+            <span className="hidden text-xs text-ink-400 sm:block">
               Press Enter
             </span>
             <Button
               type="submit"
               variant="primary"
               size="md"
-              className="rounded-card"
+              className="rounded-full"
             >
               Generate
             </Button>

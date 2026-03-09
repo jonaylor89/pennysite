@@ -54,8 +54,10 @@ export function GuestCheckoutModal({
     <Modal onClose={onClose} size="md">
       <div className="mb-6 text-center">
         <div className="mb-3 text-4xl">🚀</div>
-        <h2 className="font-serif text-xl text-fg">Generate Your Website</h2>
-        <p className="mt-2 text-sm text-fg-muted">
+        <h2 className="font-serif text-xl text-ink-900">
+          Generate Your Website
+        </h2>
+        <p className="mt-2 text-sm text-ink-600">
           Get 100 credits to create your first site. That's enough for a full
           multi-page website with room to iterate.
         </p>
@@ -79,14 +81,14 @@ export function GuestCheckoutModal({
         </div>
 
         {error && (
-          <p className="text-sm text-danger-muted" role="alert">
+          <p className="text-sm text-error" role="alert">
             {error}
           </p>
         )}
 
         <Button
           type="submit"
-          variant="success"
+          variant="primary"
           size="lg"
           fullWidth
           loading={loading}
@@ -95,11 +97,11 @@ export function GuestCheckoutModal({
           {loading ? "Redirecting to checkout..." : "Continue to Payment — $5"}
         </Button>
 
-        <p className="text-center text-xs text-fg-subtle">
+        <p className="text-center text-xs text-ink-400">
           Already have an account?{" "}
           <a
             href={`/auth/login?redirect=${encodeURIComponent("/project/new")}`}
-            className="text-fg underline hover:text-fg-muted"
+            className="text-ink-900 underline hover:text-ink-600"
           >
             Sign in
           </a>

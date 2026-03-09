@@ -2,11 +2,11 @@ import type { HTMLAttributes } from "react";
 import { cn } from "./cn";
 
 const variantClasses = {
-  neutral: "bg-surface-hover text-fg-muted",
-  success: "bg-success/20 text-success-muted",
-  danger: "bg-danger/20 text-danger-muted",
-  warning: "bg-warning/20 text-warning-muted",
-  accent: "bg-accent/20 text-accent-muted",
+  neutral: "bg-surface-2 text-ink-600 border border-border",
+  success: "bg-accent-light text-accent-text border border-accent/20",
+  danger: "bg-error/10 text-error border border-error/20",
+  warning: "bg-gold-light text-gold-text border border-gold/30",
+  accent: "bg-info/10 text-info border border-info/20",
 } as const;
 
 type BadgeProps = HTMLAttributes<HTMLSpanElement> & {
@@ -22,7 +22,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-pill px-2 py-0.5 text-xs font-medium",
+        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
         variantClasses[variant],
         className,
       )}

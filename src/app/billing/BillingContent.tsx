@@ -86,26 +86,26 @@ function BillingContentInner({ initialBalance }: Props) {
 
       {/* Current Balance */}
       <Card className="mt-8">
-        <div className="text-sm text-fg-muted">Your balance</div>
+        <div className="text-sm text-ink-600">Your balance</div>
         <div className="mt-1 flex items-baseline gap-2">
-          <span className="text-4xl font-bold text-success-muted">
+          <span className="text-4xl font-bold text-accent-text">
             {balance.availableCredits}
           </span>
-          <span className="text-fg-muted">credits</span>
+          <span className="text-ink-600">credits</span>
         </div>
         {balance.reservedCredits > 0 && (
-          <div className="mt-2 text-sm text-fg-subtle">
+          <div className="mt-2 text-sm text-ink-400">
             {balance.reservedCredits} credits reserved for active generations
           </div>
         )}
-        <div className="mt-4 text-sm text-fg-subtle">
+        <div className="mt-4 text-sm text-ink-400">
           Typical generation costs ~{balance.generationCost.typical} credits
         </div>
       </Card>
 
       {/* Credit Packs */}
       <h2 className="mt-12 font-serif text-xl">Buy Credits</h2>
-      <p className="mt-1 text-sm text-fg-muted">
+      <p className="mt-1 text-sm text-ink-600">
         One-time purchase. No subscription. Credits never expire.
       </p>
 
@@ -116,30 +116,30 @@ function BillingContentInner({ initialBalance }: Props) {
             type="button"
             onClick={() => buyPack(pack.id)}
             disabled={buyingPack !== null}
-            className={`relative rounded-modal border p-6 text-left transition-all ${
+            className={`relative rounded-xl border p-6 text-left transition-all ${
               pack.popular
-                ? "border-success/50 bg-success/10 hover:border-success"
-                : "border-border bg-surface hover:border-border-hover"
+                ? "border-accent/50 bg-accent-light hover:border-accent"
+                : "border-border bg-surface hover:border-border-strong"
             } ${buyingPack === pack.id ? "opacity-70" : ""} disabled:cursor-wait`}
           >
             {pack.popular && (
-              <span className="absolute -top-2.5 right-4 rounded-pill bg-success px-2 py-0.5 text-xs font-medium text-primary-fg">
+              <span className="absolute -top-2.5 right-4 rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-white">
                 Best value
               </span>
             )}
-            <div className="text-sm text-fg-muted">{pack.name}</div>
+            <div className="text-sm text-ink-600">{pack.name}</div>
             <div className="mt-1 text-2xl font-bold">
               {pack.credits} credits
             </div>
             <div className="mt-2 text-3xl font-bold">${pack.price}</div>
-            <div className="mt-1 text-xs text-fg-subtle">
+            <div className="mt-1 text-xs text-ink-400">
               ${((pack.price / pack.credits) * 100).toFixed(1)}¢ per credit
             </div>
-            <div className="mt-3 text-xs text-fg-subtle">
+            <div className="mt-3 text-xs text-ink-400">
               ~{Math.floor(pack.credits / 47)} generations
             </div>
             {buyingPack === pack.id && (
-              <div className="mt-2 text-xs text-success-muted">
+              <div className="mt-2 text-xs text-accent-text">
                 Redirecting to checkout...
               </div>
             )}
@@ -148,29 +148,29 @@ function BillingContentInner({ initialBalance }: Props) {
       </div>
 
       {/* Pricing Info */}
-      <Card className="mt-12 bg-surface-alt">
+      <Card className="mt-12 bg-surface-2">
         <h3 className="font-semibold">How pricing works</h3>
-        <div className="mt-4 space-y-3 text-sm text-fg-muted">
+        <div className="mt-4 space-y-3 text-sm text-ink-600">
           <div className="flex justify-between">
             <span>Base cost per generation</span>
-            <span className="text-fg">5 credits</span>
+            <span className="text-ink-900">5 credits</span>
           </div>
           <div className="flex justify-between">
             <span>Input tokens (your prompt)</span>
-            <span className="text-fg">0.1¢ per 100 tokens</span>
+            <span className="text-ink-900">0.1¢ per 100 tokens</span>
           </div>
           <div className="flex justify-between">
             <span>Output tokens (generated HTML)</span>
-            <span className="text-fg">0.5¢ per 100 tokens</span>
+            <span className="text-ink-900">0.5¢ per 100 tokens</span>
           </div>
           <div className="border-t border-border pt-3">
             <div className="flex justify-between">
               <span>Typical generation (3 pages)</span>
-              <span className="text-success-muted">~100 credits ($5.00)</span>
+              <span className="text-accent-text">~100 credits ($5.00)</span>
             </div>
           </div>
         </div>
-        <p className="mt-4 text-xs text-fg-subtle">
+        <p className="mt-4 text-xs text-ink-400">
           We reserve up to 150 credits before generation starts, then refund
           unused credits based on actual token usage.
         </p>

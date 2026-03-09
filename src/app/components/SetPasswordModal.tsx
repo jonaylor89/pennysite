@@ -61,8 +61,8 @@ export function SetPasswordModal({
     <Modal size="md">
       <div className="mb-6 text-center">
         <div className="mb-3 text-4xl">🎉</div>
-        <h2 className="font-serif text-xl text-fg">Your site is ready!</h2>
-        <p className="mt-2 text-sm text-fg-muted">
+        <h2 className="font-serif text-xl text-ink-900">Your site is ready!</h2>
+        <p className="mt-2 text-sm text-ink-600">
           Set a password to access your projects from any device.
         </p>
       </div>
@@ -117,7 +117,7 @@ export function SetPasswordModal({
         </Button>
       </form>
 
-      <p className="mt-4 text-center text-xs text-fg-subtle">
+      <p className="mt-4 text-center text-xs text-ink-400">
         You can always set a password later from your account settings.
       </p>
     </Modal>

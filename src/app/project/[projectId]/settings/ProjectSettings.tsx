@@ -39,11 +39,11 @@ function StatCard({
   subValue?: string;
 }) {
   return (
-    <div className="rounded-control border border-border bg-surface/50 p-4">
-      <div className="text-sm text-fg-muted">{label}</div>
+    <div className="rounded-md border border-border bg-surface p-4">
+      <div className="text-sm text-ink-600">{label}</div>
       <div className="mt-1 text-2xl font-semibold">{value}</div>
       {subValue && (
-        <div className="mt-0.5 text-xs text-fg-subtle">{subValue}</div>
+        <div className="mt-0.5 text-xs text-ink-400">{subValue}</div>
       )}
     </div>
   );
@@ -137,9 +137,9 @@ export function ProjectSettings({
   }
 
   const domainStatusColor = {
-    pending: "text-warning-muted",
-    active: "text-success-muted",
-    error: "text-danger-muted",
+    pending: "text-gold-text",
+    active: "text-accent-text",
+    error: "text-error",
   };
 
   const domainStatusLabel = {
@@ -149,12 +149,12 @@ export function ProjectSettings({
   };
 
   return (
-    <div className="min-h-screen bg-bg text-fg">
+    <div className="min-h-screen bg-canvas text-ink-900">
       <header className="mx-auto flex w-full max-w-2xl items-center justify-between px-6 py-6">
         <Link href="/" className="text-sm font-semibold tracking-wide">
           Pennysite
         </Link>
-        <nav className="flex items-center gap-4 text-sm text-fg-strong">
+        <nav className="flex items-center gap-4 text-sm text-ink-900">
           <Link
             href={`/project/${project.id}`}
             className={buttonClass("link", "sm")}
@@ -168,7 +168,7 @@ export function ProjectSettings({
         <h1 className="font-serif text-2xl tracking-[-0.02em]">
           {project.name}
         </h1>
-        <p className="mt-1 text-sm text-fg-muted">Project Settings</p>
+        <p className="mt-1 text-sm text-ink-600">Project Settings</p>
 
         {error && (
           <Alert variant="danger" className="mt-6">
@@ -182,27 +182,27 @@ export function ProjectSettings({
           {project.deployed_url ? (
             <>
               <div className="mt-3 flex items-center gap-2">
-                <span className="h-2 w-2 rounded-pill bg-success" />
-                <span className="text-sm text-fg-strong">Published</span>
+                <span className="h-2 w-2 rounded-full bg-accent" />
+                <span className="text-sm text-ink-900">Published</span>
               </div>
               <a
                 href={project.deployed_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-2 block text-sm text-success-muted hover:underline"
+                className="mt-2 block text-sm text-accent-text hover:underline"
               >
                 {project.deployed_url}
               </a>
               {project.last_deployed_at && (
-                <div className="mt-2 text-xs text-fg-subtle">
+                <div className="mt-2 text-xs text-ink-400">
                   Last deployed {formatDate(project.last_deployed_at)}
                 </div>
               )}
             </>
           ) : (
             <div className="mt-3 flex items-center gap-2">
-              <span className="h-2 w-2 rounded-pill bg-fg-subtle" />
-              <span className="text-sm text-fg-muted">Not published</span>
+              <span className="h-2 w-2 rounded-full bg-ink-400" />
+              <span className="text-sm text-ink-600">Not published</span>
             </div>
           )}
         </Card>
@@ -214,15 +214,15 @@ export function ProjectSettings({
             <div className="mt-3">
               <div className="flex items-center gap-2">
                 <span
-                  className={`h-2 w-2 rounded-pill ${
+                  className={`h-2 w-2 rounded-full ${
                     project.custom_domain_status === "active"
-                      ? "bg-success"
+                      ? "bg-accent"
                       : project.custom_domain_status === "pending"
-                        ? "bg-warning"
-                        : "bg-danger"
+                        ? "bg-gold"
+                        : "bg-error"
                   }`}
                 />
-                <span className="text-sm text-fg-strong">
+                <span className="text-sm text-ink-900">
                   {project.custom_domain}
                 </span>
               </div>
@@ -232,18 +232,16 @@ export function ProjectSettings({
                 {domainStatusLabel[project.custom_domain_status ?? "pending"]}
               </div>
               {project.custom_domain_added_at && (
-                <div className="mt-1 text-xs text-fg-subtle">
+                <div className="mt-1 text-xs text-ink-400">
                   Added {formatDate(project.custom_domain_added_at)}
                 </div>
               )}
               {project.custom_domain_status === "pending" && (
-                <div className="mt-3 rounded-control border border-border bg-surface-alt p-3 text-xs text-fg-muted">
-                  <p className="font-medium text-fg-strong">
-                    DNS Configuration
-                  </p>
+                <div className="mt-3 rounded-md border border-border bg-surface p-3 text-xs text-ink-600">
+                  <p className="font-medium text-ink-900">DNS Configuration</p>
                   <p className="mt-1">
                     Add a CNAME record pointing to{" "}
-                    <code className="rounded bg-surface-hover px-1 py-0.5 text-success-muted">
+                    <code className="rounded bg-surface-2 px-1 py-0.5 text-accent-text">
                       {project.cf_project_name}.pages.dev
                     </code>
                   </p>
@@ -251,7 +249,7 @@ export function ProjectSettings({
               )}
             </div>
           ) : (
-            <div className="mt-3 text-sm text-fg-muted">
+            <div className="mt-3 text-sm text-ink-600">
               {project.deployed_url
                 ? "No custom domain configured. Add one from the editor."
                 : "Publish your project first to add a custom domain."}
@@ -264,8 +262,8 @@ export function ProjectSettings({
           <h2 className="font-semibold">Sharing</h2>
           <div className="mt-3 flex items-center justify-between">
             <div>
-              <div className="text-sm text-fg-strong">Make project public</div>
-              <div className="text-xs text-fg-subtle">
+              <div className="text-sm text-ink-900">Make project public</div>
+              <div className="text-xs text-ink-400">
                 Anyone with the link can view the conversation and preview
               </div>
             </div>
@@ -273,12 +271,12 @@ export function ProjectSettings({
               type="button"
               onClick={handleTogglePublic}
               disabled={isTogglingPublic}
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-pill border-2 border-transparent transition-colors duration-200 ease-in-out disabled:opacity-50 ${
-                isPublic ? "bg-success" : "bg-surface-hover"
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out disabled:opacity-50 ${
+                isPublic ? "bg-accent" : "bg-surface-2"
               }`}
             >
               <span
-                className={`pointer-events-none inline-block h-5 w-5 rounded-pill bg-primary shadow transition duration-200 ease-in-out ${
+                className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-accent shadow transition duration-200 ease-in-out ${
                   isPublic ? "translate-x-5" : "translate-x-0"
                 }`}
               />
@@ -292,7 +290,7 @@ export function ProjectSettings({
                 value={`${typeof window !== "undefined" ? window.location.origin : ""}/project/${project.id}`}
                 className="flex-1"
               />
-              <Button variant="ghost" size="sm" onClick={copyShareLink}>
+              <Button variant="secondary" size="sm" onClick={copyShareLink}>
                 {copied ? "Copied!" : "Copy"}
               </Button>
             </div>
@@ -329,7 +327,7 @@ export function ProjectSettings({
             />
           </div>
           {stats.lastGenerationAt && (
-            <div className="mt-4 text-xs text-fg-subtle">
+            <div className="mt-4 text-xs text-ink-400">
               Last generation: {formatDate(stats.lastGenerationAt)}
             </div>
           )}
@@ -340,16 +338,16 @@ export function ProjectSettings({
           <h2 className="font-semibold">Project Info</h2>
           <div className="mt-3 space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-fg-muted">Created</span>
+              <span className="text-ink-600">Created</span>
               <span>{formatDate(project.created_at)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-fg-muted">Last updated</span>
+              <span className="text-ink-600">Last updated</span>
               <span>{formatDate(project.updated_at)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-fg-muted">Project ID</span>
-              <code className="rounded bg-surface-hover px-1.5 py-0.5 text-xs text-fg-muted">
+              <span className="text-ink-600">Project ID</span>
+              <code className="rounded bg-surface-2 px-1.5 py-0.5 text-xs text-ink-600">
                 {project.id}
               </code>
             </div>
@@ -358,7 +356,7 @@ export function ProjectSettings({
 
         {/* Danger Zone */}
         <Card variant="danger" className="mt-8">
-          <h2 className="font-semibold text-danger-muted">Danger Zone</h2>
+          <h2 className="font-semibold text-error">Danger Zone</h2>
 
           {project.deployed_url && (
             <Card
@@ -368,14 +366,14 @@ export function ProjectSettings({
             >
               <div>
                 <div className="font-medium">Unpublish project</div>
-                <div className="text-sm text-fg-muted">
+                <div className="text-sm text-ink-600">
                   Remove from the web. Your project files will be preserved.
                 </div>
               </div>
               {showUnpublishConfirm ? (
                 <div className="flex gap-2">
                   <Button
-                    variant="ghost"
+                    variant="secondary"
                     size="sm"
                     onClick={() => setShowUnpublishConfirm(false)}
                     disabled={isUnpublishing}
@@ -410,14 +408,14 @@ export function ProjectSettings({
           >
             <div>
               <div className="font-medium">Delete project</div>
-              <div className="text-sm text-fg-muted">
+              <div className="text-sm text-ink-600">
                 Permanently delete this project and all its data.
               </div>
             </div>
             {showDeleteConfirm ? (
               <div className="flex gap-2">
                 <Button
-                  variant="ghost"
+                  variant="secondary"
                   size="sm"
                   onClick={() => setShowDeleteConfirm(false)}
                   disabled={isDeleting}

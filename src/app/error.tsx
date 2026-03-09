@@ -39,7 +39,7 @@ export default function ErrorBoundary({
         onClick={reset}
         style={{
           padding: "0.5rem 1.25rem",
-          backgroundColor: "#09090b",
+          backgroundColor: "#2D6A4F",
           color: "#fff",
           border: "none",
           borderRadius: "0.5rem",

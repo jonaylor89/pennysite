@@ -30,8 +30,8 @@ export function RatingModal({ onClose, onSubmit }: RatingModalProps) {
   return (
     <Modal onClose={onClose} size="sm">
       <div className="mb-4 text-center">
-        <h2 className="font-serif text-lg text-fg">How does this look?</h2>
-        <p className="mt-1 text-sm text-fg-muted">
+        <h2 className="font-serif text-lg text-ink-900">How does this look?</h2>
+        <p className="mt-1 text-sm text-ink-600">
           Rate this draft to help us improve
         </p>
       </div>
@@ -46,8 +46,8 @@ export function RatingModal({ onClose, onSubmit }: RatingModalProps) {
             onMouseLeave={() => setHoveredRating(null)}
             className={`text-3xl transition-transform hover:scale-110 ${
               displayRating && rating <= displayRating
-                ? "text-star"
-                : "text-fg-subtle"
+                ? "text-[#C9A84C]"
+                : "text-ink-400"
             }`}
             aria-label={`Rate ${rating} stars`}
           >
@@ -57,7 +57,7 @@ export function RatingModal({ onClose, onSubmit }: RatingModalProps) {
       </div>
 
       <div className="flex gap-3">
-        <Button variant="ghost" onClick={handleSkip} className="flex-1">
+        <Button variant="secondary" onClick={handleSkip} className="flex-1">
           Skip
         </Button>
         <Button

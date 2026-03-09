@@ -1,142 +1,233 @@
 @import "tailwindcss";
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  /* ── reference palette ── */
-  --ref-zinc-950: #09090b;
-  --ref-zinc-900: #18181b;
-  --ref-zinc-800: #27272a;
-  --ref-zinc-700: #3f3f46;
-  --ref-zinc-600: #52525b;
-  --ref-zinc-500: #71717a;
-  --ref-zinc-400: #a1a1aa;
-  --ref-zinc-300: #d4d4d8;
-  --ref-zinc-200: #e4e4e7;
-  --ref-white: #ffffff;
-  --ref-black: #000000;
+  /* ── Canvas & Surface ── */
+  --color-canvas: #fafaf7;
+  --color-surface: #f4f3ee;
+  --color-surface-2: #eceae3;
+  --color-border: #ddd9ce;
+  --color-border-strong: #c5c0b4;
 
-  --ref-emerald-600: #059669;
-  --ref-emerald-500: #10b981;
-  --ref-emerald-400: #34d399;
-  --ref-red-600: #dc2626;
-  --ref-red-500: #ef4444;
-  --ref-red-400: #f87171;
-  --ref-amber-500: #f59e0b;
-  --ref-amber-400: #fbbf24;
-  --ref-amber-300: #fcd34d;
-  --ref-indigo-500: #6366f1;
-  --ref-indigo-400: #818cf8;
-  --ref-indigo-300: #a5b4fc;
-  --ref-yellow-400: #facc15;
+  /* ── Ink (Text) ── */
+  --color-ink-900: #1a1916;
+  --color-ink-600: #5c5a54;
+  --color-ink-400: #9a9790;
+  --color-ink-200: #d4d1c9;
 
-  /* ── semantic tokens ── */
-  --color-bg: var(--ref-zinc-950);
-  --color-surface: var(--ref-zinc-900);
-  --color-surface-hover: var(--ref-zinc-800);
-  --color-surface-alt: rgba(24, 24, 27, 0.5);
-  --color-border: var(--ref-zinc-800);
-  --color-border-hover: var(--ref-zinc-700);
-  --color-border-subtle: rgba(39, 39, 42, 0.5);
+  /* ── Accent — Forest Green ── */
+  --color-accent: #2d6a4f;
+  --color-accent-hover: #245740;
+  --color-accent-light: #eaf4ef;
+  --color-accent-text: #1b4332;
 
-  --color-fg: var(--ref-white);
-  --color-fg-muted: var(--ref-zinc-400);
-  --color-fg-subtle: var(--ref-zinc-500);
-  --color-fg-strong: var(--ref-zinc-300);
+  /* ── Accent — Warm Gold ── */
+  --color-gold: #c9a84c;
+  --color-gold-light: #fbf5e6;
+  --color-gold-text: #8b6914;
 
-  --color-primary: var(--ref-white);
-  --color-primary-hover: var(--ref-zinc-200);
-  --color-primary-fg: var(--ref-black);
+  /* ── Feedback ── */
+  --color-success: #2d6a4f;
+  --color-warning: #c9a84c;
+  --color-error: #c0392b;
+  --color-info: #2c5f8a;
 
-  --color-success: var(--ref-emerald-600);
-  --color-success-hover: var(--ref-emerald-500);
-  --color-success-fg: var(--ref-white);
-  --color-success-muted: var(--ref-emerald-400);
+  /* ── Shadows ── */
+  --shadow-xs: 0 1px 2px rgba(26, 25, 22, 0.06);
+  --shadow-sm: 0 2px 6px rgba(26, 25, 22, 0.08);
+  --shadow-md: 0 4px 16px rgba(26, 25, 22, 0.1);
+  --shadow-lg: 0 8px 32px rgba(26, 25, 22, 0.12);
+  --shadow-xl: 0 16px 56px rgba(26, 25, 22, 0.14);
+  --shadow-accent: 0 4px 20px rgba(45, 106, 79, 0.25);
 
-  --color-danger: var(--ref-red-600);
-  --color-danger-hover: var(--ref-red-500);
-  --color-danger-fg: var(--ref-white);
-  --color-danger-muted: var(--ref-red-400);
+  /* ── Motion ── */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 120ms;
+  --duration-base: 220ms;
+  --duration-slow: 380ms;
 
-  --color-warning: var(--ref-amber-500);
-  --color-warning-fg: var(--ref-black);
-  --color-warning-muted: var(--ref-amber-400);
-
-  --color-accent: var(--ref-indigo-500);
-  --color-accent-hover: var(--ref-indigo-400);
-  --color-accent-muted: var(--ref-indigo-300);
-
-  --color-overlay: rgba(0, 0, 0, 0.7);
-  --color-star: var(--ref-yellow-400);
-
-  /* ── radii ── */
-  --radius-control: 0.5rem;
-  --radius-card: 0.75rem;
-  --radius-modal: 1rem;
-  --radius-display: 1.5rem;
-  --radius-pill: 9999px;
-
-  /* ── shadows ── */
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  /* ── Z-Index ── */
+  --z-below: -1;
+  --z-base: 0;
+  --z-raised: 10;
+  --z-overlay: 100;
+  --z-modal: 200;
+  --z-toast: 300;
 }
 
 @theme inline {
-  --color-bg: var(--color-bg);
+  /* Canvas & Surface */
+  --color-canvas: var(--color-canvas);
   --color-surface: var(--color-surface);
-  --color-surface-hover: var(--color-surface-hover);
-  --color-surface-alt: var(--color-surface-alt);
+  --color-surface-2: var(--color-surface-2);
   --color-border: var(--color-border);
-  --color-border-hover: var(--color-border-hover);
-  --color-border-subtle: var(--color-border-subtle);
+  --color-border-strong: var(--color-border-strong);
 
-  --color-fg: var(--color-fg);
-  --color-fg-muted: var(--color-fg-muted);
-  --color-fg-subtle: var(--color-fg-subtle);
-  --color-fg-strong: var(--color-fg-strong);
+  /* Ink */
+  --color-ink-900: var(--color-ink-900);
+  --color-ink-600: var(--color-ink-600);
+  --color-ink-400: var(--color-ink-400);
+  --color-ink-200: var(--color-ink-200);
 
-  --color-primary: var(--color-primary);
-  --color-primary-hover: var(--color-primary-hover);
-  --color-primary-fg: var(--color-primary-fg);
-
-  --color-success: var(--color-success);
-  --color-success-hover: var(--color-success-hover);
-  --color-success-fg: var(--color-success-fg);
-  --color-success-muted: var(--color-success-muted);
-
-  --color-danger: var(--color-danger);
-  --color-danger-hover: var(--color-danger-hover);
-  --color-danger-fg: var(--color-danger-fg);
-  --color-danger-muted: var(--color-danger-muted);
-
-  --color-warning: var(--color-warning);
-  --color-warning-fg: var(--color-warning-fg);
-  --color-warning-muted: var(--color-warning-muted);
-
+  /* Accent */
   --color-accent: var(--color-accent);
   --color-accent-hover: var(--color-accent-hover);
-  --color-accent-muted: var(--color-accent-muted);
+  --color-accent-light: var(--color-accent-light);
+  --color-accent-text: var(--color-accent-text);
 
-  --color-overlay: var(--color-overlay);
-  --color-star: var(--color-star);
+  /* Gold */
+  --color-gold: var(--color-gold);
+  --color-gold-light: var(--color-gold-light);
+  --color-gold-text: var(--color-gold-text);
 
-  --radius-control: var(--radius-control);
-  --radius-card: var(--radius-card);
-  --radius-modal: var(--radius-modal);
-  --radius-display: var(--radius-display);
-  --radius-pill: var(--radius-pill);
+  /* Feedback */
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-error: var(--color-error);
+  --color-info: var(--color-info);
 
-  --shadow-card: var(--shadow-card);
-  --shadow-modal: var(--shadow-modal);
+  /* Overlay */
+  --color-overlay: rgba(26, 25, 22, 0.5);
 
+  /* Radii */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-accent: var(--shadow-accent);
+
+  /* Fonts */
   --font-sans: var(--font-inter);
   --font-serif: var(--font-instrument-serif);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: var(--color-bg);
-  color: var(--color-fg);
-  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+  background: var(--color-canvas);
+  color: var(--color-ink-900);
+  font-family: var(--font-inter), "Inter", system-ui, sans-serif;
   line-height: 1.6;
 }
+
+/*
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ *  COMPONENT PATTERNS
+ *  Standardized Tailwind class recipes for every
+ *  interactive and decorative element in the app.
+ *  Use these instead of inventing new combinations.
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ *
+ *  ── BUTTONS ──────────────────────────────────
+ *  All buttons are pill-shaped (rounded-full) by default.
+ *  Use the <Button> component from ui/Button.tsx.
+ *
+ *  primary    Main CTA — Generate, Save, Send, Buy.
+ *             bg-accent text-white hover:bg-accent-hover shadow-accent
+ *
+ *  secondary  Supporting action — Cancel, Skip, Copy, Sign Out.
+ *             border border-border text-ink-900
+ *             hover:border-border-strong hover:bg-surface-2
+ *
+ *  nav        Header pill buttons — Sign in, Builder.
+ *             border border-ink-900 text-ink-900
+ *             hover:bg-ink-900 hover:text-canvas
+ *
+ *  danger     Destructive confirm — Delete forever.
+ *             bg-error text-white hover:bg-error/90
+ *
+ *  danger-outline  Destructive trigger — Delete Account, Unpublish.
+ *             border border-error/50 text-error hover:bg-error/10
+ *
+ *  link       Inline text action — Skip for now, Cancel (text-only).
+ *             text-ink-600 hover:text-ink-900 underline underline-offset-2
+ *
+ *  Sizes: sm (px-3 py-1.5), md (px-4 py-2), lg (px-5 py-3)
+ *
+ *
+ *  ── ICON BUTTONS ─────────────────────────────
+ *  Small circular buttons for attach, close, menu dots.
+ *
+ *  Standard:  flex h-8 w-8 items-center justify-center rounded-full
+ *             border border-border-strong text-ink-600
+ *             hover:border-ink-400 hover:text-ink-900
+ *
+ *  Subtle:    rounded-md p-2 text-ink-600
+ *             hover:bg-surface-2 hover:text-ink-900
+ *
+ *
+ *  ── CHIPS ────────────────────────────────────
+ *  Clickable pill labels for prompt suggestions.
+ *
+ *  Suggestion chip:
+ *             rounded-full border border-border bg-white
+ *             px-4 py-2 text-sm text-ink-600
+ *             hover:border-accent hover:bg-accent-light hover:text-accent-text
+ *
+ *  Credit chip (builder header):
+ *             rounded-full border border-border-strong bg-surface-2
+ *             px-3 py-1.5 text-sm text-ink-900
+ *
+ *
+ *  ── BADGES ───────────────────────────────────
+ *  Non-interactive status indicators. Use <Badge> from ui/Badge.tsx.
+ *
+ *  neutral    bg-surface-2 text-ink-600 border border-border
+ *  success    bg-accent-light text-accent-text border border-accent/20
+ *  danger     bg-error/10 text-error border border-error/20
+ *  warning    bg-gold-light text-gold-text border border-gold/30
+ *  accent     bg-info/10 text-info border border-info/20
+ *
+ *  All badges: rounded-full px-2 py-0.5 text-xs font-medium
+ *
+ *  Eyebrow (above hero headings):
+ *             inline-flex items-center gap-2 rounded-full
+ *             bg-accent-light text-accent-text
+ *             border border-[rgba(45,106,79,0.2)]
+ *             px-3 py-1 text-xs font-semibold uppercase tracking-wider
+ *
+ *  Floating label ("Best value" on pricing cards):
+ *             absolute -top-2.5 right-4 rounded-full
+ *             bg-accent px-2 py-0.5 text-xs font-medium text-white
+ *
+ *
+ *  ── DROPDOWN MENUS ───────────────────────────
+ *  Floating panels for deploy, project actions, mobile overflow.
+ *
+ *  Container: absolute right-0 top-full z-50 mt-2 w-48
+ *             rounded-md border border-border-strong bg-surface
+ *             py-1 shadow-xl
+ *
+ *  Menu item: flex w-full items-center gap-2 px-4 py-2
+ *             text-left text-sm text-ink-900 hover:bg-surface-2
+ *
+ *  Divider:   my-1 border-t border-border-strong
+ *
+ *
+ *  ── NAV LINKS ────────────────────────────────
+ *  Inline navigation links in header, footer, and sidebar.
+ *
+ *  text-ink-600 hover:text-ink-900 transition-colors
+ *
+ *
+ *  ── TYPOGRAPHY ROLES ─────────────────────────
+ *
+ *  Page title (h1):   font-serif text-3xl–5xl tracking-[-0.02em]
+ *  Section heading:   font-serif text-xl
+ *  Modal title:       font-serif text-lg–xl text-ink-900
+ *  Body:              text-ink-900 (inherits from body)
+ *  Secondary text:    text-ink-600
+ *  Placeholder/muted: text-ink-400
+ *  Disabled:          text-ink-200
+ */

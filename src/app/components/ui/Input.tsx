@@ -9,8 +9,8 @@ export function Input({ invalid, className, ...props }: InputProps) {
   return (
     <input
       className={cn(
-        "w-full rounded-control border bg-surface-hover px-4 py-3 text-fg placeholder-fg-subtle outline-none transition-colors focus:border-border-hover",
-        invalid ? "border-danger" : "border-border-hover",
+        "w-full rounded-xl border bg-white px-4 py-3 text-ink-900 placeholder-ink-400 shadow-md outline-none transition-colors focus:border-accent",
+        invalid ? "border-error" : "border-border-strong",
         className,
       )}
       {...props}

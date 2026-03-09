@@ -4,8 +4,8 @@ import { cn } from "./cn";
 const variantClasses = {
   default: "border-border bg-surface",
   interactive:
-    "border-border bg-surface hover:border-border-hover transition-colors",
-  danger: "border-danger/30 bg-danger/5",
+    "border-border bg-surface hover:border-border-strong hover:shadow-lg hover:-translate-y-[3px] transition-all",
+  danger: "border-error/30 bg-error/5",
 } as const;
 
 const paddingClasses = {
@@ -28,7 +28,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-card border",
+        "rounded-2xl border",
         variantClasses[variant],
         paddingClasses[padding],
         className,

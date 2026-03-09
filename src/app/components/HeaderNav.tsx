@@ -19,16 +19,19 @@ export function HeaderNav() {
   }, [supabase.auth]);
 
   return (
-    <nav className="flex items-center gap-4 text-sm text-fg-strong">
-      <Link href={user ? "/billing" : "/pricing"} className="hover:text-fg">
+    <nav className="flex items-center gap-4 text-sm text-ink-600">
+      <Link
+        href={user ? "/billing" : "/pricing"}
+        className="hover:text-ink-900"
+      >
         Pricing
       </Link>
       {user && (
         <>
-          <Link href="/projects" className="hover:text-fg">
+          <Link href="/projects" className="hover:text-ink-900">
             Projects
           </Link>
-          <Link href="/account" className="hover:text-fg">
+          <Link href="/account" className="hover:text-ink-900">
             Account
           </Link>
         </>
@@ -36,25 +39,11 @@ export function HeaderNav() {
       {loading ? (
         <span className="h-8 w-16" />
       ) : user ? (
-        <Link
-          href="/project/new"
-          className={buttonClass(
-            "ghost",
-            "sm",
-            "rounded-pill border-border bg-surface-alt text-fg",
-          )}
-        >
+        <Link href="/project/new" className={buttonClass("nav", "sm")}>
           Builder
         </Link>
       ) : (
-        <Link
-          href="/auth/login"
-          className={buttonClass(
-            "ghost",
-            "sm",
-            "rounded-pill border-border bg-surface-alt text-fg",
-          )}
-        >
+        <Link href="/auth/login" className={buttonClass("nav", "sm")}>
           Sign in
         </Link>
       )}

@@ -31,7 +31,7 @@ export function Modal({
       <div className="absolute inset-0" onClick={onClose} />
       <div
         className={cn(
-          "relative w-full rounded-modal border border-border bg-surface p-6 shadow-modal",
+          "relative w-full rounded-xl border border-border bg-surface p-6 shadow-xl",
           sizeClasses[size],
           className,
         )}

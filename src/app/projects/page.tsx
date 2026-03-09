@@ -52,22 +52,22 @@ export default async function ProjectsPage({
   const totalPages = Math.ceil((count || 0) / PAGE_SIZE);
 
   return (
-    <div className="min-h-screen bg-bg px-4 py-12">
+    <div className="min-h-screen bg-canvas px-4 py-12">
       <div className="mx-auto max-w-6xl">
         <div className="mb-8 flex items-center justify-between">
-          <h1 className="font-serif text-2xl tracking-[-0.02em] text-fg">
+          <h1 className="font-serif text-2xl tracking-[-0.02em] text-ink-900">
             Your Projects
           </h1>
           <div className="flex items-center gap-3">
             <Link
               href="/account"
-              className="rounded-control border border-border bg-surface px-4 py-2 text-sm font-medium text-fg-strong transition-colors hover:bg-surface-hover hover:text-fg"
+              className="rounded-md border border-border bg-surface px-4 py-2 text-sm font-medium text-ink-900 transition-colors hover:bg-surface-2 hover:text-ink-900"
             >
               Account
             </Link>
             <Link
               href="/project/new"
-              className="rounded-control bg-primary px-4 py-2 text-sm font-medium text-primary-fg transition-colors hover:bg-primary-hover"
+              className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
             >
               New Project
             </Link>
@@ -83,7 +83,7 @@ export default async function ProjectsPage({
                 {page > 1 ? (
                   <Link
                     href={`/projects?page=${page - 1}`}
-                    className="flex items-center gap-1 text-sm font-medium text-fg-muted transition-colors hover:text-fg"
+                    className="flex items-center gap-1 text-sm font-medium text-ink-600 transition-colors hover:text-ink-900"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -102,7 +102,7 @@ export default async function ProjectsPage({
                     Previous
                   </Link>
                 ) : (
-                  <span className="flex items-center gap-1 text-sm font-medium text-fg-subtle">
+                  <span className="flex items-center gap-1 text-sm font-medium text-ink-400">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -121,14 +121,14 @@ export default async function ProjectsPage({
                   </span>
                 )}
 
-                <span className="text-sm text-fg-subtle">
+                <span className="text-sm text-ink-400">
                   Page {page} of {totalPages}
                 </span>
 
                 {page < totalPages ? (
                   <Link
                     href={`/projects?page=${page + 1}`}
-                    className="flex items-center gap-1 text-sm font-medium text-fg-muted transition-colors hover:text-fg"
+                    className="flex items-center gap-1 text-sm font-medium text-ink-600 transition-colors hover:text-ink-900"
                   >
                     Next
                     <svg
@@ -147,7 +147,7 @@ export default async function ProjectsPage({
                     </svg>
                   </Link>
                 ) : (
-                  <span className="flex items-center gap-1 text-sm font-medium text-fg-subtle">
+                  <span className="flex items-center gap-1 text-sm font-medium text-ink-400">
                     Next
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -169,11 +169,11 @@ export default async function ProjectsPage({
             )}
           </>
         ) : (
-          <div className="rounded-control border border-border bg-surface p-8 text-center">
-            <p className="text-fg-muted">No projects yet</p>
+          <div className="rounded-md border border-border bg-surface p-8 text-center">
+            <p className="text-ink-600">No projects yet</p>
             <Link
               href="/project/new"
-              className="mt-4 inline-block text-fg underline"
+              className="mt-4 inline-block text-ink-900 underline"
             >
               Create your first website
             </Link>

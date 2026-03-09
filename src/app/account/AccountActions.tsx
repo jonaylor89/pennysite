@@ -49,17 +49,17 @@ export function AccountActions() {
   return (
     <>
       <div className="mt-6">
-        <Button variant="ghost" size="md" onClick={handleSignOut}>
+        <Button variant="secondary" size="md" onClick={handleSignOut}>
           Sign Out
         </Button>
       </div>
 
       <Card variant="danger" className="mt-8">
-        <h2 className="font-semibold text-danger-muted">Danger Zone</h2>
+        <h2 className="font-semibold text-error">Danger Zone</h2>
 
         <Card variant="default" padding="md" className="mt-4">
           <div className="font-medium">Delete account</div>
-          <div className="mt-1 text-sm text-fg-muted">
+          <div className="mt-1 text-sm text-ink-600">
             Permanently delete your account and all your projects. This action
             cannot be undone.
           </div>
@@ -72,10 +72,12 @@ export function AccountActions() {
 
           {showDeleteConfirm ? (
             <div className="mt-4">
-              <p className="text-sm text-fg-muted">
+              <p className="text-sm text-ink-600">
                 Type{" "}
-                <span className="font-mono text-fg">delete my account</span> to
-                confirm:
+                <span className="font-mono text-ink-900">
+                  delete my account
+                </span>{" "}
+                to confirm:
               </p>
               <Input
                 type="text"
@@ -87,7 +89,7 @@ export function AccountActions() {
               />
               <div className="mt-3 flex gap-2">
                 <Button
-                  variant="ghost"
+                  variant="secondary"
                   size="sm"
                   onClick={() => {
                     setShowDeleteConfirm(false);

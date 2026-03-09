@@ -103,9 +103,9 @@ function LoginContent() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bg px-4">
+    <div className="flex min-h-screen items-center justify-center bg-canvas px-4">
       <div className="w-full max-w-sm">
-        <h1 className="mb-6 text-center font-serif text-2xl text-fg">
+        <h1 className="mb-6 text-center font-serif text-2xl text-ink-900">
           {isSignUp ? "Create Account" : "Sign In"}
         </h1>
 
@@ -130,8 +130,8 @@ function LoginContent() {
             />
           </div>
 
-          {error && <p className="text-sm text-danger-muted">{error}</p>}
-          {message && <p className="text-sm text-success-muted">{message}</p>}
+          {error && <p className="text-sm text-error">{error}</p>}
+          {message && <p className="text-sm text-accent-text">{message}</p>}
 
           <Button
             variant="primary"
@@ -148,7 +148,7 @@ function LoginContent() {
         {!isSignUp && (showMagicLinkOption || !password) && (
           <div className="mt-4 border-t border-border pt-4">
             <Button
-              variant="ghost"
+              variant="secondary"
               size="lg"
               fullWidth
               onClick={handleMagicLink}
@@ -156,13 +156,13 @@ function LoginContent() {
             >
               {loading ? "Sending..." : "Send me a login link instead"}
             </Button>
-            <p className="mt-2 text-center text-xs text-fg-subtle">
+            <p className="mt-2 text-center text-xs text-ink-400">
               We'll email you a link to sign in without a password
             </p>
           </div>
         )}
 
-        <p className="mt-4 text-center text-sm text-fg-muted">
+        <p className="mt-4 text-center text-sm text-ink-600">
           {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
           <button
             type="button"
@@ -172,7 +172,7 @@ function LoginContent() {
               setMessage(null);
               setShowMagicLinkOption(false);
             }}
-            className="text-fg underline"
+            className="text-ink-900 underline"
           >
             {isSignUp ? "Sign in" : "Sign up"}
           </button>
@@ -186,7 +186,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-bg text-fg-muted">
+        <div className="flex min-h-screen items-center justify-center bg-canvas text-ink-600">
           Loading...
         </div>
       }

@@ -56,7 +56,7 @@ const ProjectMenu = memo(function ProjectMenu({
           e.stopPropagation();
           setIsOpen(!isOpen);
         }}
-        className="rounded p-1 text-fg-subtle hover:bg-surface-hover hover:text-fg-strong"
+        className="rounded p-1 text-ink-400 hover:bg-surface-2 hover:text-ink-900"
         aria-label="Project menu"
       >
         <svg
@@ -78,10 +78,10 @@ const ProjectMenu = memo(function ProjectMenu({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full z-10 mt-1 w-40 rounded-control border border-border bg-surface py-1 shadow-xl">
+        <div className="absolute right-0 top-full z-10 mt-1 w-40 rounded-md border border-border bg-surface py-1 shadow-xl">
           <Link
             href={`/project/${project.id}/settings`}
-            className="block px-3 py-2 text-sm text-fg-strong hover:bg-surface-hover"
+            className="block px-3 py-2 text-sm text-ink-900 hover:bg-surface-2"
             onClick={() => setIsOpen(false)}
           >
             Settings
@@ -91,7 +91,7 @@ const ProjectMenu = memo(function ProjectMenu({
               href={project.deployed_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="block px-3 py-2 text-sm text-fg-strong hover:bg-surface-hover"
+              className="block px-3 py-2 text-sm text-ink-900 hover:bg-surface-2"
               onClick={() => setIsOpen(false)}
             >
               View Live Site
@@ -105,7 +105,7 @@ const ProjectMenu = memo(function ProjectMenu({
               setIsOpen(false);
               onDelete(project.id);
             }}
-            className="block w-full px-3 py-2 text-left text-sm text-danger-muted hover:bg-surface-hover"
+            className="block w-full px-3 py-2 text-left text-sm text-error hover:bg-surface-2"
           >
             Delete
           </button>
@@ -139,7 +139,7 @@ function PreviewFrame({ html }: { html: string }) {
   return (
     <div
       ref={containerRef}
-      className="pointer-events-none relative overflow-hidden bg-bg"
+      className="pointer-events-none relative overflow-hidden bg-canvas"
       style={{ aspectRatio: `${VIEWPORT_W}/${VIEWPORT_H}` }}
     >
       <iframe
@@ -176,7 +176,7 @@ function PreviewPlaceholder() {
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="text-border-hover"
+        className="text-border-strong"
         aria-hidden="true"
       >
         <rect width="18" height="18" x="3" y="3" rx="2" />
@@ -194,7 +194,7 @@ const ProjectCard = memo(function ProjectCard({
   onDelete: (id: string) => void;
 }) {
   return (
-    <div className="overflow-hidden rounded-card border border-border bg-surface transition-colors hover:border-border-hover">
+    <div className="overflow-hidden rounded-2xl border border-border bg-surface transition-colors hover:border-border-strong">
       <Link href={`/project/${project.id}`} className="block">
         <div className="border-b border-border">
           {project.previewHtml ? (
@@ -206,13 +206,13 @@ const ProjectCard = memo(function ProjectCard({
       </Link>
       <div className="flex items-center gap-2 px-3 py-2.5">
         <Link href={`/project/${project.id}`} className="min-w-0 flex-1">
-          <h2 className="truncate text-sm font-medium text-fg">
+          <h2 className="truncate text-sm font-medium text-ink-900">
             {project.name}
           </h2>
-          <p className="mt-0.5 truncate text-xs text-fg-subtle">
+          <p className="mt-0.5 truncate text-xs text-ink-400">
             {dateFmt.format(new Date(project.updated_at))}
             {project.deployed_url && (
-              <span className="ml-1.5 text-success-muted">• Live</span>
+              <span className="ml-1.5 text-accent-text">• Live</span>
             )}
           </p>
         </Link>
@@ -266,15 +266,17 @@ export function ProjectList({ projects }: { projects: Project[] }) {
 
       {confirmDeleteId && (
         <Modal size="sm" onClose={() => setConfirmDeleteId(null)}>
-          <h3 className="text-lg font-semibold text-fg">Delete Project?</h3>
-          <p className="mt-2 text-sm text-fg-muted">
+          <h3 className="text-lg font-semibold text-ink-900">
+            Delete Project?
+          </h3>
+          <p className="mt-2 text-sm text-ink-600">
             This will permanently delete the project and all its data. If the
             project is published, the live site will also be removed.
           </p>
-          {error && <p className="mt-3 text-sm text-danger-muted">{error}</p>}
+          {error && <p className="mt-3 text-sm text-error">{error}</p>}
           <div className="mt-6 flex justify-end gap-3">
             <Button
-              variant="ghost"
+              variant="secondary"
               onClick={() => setConfirmDeleteId(null)}
               disabled={deletingId !== null}
             >
