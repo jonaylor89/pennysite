@@ -76,8 +76,13 @@ export default function Home() {
           </div>
 
           <header className="relative mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-6">
-            <Link href="/about" className="text-sm font-semibold tracking-wide">
-              What is Pennysite
+            <Link href="/" className="flex items-center gap-2">
+              <img
+                src="/android-chrome-512x512.png"
+                alt="Pennysite"
+                width={56}
+                height={56}
+              />
             </Link>
             <HeaderNav />
           </header>

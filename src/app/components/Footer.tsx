@@ -43,7 +43,7 @@ export function Footer() {
                   href="/about"
                   className="hover:text-ink-900 transition-colors"
                 >
-                  About
+                  What is Pennysite
                 </Link>
               </li>
             </ul>
