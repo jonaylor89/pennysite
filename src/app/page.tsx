@@ -1,4 +1,4 @@
-import { LaptopIcon, MegaphoneIcon, RocketIcon } from "lucide-react";
+import { CameraIcon, DumbbellIcon, GemIcon } from "lucide-react";
 import Link from "next/link";
 import Script from "next/script";
 import { Footer } from "./components/Footer";
@@ -100,25 +100,25 @@ export default function Home() {
 
               <div className="mt-4 flex flex-wrap justify-center gap-3">
                 <Link
-                  href="/project/new?prompt=A+landing+page+for+a+developer+tools+startup+with+features+pricing+and+docs+link"
+                  href="/project/new?prompt=A+warm+elegant+wedding+photography+site+with+a+full-screen+hero+gallery+about+me+section+packages+and+a+contact+form+to+book+a+session"
                   className="flex flex-row items-center justify-center rounded-full border border-border bg-white px-4 py-2 text-sm text-ink-600 transition hover:border-accent hover:bg-accent-light hover:text-accent-text"
                 >
-                  <RocketIcon size={14} className="mr-2" />
-                  Dev tools startup
+                  <GemIcon size={14} className="mr-2" />
+                  Wedding photographer
                 </Link>
                 <Link
-                  href="/project/new?prompt=A+personal+site+for+an+executive+coach+with+about+services+and+booking+page"
+                  href="/project/new?prompt=A+bold+motivating+site+for+a+personal+trainer+with+services+like+1-on-1+coaching+and+group+classes+transformation+testimonials+and+a+booking+page"
                   className="flex flex-row items-center justify-center rounded-full border border-border bg-white px-4 py-2 text-sm text-ink-600 transition hover:border-accent hover:bg-accent-light hover:text-accent-text"
                 >
-                  <MegaphoneIcon size={14} className="mr-2" />
-                  Coaching practice
+                  <DumbbellIcon size={14} className="mr-2" />
+                  Personal trainer
                 </Link>
                 <Link
-                  href="/project/new?prompt=A+simple+landing+page+for+my+SaaS+app+with+features+pricing+FAQ+and+testimonials"
+                  href="/project/new?prompt=A+clean+modern+landing+page+for+an+indie+podcast+with+episode+highlights+listen-on+links+for+Spotify+and+Apple+a+host+bio+and+an+email+subscribe+form"
                   className="flex flex-row items-center justify-center rounded-full border border-border bg-white px-4 py-2 text-sm text-ink-600 transition hover:border-accent hover:bg-accent-light hover:text-accent-text"
                 >
-                  <LaptopIcon size={14} className="mr-2" />
-                  SaaS landing page
+                  <CameraIcon size={14} className="mr-2" />
+                  Podcast landing page
                 </Link>
               </div>
             </div>
