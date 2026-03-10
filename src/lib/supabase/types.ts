@@ -108,6 +108,57 @@ export interface Database {
         };
         Relationships: [];
       };
+      email_log: {
+        Row: {
+          id: string;
+          user_id: string;
+          email_type: string;
+          project_id: string | null;
+          resend_message_id: string | null;
+          sent_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          email_type: string;
+          project_id?: string | null;
+          resend_message_id?: string | null;
+          sent_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          email_type?: string;
+          project_id?: string | null;
+          resend_message_id?: string | null;
+          sent_at?: string;
+        };
+        Relationships: [];
+      };
+      email_preferences: {
+        Row: {
+          user_id: string;
+          unsubscribed_all: boolean;
+          unsubscribed_drip: boolean;
+          unsubscribed_reengagement: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          unsubscribed_all?: boolean;
+          unsubscribed_drip?: boolean;
+          unsubscribed_reengagement?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          unsubscribed_all?: boolean;
+          unsubscribed_drip?: boolean;
+          unsubscribed_reengagement?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       pending_generations: {
         Row: {
           id: string;
@@ -140,7 +191,85 @@ export interface Database {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      get_generated_never_published: {
+        Args: Record<string, never>;
+        Returns: {
+          user_id: string;
+          email: string;
+          project_id: string;
+          project_name: string;
+        }[];
+      };
+      get_created_never_edited: {
+        Args: Record<string, never>;
+        Returns: {
+          user_id: string;
+          email: string;
+          project_id: string;
+          project_name: string;
+        }[];
+      };
+      get_published_no_edits: {
+        Args: Record<string, never>;
+        Returns: {
+          user_id: string;
+          email: string;
+          project_id: string;
+          project_name: string;
+        }[];
+      };
+      get_has_credits_idle: {
+        Args: Record<string, never>;
+        Returns: {
+          user_id: string;
+          email: string;
+          available_credits: number;
+        }[];
+      };
+      get_purchased_never_generated: {
+        Args: Record<string, never>;
+        Returns: { user_id: string; email: string }[];
+      };
+      get_drip_eligible: {
+        Args: { p_drip_type: string; p_days_after_signup: number };
+        Returns: { user_id: string; email: string }[];
+      };
+      get_credit_balance: {
+        Args: { p_user_id: string };
+        Returns: { available_credits: number; reserved_credits: number }[];
+      };
+      reserve_credits_for_generation: {
+        Args: {
+          p_user_id: string;
+          p_reserved_credits: number;
+          p_idempotency_key: string;
+          p_project_id: string | null;
+        };
+        Returns: string;
+      };
+      finalize_generation_credits: {
+        Args: {
+          p_user_id: string;
+          p_generation_id: string;
+          p_success: boolean;
+          p_actual_credits: number | null;
+          p_input_tokens: number | null;
+          p_output_tokens: number | null;
+          p_total_tokens: number | null;
+          p_error: string | null;
+        };
+        Returns: undefined;
+      };
+      add_credits_from_purchase: {
+        Args: {
+          p_user_id: string;
+          p_credits: number;
+          p_stripe_event_id: string;
+        };
+        Returns: boolean;
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

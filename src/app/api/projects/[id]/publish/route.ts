@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { publishToCloudflare } from "@/lib/cloudflare/pages";
+import { onSitePublished } from "@/lib/email/triggers";
 import { trackServerEvent } from "@/lib/posthog/server";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/types";
@@ -64,6 +65,13 @@ export async function POST(
       page_count: Object.keys(pages).length,
       deployed_url: deployedUrl,
     });
+
+    // Fire-and-forget celebration email
+    if (user.email) {
+      onSitePublished(user.id, user.email, id, project.name, deployedUrl).catch(
+        (err) => console.error("Failed to send publish email:", err),
+      );
+    }
 
     return NextResponse.json({
       success: true,

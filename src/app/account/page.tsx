@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AccountActions } from "./AccountActions";
+import { EmailPreferences } from "./EmailPreferences";
 
 export default async function AccountPage() {
   const supabase = await createClient();
@@ -13,6 +14,18 @@ export default async function AccountPage() {
   if (!user) {
     redirect("/auth/login?redirect=/account");
   }
+
+  const { data: emailPrefs } = await supabase
+    .from("email_preferences")
+    .select("unsubscribed_all, unsubscribed_drip, unsubscribed_reengagement")
+    .eq("user_id", user.id)
+    .single();
+
+  const initialPrefs = emailPrefs ?? {
+    unsubscribed_all: false,
+    unsubscribed_drip: false,
+    unsubscribed_reengagement: false,
+  };
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -40,6 +53,8 @@ export default async function AccountPage() {
             <div className="mt-1">{user.email}</div>
           </div>
         </div>
+
+        <EmailPreferences initialPreferences={initialPrefs} />
 
         <AccountActions />
       </main>

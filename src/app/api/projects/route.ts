@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { onSecondSiteCreated } from "@/lib/email/triggers";
 import { trackServerEvent } from "@/lib/posthog/server";
 import { createClient } from "@/lib/supabase/server";
 
@@ -62,6 +63,18 @@ export async function POST(req: Request) {
     project_id: projectData.id,
     page_count: Object.keys(pages || {}).length,
   });
+
+  // Check if this is the user's second project → send celebration email
+  const { count } = await supabase
+    .from("projects")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id);
+
+  if (count === 2 && user.email) {
+    onSecondSiteCreated(user.id, user.email).catch((err) =>
+      console.error("Failed to send second-site email:", err),
+    );
+  }
 
   return NextResponse.json({ project });
 }
