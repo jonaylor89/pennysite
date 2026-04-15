@@ -3,6 +3,7 @@ import { removeCustomDomain } from "@/lib/cloudflare/domains";
 import { deleteProject } from "@/lib/cloudflare/pages";
 import { trackServerEvent } from "@/lib/posthog/server";
 import { createClient } from "@/lib/supabase/server";
+import type { Database } from "@/lib/supabase/types";
 
 export async function GET(
   _req: Request,
@@ -33,6 +34,8 @@ export async function GET(
   return NextResponse.json({ project });
 }
 
+type ProjectUpdate = Database["public"]["Tables"]["projects"]["Update"];
+
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -50,7 +53,7 @@ export async function PUT(
 
   const { name, pages, conversation, is_public } = await req.json();
 
-  const updateData: Record<string, unknown> = {
+  const updateData: ProjectUpdate = {
     name,
     pages,
     updated_at: new Date().toISOString(),
