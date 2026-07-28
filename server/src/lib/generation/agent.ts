@@ -1,0 +1,419 @@
+import type { AgentEvent } from "@earendil-works/pi-agent-core";
+import { getModel } from "@earendil-works/pi-ai/compat";
+import {
+	type AgentFactory,
+	type AgentLike,
+	createDefaultAgentFactory,
+	type GenerationDeps,
+	type GenerationState,
+} from "./agent-interface.js";
+import { selectComponentExamples } from "./components.js";
+import { generateDesignSeed } from "./design-seeds.js";
+import type {
+	GenerationEvent,
+	TokenUsage,
+	ToolCallMetrics,
+} from "./generation-events.js";
+import { buildAgentSystemPrompt } from "./system-prompt.js";
+import { createTools } from "./tools.js";
+import type { SiteSpec } from "./types.js";
+
+export type {
+	AgentFactory,
+	AgentLike,
+	GenerationDeps,
+	GenerationState,
+	PageDetails,
+} from "./agent-interface.js";
+export { validateHtml } from "./agent-interface.js";
+export type {
+	GenerationEvent,
+	TokenUsage,
+	ToolActivityEvent,
+	ToolCallMetrics,
+} from "./generation-events.js";
+export {
+	AGENT_SYSTEM_PROMPT,
+	buildAgentSystemPrompt,
+} from "./system-prompt.js";
+export { createTools } from "./tools.js";
+
+export async function* generateWebsite(
+	userRequest: string,
+	existingSpec?: SiteSpec,
+	existingPages?: Record<string, string>,
+	deps?: GenerationDeps,
+	images?: { data: string; mimeType: string }[],
+): AsyncGenerator<GenerationEvent> {
+	const state: GenerationState = {
+		spec: existingSpec || null,
+		pages: existingPages ? { ...existingPages } : {},
+		validationPassed: false,
+	};
+
+	const model = deps?.model ?? getModel("openai", "gpt-5.6-terra");
+
+	const apiKey = deps?.apiKey ?? process.env.OPENAI_API_KEY;
+
+	const tools = createTools(state);
+
+	const seed = Date.now();
+	const sectionTypes = existingSpec?.pages?.flatMap(
+		(p: { sections?: { type: string }[] }) =>
+			p.sections?.map((s: { type: string }) => s.type) ?? [],
+	) ?? ["hero", "features", "testimonials", "cta", "footer"];
+	const complexity = existingSpec?.siteComplexity;
+	const selectedExamples = selectComponentExamples(sectionTypes, seed);
+	const designSeed = generateDesignSeed(seed, complexity);
+	const systemPrompt = buildAgentSystemPrompt(selectedExamples, designSeed);
+
+	const agentFactory: AgentFactory =
+		deps?.agentFactory ?? createDefaultAgentFactory();
+
+	const agent: AgentLike = agentFactory(
+		{
+			systemPrompt,
+			model,
+			tools,
+			thinkingLevel: "low",
+			messages: [],
+		},
+		() => apiKey,
+	);
+
+	yield { type: "status", message: "Starting website generation..." };
+
+	const isModification =
+		existingSpec && existingPages && Object.keys(existingPages).length > 0;
+	console.log(`\n${"=".repeat(80)}`);
+	console.log("[AGENT] Generation started");
+	console.log("[AGENT] Mode:", isModification ? "MODIFICATION" : "NEW SITE");
+	console.log("[AGENT] User request:", userRequest);
+	if (isModification) {
+		console.log(
+			"[AGENT] Existing pages:",
+			Object.keys(existingPages as Record<string, string>),
+		);
+		console.log("[AGENT] Existing spec name:", existingSpec?.name);
+	}
+	console.log(`${"=".repeat(80)}\n`);
+
+	let prompt: string;
+
+	if (isModification) {
+		prompt = `## MODIFICATION REQUEST
+${userRequest}
+
+IMPORTANT: You are MODIFYING an existing website. Follow these steps:
+1. DO NOT call plan_site or write_page — the site already exists
+2. Call read_page for each page you need to inspect
+3. Call edit_page with targeted search/replace edits — change ONLY what the user asked for
+4. Keep all existing content, styling, and structure intact unless the user specifically asks to change it
+5. After all edits, call validate_site
+
+The site has these pages: ${Object.keys(existingPages as Record<string, string>).join(", ")}
+
+START by calling read_page to inspect the relevant page(s), then apply edits.`;
+	} else {
+		const imageHint =
+			images && images.length > 0
+				? "\n\nThe user has attached reference image(s). Use them as visual inspiration for the design — match layout, color scheme, typography, and overall aesthetic as closely as possible. You MUST still use your tools (plan_site, then write_page) to generate the site. Do NOT output raw HTML as text."
+				: "";
+		prompt = userRequest + imageHint;
+	}
+
+	const eventQueue: GenerationEvent[] = [];
+	let resolveWait: (() => void) | null = null;
+	let agentDone = false;
+	let runError: unknown = null;
+
+	const tokenUsage: TokenUsage = {
+		inputTokens: 0,
+		outputTokens: 0,
+		totalTokens: 0,
+	};
+
+	const toolMetrics: ToolCallMetrics = {
+		totalToolCalls: 0,
+		writePageCalls: 0,
+		editPageCalls: 0,
+		validateSiteCalls: 0,
+		pagesPassedValidation: 0,
+		pagesFailedValidation: 0,
+		fixAttemptsPerPage: {},
+	};
+
+	const unsubscribe = agent.subscribe((event: AgentEvent) => {
+		let newEvent: GenerationEvent | null = null;
+
+		if (event.type !== "message_update") {
+			console.log("[AGENT EVENT]", event.type);
+		}
+
+		switch (event.type) {
+			case "tool_execution_start": {
+				console.log("[AGENT] Tool execution START:", event.toolName);
+				const argsPreview = JSON.stringify(event.args, null, 2);
+				console.log(
+					"[AGENT] Tool args:",
+					`${argsPreview?.slice(0, 200)}${argsPreview && argsPreview.length > 200 ? "..." : ""}`,
+				);
+				const startArgs = event.args as Record<string, unknown> | undefined;
+				eventQueue.push({
+					type: "tool_activity",
+					toolName: event.toolName,
+					status: "start",
+					args: startArgs,
+				});
+				if (event.toolName === "plan_site") {
+					newEvent = { type: "status", message: "Creating site plan..." };
+				} else if (event.toolName === "write_page") {
+					const filename =
+						(event.args as { filename?: string })?.filename || "page";
+					newEvent = {
+						type: "status",
+						message: `Writing ${filename}...`,
+					};
+				} else if (event.toolName === "edit_page") {
+					const filename =
+						(event.args as { filename?: string })?.filename || "page";
+					newEvent = {
+						type: "status",
+						message: `Editing ${filename}...`,
+					};
+				} else if (event.toolName === "read_page") {
+					const filename =
+						(event.args as { filename?: string })?.filename || "page";
+					newEvent = {
+						type: "status",
+						message: `Reading ${filename}...`,
+					};
+				} else if (event.toolName === "validate_site") {
+					newEvent = { type: "status", message: "Validating site..." };
+				}
+				break;
+			}
+
+			case "tool_execution_end": {
+				console.log("[AGENT] Tool execution END:", event.toolName);
+				const resultPreview = JSON.stringify(event.result?.content, null, 2);
+				console.log(
+					"[AGENT] Tool result:",
+					`${resultPreview?.slice(0, 200)}${resultPreview && resultPreview.length > 200 ? "..." : ""}`,
+				);
+
+				toolMetrics.totalToolCalls++;
+
+				const toolName = event.toolName;
+				const details = event.result?.details as
+					| Record<string, unknown>
+					| undefined;
+
+				if (toolName === "write_page") {
+					toolMetrics.writePageCalls++;
+					if (details) {
+						if (details.valid === true) {
+							toolMetrics.pagesPassedValidation++;
+						} else if (details.valid === false) {
+							toolMetrics.pagesFailedValidation++;
+						}
+					}
+				} else if (toolName === "edit_page") {
+					toolMetrics.editPageCalls++;
+					if (details) {
+						const filename = details.filename as string;
+						toolMetrics.fixAttemptsPerPage[filename] =
+							(toolMetrics.fixAttemptsPerPage[filename] || 0) + 1;
+					}
+				} else if (toolName === "validate_site") {
+					toolMetrics.validateSiteCalls++;
+				}
+
+				const resultSuccess = details?.valid !== false;
+				const resultMessage =
+					typeof event.result?.content === "string"
+						? event.result.content.slice(0, 100)
+						: undefined;
+				eventQueue.push({
+					type: "tool_activity",
+					toolName,
+					status: "end",
+					result: {
+						success: resultSuccess,
+						message: resultMessage,
+					},
+				});
+
+				if (details) {
+					if (details.spec) {
+						newEvent = { type: "spec", spec: details.spec as SiteSpec };
+					}
+					if (details.filename && details.html && details.valid) {
+						eventQueue.push({
+							type: "page",
+							filename: details.filename as string,
+							html: details.html as string,
+						});
+					}
+				}
+				break;
+			}
+
+			case "message_end": {
+				const msg = event.message;
+				if (msg && typeof msg === "object" && "role" in msg) {
+					console.log("[AGENT] Message end - role:", msg.role);
+					if ("content" in msg && Array.isArray(msg.content)) {
+						for (const block of msg.content) {
+							if (block.type === "text" && "text" in block) {
+								console.log(
+									"[AGENT] Assistant text response:",
+									(block.text as string).slice(0, 500),
+								);
+							} else if (block.type === "toolCall") {
+								console.log(
+									"[AGENT] Tool call in message:",
+									(block as { name?: string }).name,
+								);
+							}
+						}
+					}
+				}
+				if (msg && typeof msg === "object") {
+					if ("role" in msg && msg.role === "assistant") {
+						const usageAny =
+							"usage" in msg
+								? (msg.usage as unknown as Record<string, unknown>)
+								: null;
+						if (usageAny && typeof usageAny === "object") {
+							const input = (usageAny.input ??
+								usageAny.prompt_tokens ??
+								usageAny.input_tokens ??
+								0) as number;
+							const output = (usageAny.output ??
+								usageAny.completion_tokens ??
+								usageAny.output_tokens ??
+								0) as number;
+							const total = (usageAny.totalTokens ??
+								usageAny.total_tokens ??
+								usageAny.total ??
+								input + output) as number;
+
+							tokenUsage.inputTokens += input;
+							tokenUsage.outputTokens += output;
+							tokenUsage.totalTokens += total;
+							newEvent = { type: "usage", usage: { ...tokenUsage } };
+						}
+					}
+				}
+				break;
+			}
+
+			case "message_update":
+				break;
+
+			case "agent_end":
+				console.log("[AGENT] Agent finished");
+				console.log("[AGENT] Final state.pages:", Object.keys(state.pages));
+				console.log("[AGENT] Final state.spec:", state.spec?.name);
+				console.log("[AGENT] Tool metrics:", JSON.stringify(toolMetrics));
+				agentDone = true;
+				break;
+		}
+
+		if (newEvent) {
+			eventQueue.push(newEvent);
+		}
+		if (resolveWait) {
+			resolveWait();
+			resolveWait = null;
+		}
+	});
+
+	const imageContent = images?.map((img) => ({
+		type: "image" as const,
+		data: img.data,
+		mimeType: img.mimeType,
+	}));
+
+	const runPromise = agent
+		.prompt(prompt, imageContent)
+		.catch((err: unknown) => {
+			runError = err;
+			eventQueue.push({
+				type: "error",
+				error: err instanceof Error ? err.message : "Unknown error",
+				usage: tokenUsage,
+				toolMetrics,
+			});
+		})
+		.finally(() => {
+			agentDone = true;
+			if (resolveWait) {
+				resolveWait();
+				resolveWait = null;
+			}
+		});
+
+	while (!agentDone || eventQueue.length > 0) {
+		if (eventQueue.length > 0) {
+			const ev = eventQueue.shift();
+			if (ev) yield ev;
+		} else if (!agentDone) {
+			await new Promise<void>((resolve) => {
+				resolveWait = resolve;
+				setTimeout(resolve, 100);
+			});
+		}
+	}
+
+	await runPromise;
+	unsubscribe();
+
+	if (runError) {
+		return;
+	}
+
+	if (Object.keys(state.pages).length > 0 && state.spec) {
+		yield {
+			type: "complete",
+			pages: state.pages,
+			spec: state.spec,
+			usage: tokenUsage,
+			toolMetrics,
+		};
+	} else if (Object.keys(state.pages).length > 0) {
+		const minimalSpec: SiteSpec = {
+			name: "Website",
+			tagline: "",
+			type: "landing",
+			industry: "general",
+			audience: "general",
+			tone: "professional",
+			colorPalette: {
+				primary: "#3b82f6",
+				secondary: "#1e40af",
+				accent: "#f59e0b",
+				background: "#ffffff",
+				text: "#1f2937",
+			},
+			typography: { headingStyle: "modern", bodyFont: "sans" },
+			pages: [],
+			features: [],
+		};
+		yield {
+			type: "complete",
+			pages: state.pages,
+			spec: minimalSpec,
+			usage: tokenUsage,
+			toolMetrics,
+		};
+	} else {
+		yield {
+			type: "error",
+			error: "No pages were generated",
+			usage: tokenUsage,
+			toolMetrics,
+		};
+	}
+}

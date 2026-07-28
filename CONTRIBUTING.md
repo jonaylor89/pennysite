@@ -1,80 +1,110 @@
-# Contributing
+# Pennysite
 
-Thanks for contributing! This is a Next.js 16 app with Supabase, AI providers, and Stripe billing.
+AI website builder. Users describe a site, AI generates HTML pages, users publish to Cloudflare Pages.
 
-## Prerequisites
+## Architecture
 
-- Node.js 18+ (npm)
-- Supabase account
-- OpenAI API key
-- Supabase CLI (for migrations)
-- Optional: Stripe + Cloudflare + PostHog credentials for those features
+pnpm monorepo with two packages:
+
+- **`server/`** — Hono + TypeScript backend (Node.js). Handles API, auth, generation, billing, email, cron.
+- **`frontend/`** — React + Vite SPA. Deploys to Cloudflare Workers.
+- **`supabase/`** — Database migrations (Postgres, currently hosted on Supabase).
+
+Auth is JWT-based (jose + bcrypt). No Supabase SDK — direct Postgres via `postgres` (postgres.js). The server connects to `auth.users` in the Supabase Postgres instance directly.
 
 ## Setup
 
 ```bash
-npm install
-cp .env.example .env.local
+pnpm install
+# Fill in server/.env and frontend/.env from their .env.example files
 ```
-
-Fill in `.env.local` (see `.env.example` for all variables).
 
 ## Local dev
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
-Open http://localhost:3000
+Starts both server (:3001) and frontend (:3000) in parallel. Vite proxies `/api`, `/ingest` (PostHog), and `/monitoring` (Sentry) to the backend.
 
 ## Scripts
 
-- `npm run dev` - dev server
-- `npm run build` - production build
-- `npm run start` - start production server
-- `npm run lint` - lint (Biome)
-- `npm run lint:fix` - lint + fix
-- `npm run format` - format (Biome)
-- `npm run test` - test suite (Vitest)
-- `npm run test:watch` - tests in watch mode
-- `npm run test:agent` - agent test harness
-- `npm run db:migrate` - push migrations to Supabase
-- `npm run db:migrate:new` - create a new migration
-- `npm run db:diff` - generate migration from schema diff
-- `npm run db:reset` - reset local Supabase DB
+Root (runs across both packages):
+- `pnpm run dev` — start both server and frontend
+- `pnpm run build` — build both
+- `pnpm run lint` — lint both
+
+Server (`pnpm --filter pennysite-server <cmd>`):
+- `dev` — `tsx watch src/index.ts` (auto-reload)
+- `build` — `tsc`
+- `start` — `node dist/index.js`
+
+Frontend (`pnpm --filter pennysite-frontend <cmd>`):
+- `dev` — `vite` (HMR)
+- `build` — `tsc --noEmit && vite build`
+- `preview` — `vite preview`
+
+Database:
+- `pnpm run db:migrate` — push migrations to Supabase
+- `pnpm run db:migrate:new` — create a new migration
 
 ## Project structure
 
 ```
-src/
-  app/                Next.js App Router pages and API routes
-    api/              HTTP endpoints (generation, billing, projects, etc.)
-    auth/             Auth pages + callbacks
-    project/          Project builder UI (new and [projectId])
-    projects/         Saved projects list
-  lib/
-    supabase/         Supabase clients and types
-  proxy.ts            Supabase auth session refresh helper
-supabase/             DB migrations and config
-scripts/              Local scripts (agent tests, tooling)
-docs/                 Product/architecture docs
-public/               Static assets
+server/
+  src/
+    index.ts            Entry point (starts server + cron)
+    app.ts              Hono app factory, route mounting, middleware
+    config.ts           Env var validation
+    types.ts            Shared Hono env type
+    auth/               JWT creation/verification, bcrypt, auth middleware
+    db/                 Database modules (postgres.js): users, projects, credits, generations, email, pending-generations
+    routes/             HTTP handlers: auth, generate, enhance, projects, publish, billing, webhook, credits, account, email, generations
+    middleware/          CORS, error handler
+    cron/               Internal scheduler + email campaign
+    lib/
+      generation/       AI agent (pi-agent-core), tools, prompts, system prompt, skills
+      billing/          Credit pricing config
+      stripe/           Stripe client + credit packs
+      cloudflare/       Pages publishing + custom domains
+      email/            Resend client, templates, triggers
+      posthog/          Server-side analytics
+      analytics/        HTML quality metrics
+
+frontend/
+  src/
+    main.tsx            React entry point
+    App.tsx             React Router + AuthProvider
+    globals.css         Design system (Tailwind v4 theme)
+    routes/             Page components (index, login, projects, editor, settings, pricing, billing, account, about)
+    components/         UI components (BuilderUI, HeaderNav, Footer, PromptForm, ProjectList, ProjectSettings, ProjectViewer, etc.)
+    components/ui/      Primitives (Button, Input, Card, Modal, Alert, Badge)
+    lib/
+      auth/             JWT token store, AuthContext, useAuth hook
+      api-client.ts     Fetch wrapper with Bearer token + auto-refresh on 401
+      posthog.ts        Client-side PostHog
+      sentry.ts         Client-side Sentry
+      generation/       Shared types (SiteSpec, GenerationEvent, skills)
+      billing/          Client-side credit config
+
+supabase/
+  migrations/           Postgres migrations (PL/pgSQL functions for credits, email segments)
 ```
+
+## Key patterns
+
+- **Auth**: JWT access token (15min) in memory + refresh token (30d) in HttpOnly cookie. `useAuth()` hook on frontend. `authMiddleware` on backend extracts Bearer token.
+- **Credits**: PL/pgSQL functions (`reserve_credits_for_generation`, `finalize_generation_credits`, etc.) called via `SELECT fn(...)` through postgres.js. Atomic transactions in the database.
+- **Generation**: SSE streaming via Hono's `streamSSE()`. Uses `@earendil-works/pi-agent-core` for the agentic loop. No serverless timeouts.
+- **Cron**: Internal `setInterval` in the server process, runs daily email campaigns at 14:00 UTC.
+- **Proxies**: PostHog (`/ingest/*`) and Sentry (`/monitoring/*`) are proxied through the backend to avoid ad blockers.
 
 ## Database
 
-Migrations live in `supabase/migrations`. Use the Supabase CLI:
+Postgres hosted on Supabase (direct connection via `DATABASE_URL`). Migrations in `supabase/migrations/`. Key tables: `projects`, `generations`, `credit_accounts`, `credit_ledger`, `stripe_customers`, `stripe_events`, `email_log`, `email_preferences`, `pending_generations`. User data in `auth.users` (Supabase auth schema).
 
-```bash
-npm run db:migrate
-```
+## Deployment
 
-## Code style
-
-- Formatting and linting via Biome. Run `npm run lint` and `npm run format` before opening a PR.
-
-## Pull requests
-
-- Keep PRs focused and small when possible.
-- Include tests or update existing tests if behavior changes.
-- Update docs when you change environment variables or workflows.
+- **Frontend**: Cloudflare Workers. `wrangler.toml` in `frontend/` configures static asset serving with SPA fallback. Deploy: `cd frontend && pnpm run build && wrangler deploy`. Set `VITE_API_URL` to backend URL.
+- **Backend**: Render.com. Uses `server/Dockerfile` for builds. Set environment variables per `server/.env.example`.
+- **Stripe webhook**: Must point to `<backend-url>/api/billing/webhook`.
