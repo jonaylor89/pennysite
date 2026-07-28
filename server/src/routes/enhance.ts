@@ -10,6 +10,17 @@ import {
 } from "../lib/billing/config.js";
 import type { Env } from "../types.js";
 
+let _anthropicClient:
+	| InstanceType<typeof import("@anthropic-ai/sdk").default>
+	| undefined;
+async function getAnthropicClient() {
+	if (!_anthropicClient) {
+		const Anthropic = (await import("@anthropic-ai/sdk")).default;
+		_anthropicClient = new Anthropic();
+	}
+	return _anthropicClient;
+}
+
 const enhance = new Hono<Env>();
 
 /**
@@ -73,8 +84,7 @@ enhance.post("/", async (c) => {
 
 		// Try Anthropic first, fall back to OpenAI
 		if (process.env.ANTHROPIC_API_KEY) {
-			const Anthropic = (await import("@anthropic-ai/sdk")).default;
-			const client = new Anthropic();
+			const client = await getAnthropicClient();
 			const response = await client.messages.create({
 				model: "claude-sonnet-4-20250514",
 				max_tokens: 16000,

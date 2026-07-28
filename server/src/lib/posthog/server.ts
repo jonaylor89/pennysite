@@ -13,15 +13,15 @@ export function getPostHogServer(): PostHog | null {
 	if (!posthogServer) {
 		posthogServer = new PostHog(POSTHOG_KEY, {
 			host: POSTHOG_HOST,
-			flushAt: 1,
-			flushInterval: 0,
+			flushAt: 20,
+			flushInterval: 10000,
 		});
 	}
 
 	return posthogServer;
 }
 
-export async function trackServerEvent(
+export function trackServerEvent(
 	distinctId: string,
 	event: string,
 	properties?: Record<string, unknown>,
@@ -34,11 +34,9 @@ export async function trackServerEvent(
 		event,
 		properties,
 	});
-
-	await client.flush();
 }
 
-export async function identifyUser(
+export function identifyUser(
 	distinctId: string,
 	properties?: Record<string, unknown>,
 ) {
@@ -49,6 +47,4 @@ export async function identifyUser(
 		distinctId,
 		properties,
 	});
-
-	await client.flush();
 }

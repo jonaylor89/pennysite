@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { deleteCookie, setCookie } from "hono/cookie";
+import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import {
 	createAccessToken,
 	createRefreshToken,
@@ -109,9 +109,7 @@ auth.post("/login", async (c) => {
  * Uses the httpOnly refresh_token cookie to issue a new access token.
  */
 auth.post("/refresh", async (c) => {
-	const cookie = c.req.header("Cookie") || "";
-	const match = cookie.match(/refresh_token=([^;]+)/);
-	const refreshToken = match?.[1];
+	const refreshToken = getCookie(c, "refresh_token");
 
 	if (!refreshToken) {
 		return c.json({ error: "No refresh token" }, 401);
@@ -150,9 +148,7 @@ auth.post("/refresh", async (c) => {
  * Returns current user from refresh token cookie (used on app load).
  */
 auth.get("/me", async (c) => {
-	const cookie = c.req.header("Cookie") || "";
-	const match = cookie.match(/refresh_token=([^;]+)/);
-	const refreshToken = match?.[1];
+	const refreshToken = getCookie(c, "refresh_token");
 
 	if (!refreshToken) {
 		return c.json({ error: "Not authenticated" }, 401);
