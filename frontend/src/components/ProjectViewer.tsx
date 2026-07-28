@@ -169,7 +169,7 @@ export function ProjectViewer({
 								<iframe
 									className="h-full w-full border-0 bg-white"
 									title="Preview"
-									sandbox="allow-scripts allow-same-origin"
+									sandbox="allow-scripts"
 									srcDoc={displayHtml}
 								/>
 							) : (

@@ -1,4 +1,5 @@
 import type { Context, Next } from "hono";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 export async function errorHandler(c: Context, next: Next) {
 	try {
@@ -19,8 +20,24 @@ export async function errorHandler(c: Context, next: Next) {
 			// Sentry not initialized, skip
 		}
 
+		const errStatus = (err as { status?: number }).status;
+		const httpStatus: ContentfulStatusCode =
+			errStatus && errStatus >= 400 && errStatus < 600
+				? (errStatus as ContentfulStatusCode)
+				: 500;
+
+		if (
+			err instanceof Error &&
+			err.message?.includes("invalid input syntax for type uuid")
+		) {
+			return c.json({ error: "Invalid ID format" }, 400);
+		}
+
+		// Only expose error messages for client errors (4xx); hide internal details for 5xx
 		const message =
-			err instanceof Error ? err.message : "Internal server error";
-		return c.json({ error: message }, 500);
+			httpStatus < 500 && err instanceof Error
+				? err.message
+				: "Internal server error";
+		return c.json({ error: message }, httpStatus);
 	}
 }

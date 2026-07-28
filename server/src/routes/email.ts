@@ -3,6 +3,15 @@ import { verifyUnsubscribeToken } from "../auth/jwt.js";
 import { config } from "../config.js";
 import { unsubscribeByCategory } from "../db/email.js";
 
+function escapeHtml(s: string): string {
+	return s
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#39;");
+}
+
 const email = new Hono();
 
 /**
@@ -25,8 +34,8 @@ email.get("/unsubscribe", async (c) => {
         <head><title>Unsubscribed</title></head>
         <body style="font-family: system-ui; max-width: 500px; margin: 80px auto; text-align: center;">
           <h1>You've been unsubscribed</h1>
-          <p>You won't receive ${category === "all" ? "any more" : category} emails from Pennysite.</p>
-          <p><a href="${config.siteUrl}">Back to Pennysite</a></p>
+          <p>You won't receive ${category === "all" ? "any more" : escapeHtml(category)} emails from Pennysite.</p>
+          <p><a href="${escapeHtml(config.siteUrl)}">Back to Pennysite</a></p>
         </body>
       </html>
     `);

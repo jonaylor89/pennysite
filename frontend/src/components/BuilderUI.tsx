@@ -692,6 +692,7 @@ export function BuilderUI({
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const multimodalEnabled = useFeatureFlag("multimodal-prompt");
 
+	const iframeRef = useRef<HTMLIFrameElement>(null);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const didAutoSendRef = useRef(false);
 	const isGeneratingRef = useRef(false);
@@ -837,6 +838,7 @@ export function BuilderUI({
 
 	useEffect(() => {
 		function handleMessage(e: MessageEvent) {
+			if (e.source !== iframeRef.current?.contentWindow) return;
 			if (e.data?.type === "navigate" && e.data.href) {
 				const href = e.data.href
 					.replace(/^\.?\//, "")
@@ -918,7 +920,7 @@ export function BuilderUI({
 
 			// Handle background image update if it was edited
 			if (editBgImage) {
-				el.style.backgroundImage = `url('${editBgImage}')`;
+				el.style.backgroundImage = `url('${editBgImage.replace(/'/g, "\\'")}')`;
 			}
 		}
 
@@ -1062,7 +1064,7 @@ export function BuilderUI({
 
 				for (const rawLine of lines) {
 					const line = rawLine.trim();
-					if (!line?.startsWith("data: ")) continue;
+					if (!line || !line.startsWith("data: ")) continue;
 					const data = line.slice(6);
 
 					if (data === "[DONE]") continue;
@@ -2614,7 +2616,8 @@ export function BuilderUI({
 								<iframe
 									className="h-full w-full border-0 bg-accent"
 									title="Preview"
-									sandbox="allow-scripts allow-same-origin"
+									ref={iframeRef}
+									sandbox="allow-scripts"
 									srcDoc={displayHtml}
 								/>
 							) : (
