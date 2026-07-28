@@ -52,7 +52,7 @@ auth.post("/signup", async (c) => {
 
 	setCookie(c, "refresh_token", refreshToken, {
 		httpOnly: true,
-		secure: true,
+		secure: process.env.NODE_ENV === "production",
 		sameSite: "Lax",
 		path: "/",
 		maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -92,7 +92,7 @@ auth.post("/login", async (c) => {
 
 	setCookie(c, "refresh_token", refreshToken, {
 		httpOnly: true,
-		secure: true,
+		secure: process.env.NODE_ENV === "production",
 		sameSite: "Lax",
 		path: "/",
 		maxAge: 30 * 24 * 60 * 60,
@@ -130,7 +130,7 @@ auth.post("/refresh", async (c) => {
 		const newRefreshToken = await createRefreshToken(user.id, user.email);
 		setCookie(c, "refresh_token", newRefreshToken, {
 			httpOnly: true,
-			secure: true,
+			secure: process.env.NODE_ENV === "production",
 			sameSite: "Lax",
 			path: "/",
 			maxAge: 30 * 24 * 60 * 60,

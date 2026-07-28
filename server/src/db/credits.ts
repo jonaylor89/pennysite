@@ -110,12 +110,14 @@ export async function getOrCreateStripeCustomer(
 		metadata: { user_id: userId },
 	});
 
-	// Store mapping
-	await sql`
+	// Store mapping atomically — if another request raced and inserted first,
+	// update to our new customer ID and return it via RETURNING
+	const [row] = await sql`
     INSERT INTO stripe_customers (user_id, stripe_customer_id)
     VALUES (${userId}::uuid, ${customer.id})
-    ON CONFLICT (user_id) DO NOTHING
+    ON CONFLICT (user_id) DO UPDATE SET stripe_customer_id = EXCLUDED.stripe_customer_id
+    RETURNING stripe_customer_id
   `;
 
-	return customer.id;
+	return row.stripe_customer_id as string;
 }

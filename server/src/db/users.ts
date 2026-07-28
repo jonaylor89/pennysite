@@ -62,14 +62,10 @@ export async function createUser(
 /**
  * Create a passwordless user for guest checkout.
  * Returns existing user if email already exists.
+ * Uses a single atomic INSERT ... ON CONFLICT to avoid race conditions.
  */
 export async function getOrCreateGuestUser(email: string): Promise<DbUser> {
-	// Check if user exists
-	const existing = await findUserByEmail(email);
-	if (existing) return existing;
-
-	// Create passwordless user
-	const rows = await sql`
+	const [user] = await sql<DbUser[]>`
     INSERT INTO auth.users (
       instance_id, id, aud, role, email, encrypted_password,
       email_confirmed_at, raw_user_meta_data, created_at, updated_at,
@@ -84,7 +80,7 @@ export async function getOrCreateGuestUser(email: string): Promise<DbUser> {
     ON CONFLICT (email) DO UPDATE SET updated_at = NOW()
     RETURNING id, email, encrypted_password, raw_user_meta_data, created_at
   `;
-	return rows[0] as DbUser;
+	return user;
 }
 
 /**
@@ -116,17 +112,20 @@ export async function ensureCreditAccount(userId: string): Promise<void> {
 
 /**
  * Delete a user and all their data.
+ * Wrapped in a transaction to ensure all-or-nothing deletion.
  */
 export async function deleteUser(userId: string): Promise<void> {
-	// Delete in order: email_log, email_preferences, generations, credit_ledger,
-	// credit_accounts, stripe_customers, pending_generations, projects
-	await sql`DELETE FROM email_log WHERE user_id = ${userId}::uuid`;
-	await sql`DELETE FROM email_preferences WHERE user_id = ${userId}::uuid`;
-	await sql`DELETE FROM generations WHERE user_id = ${userId}::uuid`;
-	await sql`DELETE FROM credit_ledger WHERE user_id = ${userId}::uuid`;
-	await sql`DELETE FROM credit_accounts WHERE user_id = ${userId}::uuid`;
-	await sql`DELETE FROM stripe_customers WHERE user_id = ${userId}::uuid`;
-	await sql`DELETE FROM pending_generations WHERE user_id = ${userId}::uuid`;
-	await sql`DELETE FROM projects WHERE user_id = ${userId}::uuid`;
-	await sql`DELETE FROM auth.users WHERE id = ${userId}::uuid`;
+	await sql.begin(async (tx) => {
+		// Delete in order: email_log, email_preferences, generations, credit_ledger,
+		// credit_accounts, stripe_customers, pending_generations, projects
+		await tx`DELETE FROM email_log WHERE user_id = ${userId}::uuid`;
+		await tx`DELETE FROM email_preferences WHERE user_id = ${userId}::uuid`;
+		await tx`DELETE FROM generations WHERE user_id = ${userId}::uuid`;
+		await tx`DELETE FROM credit_ledger WHERE user_id = ${userId}::uuid`;
+		await tx`DELETE FROM credit_accounts WHERE user_id = ${userId}::uuid`;
+		await tx`DELETE FROM stripe_customers WHERE user_id = ${userId}::uuid`;
+		await tx`DELETE FROM pending_generations WHERE user_id = ${userId}::uuid`;
+		await tx`DELETE FROM projects WHERE user_id = ${userId}::uuid`;
+		await tx`DELETE FROM auth.users WHERE id = ${userId}::uuid`;
+	});
 }

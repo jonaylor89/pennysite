@@ -5,6 +5,7 @@ import {
 	getHasCreditsIdle,
 	getPublishedNoEdits,
 	getPurchasedNeverGenerated,
+	isUnsubscribed,
 	logEmailSent,
 } from "../db/email.js";
 import { sendEmail } from "../lib/email/send.js";
@@ -25,6 +26,7 @@ export async function runEmailCampaign(): Promise<Record<string, number>> {
 	let sent = 0;
 	for (const user of unpublished) {
 		if (!user.projectId || !user.projectName) continue;
+		if (await isUnsubscribed(user.userId, "reengagement")) continue;
 		const unsub = await generateUnsubscribeUrl(user.userId, "reengagement");
 		const template = templates.generatedNeverPublished(
 			user.projectName,
@@ -51,6 +53,7 @@ export async function runEmailCampaign(): Promise<Record<string, number>> {
 	sent = 0;
 	for (const user of unedited) {
 		if (!user.projectId || !user.projectName) continue;
+		if (await isUnsubscribed(user.userId, "reengagement")) continue;
 		const unsub = await generateUnsubscribeUrl(user.userId, "reengagement");
 		const template = templates.createdNeverEdited(
 			user.projectName,
@@ -77,6 +80,7 @@ export async function runEmailCampaign(): Promise<Record<string, number>> {
 	sent = 0;
 	for (const user of stale) {
 		if (!user.projectId || !user.projectName) continue;
+		if (await isUnsubscribed(user.userId, "reengagement")) continue;
 		const unsub = await generateUnsubscribeUrl(user.userId, "reengagement");
 		const template = templates.publishedNoEdits(
 			user.projectName,
@@ -103,6 +107,7 @@ export async function runEmailCampaign(): Promise<Record<string, number>> {
 	sent = 0;
 	for (const user of idle) {
 		if (user.availableCredits == null) continue;
+		if (await isUnsubscribed(user.userId, "reengagement")) continue;
 		const unsub = await generateUnsubscribeUrl(user.userId, "reengagement");
 		const template = templates.hasCreditsIdle(user.availableCredits, unsub);
 		const messageId = await sendEmail({
@@ -119,6 +124,7 @@ export async function runEmailCampaign(): Promise<Record<string, number>> {
 	const neverGenerated = await getPurchasedNeverGenerated();
 	sent = 0;
 	for (const user of neverGenerated) {
+		if (await isUnsubscribed(user.userId, "reengagement")) continue;
 		const unsub = await generateUnsubscribeUrl(user.userId, "reengagement");
 		const template = templates.purchasedNeverGenerated(unsub);
 		const messageId = await sendEmail({
@@ -149,6 +155,7 @@ export async function runEmailCampaign(): Promise<Record<string, number>> {
 		const eligible = await getDripEligible(dripType, daysAfter);
 		sent = 0;
 		for (const user of eligible) {
+			if (await isUnsubscribed(user.userId, "drip")) continue;
 			const unsub = await generateUnsubscribeUrl(user.userId, "drip");
 			const template = templateFn(unsub);
 			const messageId = await sendEmail({
