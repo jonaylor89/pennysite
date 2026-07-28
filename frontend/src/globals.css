@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+
+  /* ── Canvas & Surface ── */
+  --color-canvas: #fafaf7;
+  --color-surface: #f4f3ee;
+  --color-surface-2: #eceae3;
+  --color-border: #ddd9ce;
+  --color-border-strong: #c5c0b4;
+
+  /* ── Ink (Text) ── */
+  --color-ink-900: #1a1916;
+  --color-ink-600: #5c5a54;
+  --color-ink-400: #9a9790;
+  --color-ink-200: #d4d1c9;
+
+  /* ── Accent — Forest Green ── */
+  --color-accent: #2d6a4f;
+  --color-accent-hover: #245740;
+  --color-accent-light: #eaf4ef;
+  --color-accent-text: #1b4332;
+
+  /* ── Accent — Warm Gold ── */
+  --color-gold: #c9a84c;
+  --color-gold-light: #fbf5e6;
+  --color-gold-text: #8b6914;
+
+  /* ── Feedback ── */
+  --color-success: #2d6a4f;
+  --color-warning: #c9a84c;
+  --color-error: #c0392b;
+  --color-info: #2c5f8a;
+
+  /* ── Shadows ── */
+  --shadow-xs: 0 1px 2px rgba(26, 25, 22, 0.06);
+  --shadow-sm: 0 2px 6px rgba(26, 25, 22, 0.08);
+  --shadow-md: 0 4px 16px rgba(26, 25, 22, 0.1);
+  --shadow-lg: 0 8px 32px rgba(26, 25, 22, 0.12);
+  --shadow-xl: 0 16px 56px rgba(26, 25, 22, 0.14);
+  --shadow-accent: 0 4px 20px rgba(45, 106, 79, 0.25);
+
+  /* ── Motion ── */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 120ms;
+  --duration-base: 220ms;
+  --duration-slow: 380ms;
+
+  /* ── Z-Index ── */
+  --z-below: -1;
+  --z-base: 0;
+  --z-raised: 10;
+  --z-overlay: 100;
+  --z-modal: 200;
+  --z-toast: 300;
+}
+
+@theme inline {
+  --color-canvas: var(--color-canvas);
+  --color-surface: var(--color-surface);
+  --color-surface-2: var(--color-surface-2);
+  --color-border: var(--color-border);
+  --color-border-strong: var(--color-border-strong);
+
+  --color-ink-900: var(--color-ink-900);
+  --color-ink-600: var(--color-ink-600);
+  --color-ink-400: var(--color-ink-400);
+  --color-ink-200: var(--color-ink-200);
+
+  --color-accent: var(--color-accent);
+  --color-accent-hover: var(--color-accent-hover);
+  --color-accent-light: var(--color-accent-light);
+  --color-accent-text: var(--color-accent-text);
+
+  --color-gold: var(--color-gold);
+  --color-gold-light: var(--color-gold-light);
+  --color-gold-text: var(--color-gold-text);
+
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-error: var(--color-error);
+  --color-info: var(--color-info);
+
+  --color-overlay: rgba(26, 25, 22, 0.5);
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+  --radius-full: 9999px;
+
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-accent: var(--shadow-accent);
+
+  /* Fonts — loaded via Google Fonts <link> in index.html */
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-serif: "Instrument Serif", serif;
+  --font-mono: "Geist Mono", monospace;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink-900);
+  font-family: "Inter", system-ui, sans-serif;
+  line-height: 1.6;
+}

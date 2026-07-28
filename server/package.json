@@ -1,0 +1,39 @@
+{
+  "name": "pennysite-server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "biome check",
+    "lint:fix": "biome check --write",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "latest",
+    "@anthropic-ai/sdk": "latest",
+    "@hono/node-server": "latest",
+    "@earendil-works/pi-agent-core": "latest",
+    "@earendil-works/pi-ai": "latest",
+    "@node-rs/bcrypt": "latest",
+    "@sentry/node": "latest",
+    "@sinclair/typebox": "latest",
+    "ai": "latest",
+    "hono": "latest",
+    "jose": "latest",
+    "postgres": "latest",
+    "posthog-node": "latest",
+    "resend": "latest",
+    "stripe": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "latest",
+    "@types/node": "latest",
+    "dotenv": "latest",
+    "tsx": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
+  }
+}
