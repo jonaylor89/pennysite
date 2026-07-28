@@ -76,14 +76,30 @@ export const api = {
 	 * Raw fetch with auth header — for SSE streaming where we need
 	 * the raw Response object.
 	 */
-	raw: (path: string, options: RequestInit = {}) => {
+	raw: async (path: string, options: RequestInit = {}) => {
 		const token = getAccessToken();
 		const headers = new Headers(options.headers);
 		if (token) headers.set("Authorization", `Bearer ${token}`);
-		return fetch(`${BASE_URL}${path}`, {
+		let res = await fetch(`${BASE_URL}${path}`, {
 			...options,
 			headers,
 			credentials: "include",
 		});
+
+		// Auto-refresh on 401
+		if (res.status === 401 && token) {
+			const refreshed = await refreshAccessToken();
+			if (refreshed) {
+				const newToken = getAccessToken();
+				if (newToken) headers.set("Authorization", `Bearer ${newToken}`);
+				res = await fetch(`${BASE_URL}${path}`, {
+					...options,
+					headers,
+					credentials: "include",
+				});
+			}
+		}
+
+		return res;
 	},
 };

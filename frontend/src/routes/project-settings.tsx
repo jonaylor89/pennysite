@@ -156,7 +156,7 @@ export function ProjectSettingsPage() {
 	function copyShareLink() {
 		if (!project) return;
 		const url = `${window.location.origin}/project/${project.id}`;
-		navigator.clipboard.writeText(url);
+		navigator.clipboard.writeText(url).catch(() => {});
 		setCopied(true);
 		setTimeout(() => setCopied(false), 2000);
 	}

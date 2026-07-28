@@ -11,6 +11,7 @@ import { RatingModal } from "@/components/RatingModal";
 import { SetPasswordModal } from "@/components/SetPasswordModal";
 import { api } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth/useAuth";
+import { CREDIT_PACKS } from "@/lib/billing/config";
 import { useFeatureFlag } from "@/lib/featureflags";
 import { getAllSkills, getSkill, type SkillId } from "@/lib/generation/skills";
 import { captureEvent } from "@/lib/posthog";
@@ -238,12 +239,7 @@ function BuyCreditsModal({
 }) {
 	const [isLoading, setIsLoading] = useState<string | null>(null);
 
-	const packs = [
-		{ id: "starter", name: "Starter", credits: 100, price: 5 },
-		{ id: "basic", name: "Basic", credits: 440, price: 20, popular: true },
-		{ id: "pro", name: "Pro", credits: 1200, price: 50 },
-		{ id: "max", name: "Max", credits: 2600, price: 100 },
-	];
+	const packs = CREDIT_PACKS;
 
 	async function buyPack(packId: string) {
 		setIsLoading(packId);
@@ -696,6 +692,7 @@ export function BuilderUI({
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const didAutoSendRef = useRef(false);
 	const isGeneratingRef = useRef(false);
+	const abortControllerRef = useRef<AbortController | null>(null);
 
 	const pageNames = Object.keys(pages);
 	const currentHtml = pages[currentPage] || "";
@@ -704,6 +701,13 @@ export function BuilderUI({
 	useEffect(() => {
 		isGeneratingRef.current = isGenerating;
 	}, [isGenerating]);
+
+	// Abort generation stream on unmount
+	useEffect(() => {
+		return () => {
+			abortControllerRef.current?.abort();
+		};
+	}, []);
 
 	useEffect(() => {
 		if (!isGenerating) return;
@@ -1004,9 +1008,15 @@ export function BuilderUI({
 		try {
 			setGenerationPhase("Starting...");
 
+			// Abort any previous generation stream
+			abortControllerRef.current?.abort();
+			const controller = new AbortController();
+			abortControllerRef.current = controller;
+
 			const response = await api.raw("/api/generate", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
+				signal: controller.signal,
 				body: JSON.stringify({
 					messages: newMessages.map((m) => {
 						if (m.role !== "enhance" && m.images) {
@@ -1244,8 +1254,8 @@ export function BuilderUI({
 								setLiveUsage(null);
 								break;
 						}
-					} catch {
-						// Ignore parse errors for partial chunks
+					} catch (e) {
+						console.warn("Failed to parse SSE event:", data, e);
 					}
 				}
 			}
@@ -1455,7 +1465,6 @@ export function BuilderUI({
 	// biome-ignore lint/correctness/useExhaustiveDependencies: only run once to bootstrap from initial prompt
 	useEffect(() => {
 		if (didAutoSendRef.current) return;
-		if (!user && user !== null) return;
 		if (!initialPrompt) {
 			didAutoSendRef.current = true;
 			return;
@@ -1942,7 +1951,6 @@ export function BuilderUI({
 			{/* Rating Modal */}
 			{showRatingModal && (
 				<RatingModal
-					projectId={projectId}
 					onClose={() => setShowRatingModal(false)}
 					onSubmit={handleRatingSubmit}
 				/>

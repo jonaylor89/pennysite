@@ -3,13 +3,9 @@ import { Link } from "react-router";
 import { Footer } from "@/components/Footer";
 import { buttonClass } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { CREDIT_PACKS } from "@/lib/billing/config";
 
-const packs = [
-	{ id: "starter", name: "Starter", credits: 100, price: 5 },
-	{ id: "basic", name: "Basic", credits: 440, price: 20, popular: true },
-	{ id: "pro", name: "Pro", credits: 1200, price: 50 },
-	{ id: "max", name: "Max", credits: 2600, price: 100 },
-];
+const packs = CREDIT_PACKS;
 
 export function PricingPage() {
 	useEffect(() => {

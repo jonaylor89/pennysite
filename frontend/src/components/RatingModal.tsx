@@ -3,7 +3,6 @@ import { Button } from "./ui/Button";
 import { Modal } from "./ui/Modal";
 
 type RatingModalProps = {
-	projectId: string | null;
 	onClose: () => void;
 	onSubmit: (rating: number) => void;
 };
