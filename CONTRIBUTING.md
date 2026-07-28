@@ -7,7 +7,7 @@ AI website builder. Users describe a site, AI generates HTML pages, users publis
 pnpm monorepo with two packages:
 
 - **`server/`** — Hono + TypeScript backend (Node.js). Handles API, auth, generation, billing, email, cron.
-- **`frontend/`** — React + Vite SPA. Deploys to Cloudflare Pages.
+- **`frontend/`** — React + Vite SPA. Deploys to Cloudflare Workers.
 - **`supabase/`** — Database migrations (Postgres, currently hosted on Supabase).
 
 Auth is JWT-based (jose + bcrypt). No Supabase SDK — direct Postgres via `postgres` (postgres.js). The server connects to `auth.users` in the Supabase Postgres instance directly.
@@ -105,6 +105,6 @@ Postgres hosted on Supabase (direct connection via `DATABASE_URL`). Migrations i
 
 ## Deployment
 
-- **Frontend**: Cloudflare Pages. Build command: `cd frontend && pnpm install && pnpm run build`. Output: `frontend/dist`. Set `VITE_API_URL` to backend URL.
-- **Backend**: Docker on Hetzner VPS (or any host). `docker-compose.yml` + `Caddyfile` included. Caddy handles TLS + reverse proxy.
+- **Frontend**: Cloudflare Workers. `wrangler.toml` in `frontend/` configures static asset serving with SPA fallback. Deploy: `cd frontend && pnpm run build && wrangler deploy`. Set `VITE_API_URL` to backend URL.
+- **Backend**: Render.com. Uses `server/Dockerfile` for builds. Set environment variables per `server/.env.example`.
 - **Stripe webhook**: Must point to `<backend-url>/api/billing/webhook`.

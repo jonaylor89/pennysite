@@ -1,7 +1,0 @@
-{
-	email me@jonaylor.com
-}
-
-api.pennysite.app {
-	reverse_proxy api:3001
-}

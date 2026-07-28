@@ -1,0 +1,9 @@
+name = "pennysite"
+compatibility_date = "2024-12-01"
+
+[assets]
+directory = "dist"
+
+# SPA fallback — serves index.html for unmatched routes
+[assets.serving]
+not_found_handling = "single-page-application"
