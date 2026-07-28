@@ -8,17 +8,17 @@ export type FeatureFlag = "multimodal-prompt";
  * Returns `false` initially, then updates once PostHog has loaded flags.
  */
 export function useFeatureFlag(flag: FeatureFlag): boolean {
-  const [enabled, setEnabled] = useState(false);
+	const [enabled, setEnabled] = useState(false);
 
-  useEffect(() => {
-    // PostHog may not have loaded flags yet. Check immediately, then
-    // subscribe to updates so we pick up async flag loads.
-    setEnabled(posthog.isFeatureEnabled(flag) ?? false);
+	useEffect(() => {
+		// PostHog may not have loaded flags yet. Check immediately, then
+		// subscribe to updates so we pick up async flag loads.
+		setEnabled(posthog.isFeatureEnabled(flag) ?? false);
 
-    return posthog.onFeatureFlags(() => {
-      setEnabled(posthog.isFeatureEnabled(flag) ?? false);
-    });
-  }, [flag]);
+		return posthog.onFeatureFlags(() => {
+			setEnabled(posthog.isFeatureEnabled(flag) ?? false);
+		});
+	}, [flag]);
 
-  return enabled;
+	return enabled;
 }

@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { verifyUnsubscribeToken } from "../auth/jwt.js";
-import { unsubscribeByCategory } from "../db/email.js";
 import { config } from "../config.js";
+import { unsubscribeByCategory } from "../db/email.js";
 
 const email = new Hono();
 
@@ -10,16 +10,16 @@ const email = new Hono();
  * One-click unsubscribe from email link.
  */
 email.get("/unsubscribe", async (c) => {
-  const token = c.req.query("token");
-  if (!token) {
-    return c.html("<h1>Invalid unsubscribe link</h1>", 400);
-  }
+	const token = c.req.query("token");
+	if (!token) {
+		return c.html("<h1>Invalid unsubscribe link</h1>", 400);
+	}
 
-  try {
-    const { userId, category } = await verifyUnsubscribeToken(token);
-    await unsubscribeByCategory(userId, category);
+	try {
+		const { userId, category } = await verifyUnsubscribeToken(token);
+		await unsubscribeByCategory(userId, category);
 
-    return c.html(`
+		return c.html(`
       <!DOCTYPE html>
       <html>
         <head><title>Unsubscribed</title></head>
@@ -30,9 +30,9 @@ email.get("/unsubscribe", async (c) => {
         </body>
       </html>
     `);
-  } catch {
-    return c.html("<h1>Invalid or expired unsubscribe link</h1>", 400);
-  }
+	} catch {
+		return c.html("<h1>Invalid or expired unsubscribe link</h1>", 400);
+	}
 });
 
 export default email;

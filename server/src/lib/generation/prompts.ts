@@ -1,40 +1,40 @@
 export const FONT_PAIRINGS = {
-  "inter-playfair": {
-    import:
-      '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">',
-    headingClass: "font-['Playfair_Display']",
-    bodyClass: "font-['Inter']",
-  },
-  "dm-sans-fraunces": {
-    import:
-      '<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@400;500;600;700&display=swap" rel="stylesheet">',
-    headingClass: "font-['Fraunces']",
-    bodyClass: "font-['DM_Sans']",
-  },
-  "space-grotesk-mono": {
-    import:
-      '<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">',
-    headingClass: "font-['Space_Grotesk']",
-    bodyClass: "font-['Space_Mono']",
-  },
-  "poppins-lora": {
-    import:
-      '<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">',
-    headingClass: "font-['Lora']",
-    bodyClass: "font-['Poppins']",
-  },
-  "plus-jakarta": {
-    import:
-      '<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">',
-    headingClass: "font-['Plus_Jakarta_Sans']",
-    bodyClass: "font-['Plus_Jakarta_Sans']",
-  },
-  "source-serif-only": {
-    import:
-      '<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;500;600;700&display=swap" rel="stylesheet">',
-    headingClass: "font-['Source_Serif_4']",
-    bodyClass: "font-['Source_Serif_4']",
-  },
+	"inter-playfair": {
+		import:
+			'<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">',
+		headingClass: "font-['Playfair_Display']",
+		bodyClass: "font-['Inter']",
+	},
+	"dm-sans-fraunces": {
+		import:
+			'<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@400;500;600;700&display=swap" rel="stylesheet">',
+		headingClass: "font-['Fraunces']",
+		bodyClass: "font-['DM_Sans']",
+	},
+	"space-grotesk-mono": {
+		import:
+			'<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">',
+		headingClass: "font-['Space_Grotesk']",
+		bodyClass: "font-['Space_Mono']",
+	},
+	"poppins-lora": {
+		import:
+			'<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">',
+		headingClass: "font-['Lora']",
+		bodyClass: "font-['Poppins']",
+	},
+	"plus-jakarta": {
+		import:
+			'<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">',
+		headingClass: "font-['Plus_Jakarta_Sans']",
+		bodyClass: "font-['Plus_Jakarta_Sans']",
+	},
+	"source-serif-only": {
+		import:
+			'<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;500;600;700&display=swap" rel="stylesheet">',
+		headingClass: "font-['Source_Serif_4']",
+		bodyClass: "font-['Source_Serif_4']",
+	},
 } as const;
 
 export type FontPairingName = keyof typeof FONT_PAIRINGS;
@@ -321,62 +321,62 @@ For multi-page sites, use this delimiter:
 Start immediately with ---FILE: index.html--- or <!DOCTYPE html>`;
 
 export function buildGenerationPrompt(
-  spec: {
-    name: string;
-    tagline: string;
-    type: string;
-    industry: string;
-    audience: string;
-    tone: string;
-    uniqueValueProposition?: string;
-    visualMood?: string[];
-    colorPalette: {
-      primary: string;
-      secondary: string;
-      accent: string;
-      background: string;
-      text: string;
-    };
-    typography: {
-      headingStyle: string;
-      bodyFont: string;
-      fontPairing?: string;
-    };
-    contentDetails?: {
-      featureNames?: string[];
-      testimonialIdeas?: string[];
-      statsToShow?: string[];
-    };
-    designEffects?: {
-      roundness: string;
-      shadow: string;
-      grain: boolean;
-      glassmorphism: boolean;
-      animations: string;
-    };
-    pages: Array<{
-      filename: string;
-      title: string;
-      purpose: string;
-      layoutStrategy?: string;
-      sections: Array<{
-        type: string;
-        headline?: string;
-        subheadline?: string;
-        content: string;
-        layout: string;
-        elements: string[];
-      }>;
-    }>;
-    features: string[];
-  },
-  userRequest: string,
+	spec: {
+		name: string;
+		tagline: string;
+		type: string;
+		industry: string;
+		audience: string;
+		tone: string;
+		uniqueValueProposition?: string;
+		visualMood?: string[];
+		colorPalette: {
+			primary: string;
+			secondary: string;
+			accent: string;
+			background: string;
+			text: string;
+		};
+		typography: {
+			headingStyle: string;
+			bodyFont: string;
+			fontPairing?: string;
+		};
+		contentDetails?: {
+			featureNames?: string[];
+			testimonialIdeas?: string[];
+			statsToShow?: string[];
+		};
+		designEffects?: {
+			roundness: string;
+			shadow: string;
+			grain: boolean;
+			glassmorphism: boolean;
+			animations: string;
+		};
+		pages: Array<{
+			filename: string;
+			title: string;
+			purpose: string;
+			layoutStrategy?: string;
+			sections: Array<{
+				type: string;
+				headline?: string;
+				subheadline?: string;
+				content: string;
+				layout: string;
+				elements: string[];
+			}>;
+		}>;
+		features: string[];
+	},
+	userRequest: string,
 ): string {
-  const fontPairing =
-    spec.typography.fontPairing &&
-    FONT_PAIRINGS[spec.typography.fontPairing as FontPairingName];
+	const fontPairing =
+		spec.typography.fontPairing &&
+		FONT_PAIRINGS[spec.typography.fontPairing as FontPairingName];
 
-  return `## PROJECT SPECIFICATION
+	return `## PROJECT SPECIFICATION
 
 **Name:** ${spec.name}
 **Tagline:** ${spec.tagline}
@@ -398,35 +398,35 @@ ${spec.visualMood?.length ? `**Visual Mood:** ${spec.visualMood.join(", ")}` : "
 - Heading Style: ${spec.typography.headingStyle}
 - Body Font: ${spec.typography.bodyFont === "sans" ? "font-sans" : spec.typography.bodyFont === "serif" ? "font-serif" : "font-mono"}
 ${
-  fontPairing
-    ? `- Font Pairing: ${spec.typography.fontPairing}
+	fontPairing
+		? `- Font Pairing: ${spec.typography.fontPairing}
   - Add this to <head>: ${fontPairing.import}
   - Use ${fontPairing.headingClass} for headings
   - Use ${fontPairing.bodyClass} for body text`
-    : ""
+		: ""
 }
 
 ## DESIGN EFFECTS
 ${
-  spec.designEffects
-    ? `- Roundness: ${spec.designEffects.roundness}
+	spec.designEffects
+		? `- Roundness: ${spec.designEffects.roundness}
 - Shadow: ${spec.designEffects.shadow}
 - Grain Overlay: ${spec.designEffects.grain ? "Yes - add grain effect" : "No"}
 - Glassmorphism: ${spec.designEffects.glassmorphism ? "Yes - use frosted glass effects" : "No"}
 - Animations: ${spec.designEffects.animations}`
-    : "- Use default subtle effects"
+		: "- Use default subtle effects"
 }
 
 ${
-  spec.contentDetails
-    ? `## CONTENT DETAILS
+	spec.contentDetails
+		? `## CONTENT DETAILS
 ${spec.contentDetails.featureNames?.length ? `### Feature Names (use these exact names)\n${spec.contentDetails.featureNames.map((f) => `- ${f}`).join("\n")}` : ""}
 
 ${spec.contentDetails.testimonialIdeas?.length ? `### Testimonial Ideas (create realistic testimonials based on these)\n${spec.contentDetails.testimonialIdeas.map((t) => `- ${t}`).join("\n")}` : ""}
 
 ${spec.contentDetails.statsToShow?.length ? `### Stats to Display\n${spec.contentDetails.statsToShow.map((s) => `- ${s}`).join("\n")}` : ""}
 `
-    : ""
+		: ""
 }
 
 ## KEY FEATURES TO HIGHLIGHT
@@ -435,27 +435,27 @@ ${spec.features.map((f) => `- ${f}`).join("\n")}
 ## PAGES TO GENERATE
 
 ${spec.pages
-  .map(
-    (
-      page,
-    ) => `### ${page.filename}${page.layoutStrategy ? ` (${page.layoutStrategy} layout)` : ""}
+	.map(
+		(
+			page,
+		) => `### ${page.filename}${page.layoutStrategy ? ` (${page.layoutStrategy} layout)` : ""}
 **Title:** ${page.title}
 **Purpose:** ${page.purpose}
 
 **Sections:**
 ${page.sections
-  .map(
-    (
-      s,
-      i,
-    ) => `${i + 1}. **${s.type.toUpperCase()}** (${s.layout} layout)${s.headline ? `\n   - Headline: ${s.headline}` : ""}${s.subheadline ? `\n   - Subheadline: ${s.subheadline}` : ""}
+	.map(
+		(
+			s,
+			i,
+		) => `${i + 1}. **${s.type.toUpperCase()}** (${s.layout} layout)${s.headline ? `\n   - Headline: ${s.headline}` : ""}${s.subheadline ? `\n   - Subheadline: ${s.subheadline}` : ""}
    - Content: ${s.content}
    - Elements: ${s.elements.join(", ")}`,
-  )
-  .join("\n")}
+	)
+	.join("\n")}
 `,
-  )
-  .join("\n")}
+	)
+	.join("\n")}
 
 ## USER REQUEST
 ${userRequest}

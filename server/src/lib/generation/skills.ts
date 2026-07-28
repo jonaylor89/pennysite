@@ -6,20 +6,20 @@
 export type SkillId = "seo" | "accessibility" | "performance" | "darkMode";
 
 export interface Skill {
-  id: SkillId;
-  name: string;
-  icon: string;
-  description: string;
-  prompt: string;
+	id: SkillId;
+	name: string;
+	icon: string;
+	description: string;
+	prompt: string;
 }
 
 export const SKILLS: Record<SkillId, Skill> = {
-  seo: {
-    id: "seo",
-    name: "SEO Boost",
-    icon: "🔍",
-    description: "Add meta tags, Open Graph, and structured data",
-    prompt: `You are an SEO expert. Improve this HTML for search engine optimization.
+	seo: {
+		id: "seo",
+		name: "SEO Boost",
+		icon: "🔍",
+		description: "Add meta tags, Open Graph, and structured data",
+		prompt: `You are an SEO expert. Improve this HTML for search engine optimization.
 
 ## Required Changes
 
@@ -51,14 +51,14 @@ export const SKILLS: Record<SkillId, Skill> = {
 
 ## Output
 Return the complete improved HTML. Make minimal changes - only add what's needed for SEO. Do not change the visual design or layout.`,
-  },
+	},
 
-  accessibility: {
-    id: "accessibility",
-    name: "Accessibility",
-    icon: "♿",
-    description: "WCAG compliance, ARIA labels, keyboard navigation",
-    prompt: `You are an accessibility expert. Improve this HTML for WCAG 2.1 AA compliance.
+	accessibility: {
+		id: "accessibility",
+		name: "Accessibility",
+		icon: "♿",
+		description: "WCAG compliance, ARIA labels, keyboard navigation",
+		prompt: `You are an accessibility expert. Improve this HTML for WCAG 2.1 AA compliance.
 
 ## Required Changes
 
@@ -97,14 +97,14 @@ If not present, add this to a <style> tag:
 
 ## Output
 Return the complete improved HTML. Preserve all existing functionality and visual design.`,
-  },
+	},
 
-  performance: {
-    id: "performance",
-    name: "Performance",
-    icon: "⚡",
-    description: "Lazy loading, optimized assets, faster load times",
-    prompt: `You are a web performance expert. Optimize this HTML for faster loading.
+	performance: {
+		id: "performance",
+		name: "Performance",
+		icon: "⚡",
+		description: "Lazy loading, optimized assets, faster load times",
+		prompt: `You are a web performance expert. Optimize this HTML for faster loading.
 
 ## Required Changes
 
@@ -133,14 +133,14 @@ Return the complete improved HTML. Preserve all existing functionality and visua
 
 ## Output
 Return the complete optimized HTML. Do not remove any functionality or visual elements.`,
-  },
+	},
 
-  darkMode: {
-    id: "darkMode",
-    name: "Dark Mode",
-    icon: "🌙",
-    description: "Add theme toggle with system preference support",
-    prompt: `You are a frontend expert. Add dark mode support to this HTML.
+	darkMode: {
+		id: "darkMode",
+		name: "Dark Mode",
+		icon: "🌙",
+		description: "Add theme toggle with system preference support",
+		prompt: `You are a frontend expert. Add dark mode support to this HTML.
 
 ## Required Changes
 
@@ -202,13 +202,13 @@ Return the complete optimized HTML. Do not remove any functionality or visual el
 
 ## Output
 Return the complete HTML with dark mode support added.`,
-  },
+	},
 };
 
 export function getSkill(id: SkillId): Skill | undefined {
-  return SKILLS[id];
+	return SKILLS[id];
 }
 
 export function getAllSkills(): Skill[] {
-  return Object.values(SKILLS);
+	return Object.values(SKILLS);
 }

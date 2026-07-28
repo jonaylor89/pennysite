@@ -1,39 +1,39 @@
 export type ComponentExampleType =
-  | "hero"
-  | "features"
-  | "testimonials"
-  | "pricing"
-  | "cta"
-  | "footer"
-  | "gallery"
-  | "contact"
-  | "faq"
-  | "navbar"
-  | "services"
-  | "about"
-  | "stats"
-  | "logos"
-  | "team"
-  | "process"
-  | "bento"
-  | "schedule"
-  | "menu";
+	| "hero"
+	| "features"
+	| "testimonials"
+	| "pricing"
+	| "cta"
+	| "footer"
+	| "gallery"
+	| "contact"
+	| "faq"
+	| "navbar"
+	| "services"
+	| "about"
+	| "stats"
+	| "logos"
+	| "team"
+	| "process"
+	| "bento"
+	| "schedule"
+	| "menu";
 
 export type ComponentExample = {
-  id: string;
-  type: ComponentExampleType;
-  label: string;
-  bestFor: string;
-  html: string;
+	id: string;
+	type: ComponentExampleType;
+	label: string;
+	bestFor: string;
+	html: string;
 };
 
 export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
-  {
-    id: "hero-bold-typography-focus",
-    type: "hero",
-    label: "Bold Typography Focus",
-    bestFor: "SaaS/Dev Tools",
-    html: `<section class="bg-zinc-950 py-32">
+	{
+		id: "hero-bold-typography-focus",
+		type: "hero",
+		label: "Bold Typography Focus",
+		bestFor: "SaaS/Dev Tools",
+		html: `<section class="bg-zinc-950 py-32">
   <div class="mx-auto max-w-5xl px-6 text-center">
     <div class="mb-8 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-2">
       <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -73,13 +73,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "hero-split-layout-with-svg-illustration",
-    type: "hero",
-    label: "Split Layout with SVG Illustration",
-    bestFor: "Consultants/Services",
-    html: `<section class="bg-stone-50 py-24">
+	},
+	{
+		id: "hero-split-layout-with-svg-illustration",
+		type: "hero",
+		label: "Split Layout with SVG Illustration",
+		bestFor: "Consultants/Services",
+		html: `<section class="bg-stone-50 py-24">
   <div class="mx-auto max-w-7xl px-6 lg:flex lg:items-center lg:gap-16">
     <div class="lg:w-1/2">
       <p class="text-sm font-semibold uppercase tracking-widest text-amber-600">Executive Coaching</p>
@@ -117,13 +117,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "hero-minimal-editorial",
-    type: "hero",
-    label: "Minimal/Editorial",
-    bestFor: "Portfolios/Writers",
-    html: `<section class="bg-white py-32">
+	},
+	{
+		id: "hero-minimal-editorial",
+		type: "hero",
+		label: "Minimal/Editorial",
+		bestFor: "Portfolios/Writers",
+		html: `<section class="bg-white py-32">
   <div class="mx-auto max-w-3xl px-6">
     <h1 class="font-serif text-5xl font-normal leading-tight text-gray-900 md:text-6xl">
       I write code that<br>
@@ -145,13 +145,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "features-icon-grid-with-descriptions",
-    type: "features",
-    label: "Icon Grid with Descriptions",
-    bestFor: "",
-    html: `<section class="bg-white py-24">
+	},
+	{
+		id: "features-icon-grid-with-descriptions",
+		type: "features",
+		label: "Icon Grid with Descriptions",
+		bestFor: "",
+		html: `<section class="bg-white py-24">
   <div class="mx-auto max-w-7xl px-6">
     <div class="text-center">
       <h2 class="text-3xl font-bold text-gray-900 md:text-4xl">Everything you need to ship fast</h2>
@@ -182,13 +182,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "features-alternating-layout-with-illustrations",
-    type: "features",
-    label: "Alternating Layout with Illustrations",
-    bestFor: "",
-    html: `<section class="bg-slate-50 py-24">
+	},
+	{
+		id: "features-alternating-layout-with-illustrations",
+		type: "features",
+		label: "Alternating Layout with Illustrations",
+		bestFor: "",
+		html: `<section class="bg-slate-50 py-24">
   <div class="mx-auto max-w-7xl px-6">
     <!-- Feature 1 -->
     <div class="lg:flex lg:items-center lg:gap-16">
@@ -219,13 +219,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "testimonials-quote-cards",
-    type: "testimonials",
-    label: "Quote Cards",
-    bestFor: "",
-    html: `<section class="bg-white py-24">
+	},
+	{
+		id: "testimonials-quote-cards",
+		type: "testimonials",
+		label: "Quote Cards",
+		bestFor: "",
+		html: `<section class="bg-white py-24">
   <div class="mx-auto max-w-7xl px-6">
     <h2 class="text-center text-3xl font-bold text-gray-900">Trusted by teams everywhere</h2>
     <div class="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
@@ -280,13 +280,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "pricing-simple-three-tier",
-    type: "pricing",
-    label: "Simple Three Tier",
-    bestFor: "",
-    html: `<section class="bg-slate-50 py-24">
+	},
+	{
+		id: "pricing-simple-three-tier",
+		type: "pricing",
+		label: "Simple Three Tier",
+		bestFor: "",
+		html: `<section class="bg-slate-50 py-24">
   <div class="mx-auto max-w-7xl px-6">
     <div class="text-center">
       <h2 class="text-3xl font-bold text-gray-900">Simple, honest pricing</h2>
@@ -356,13 +356,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "cta-simple-centered",
-    type: "cta",
-    label: "Simple Centered",
-    bestFor: "",
-    html: `<section class="bg-indigo-600 py-24">
+	},
+	{
+		id: "cta-simple-centered",
+		type: "cta",
+		label: "Simple Centered",
+		bestFor: "",
+		html: `<section class="bg-indigo-600 py-24">
   <div class="mx-auto max-w-4xl px-6 text-center">
     <h2 class="text-3xl font-bold text-white md:text-4xl">Ready to ship faster?</h2>
     <p class="mt-4 text-xl text-indigo-100">Join 10,000+ developers who've already made the switch.</p>
@@ -375,13 +375,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "navbar-clean-with-mobile-menu",
-    type: "navbar",
-    label: "Clean with Mobile Menu",
-    bestFor: "",
-    html: `<nav class="fixed top-0 z-50 w-full bg-white/80 backdrop-blur-lg border-b border-gray-200" x-data="{ open: false }">
+	},
+	{
+		id: "navbar-clean-with-mobile-menu",
+		type: "navbar",
+		label: "Clean with Mobile Menu",
+		bestFor: "",
+		html: `<nav class="fixed top-0 z-50 w-full bg-white/80 backdrop-blur-lg border-b border-gray-200" x-data="{ open: false }">
   <div class="mx-auto max-w-7xl px-6">
     <div class="flex h-16 items-center justify-between">
       <a href="/" class="text-xl font-bold text-gray-900">Brand</a>
@@ -406,13 +406,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </nav>`,
-  },
-  {
-    id: "footer-minimal",
-    type: "footer",
-    label: "Minimal",
-    bestFor: "",
-    html: `<footer class="bg-gray-900 py-12">
+	},
+	{
+		id: "footer-minimal",
+		type: "footer",
+		label: "Minimal",
+		bestFor: "",
+		html: `<footer class="bg-gray-900 py-12">
   <div class="mx-auto max-w-7xl px-6">
     <div class="flex flex-col items-center justify-between gap-6 md:flex-row">
       <p class="text-sm text-gray-400">© 2025 Brand. All rights reserved.</p>
@@ -432,13 +432,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </footer>`,
-  },
-  {
-    id: "services-cards-for-consultants",
-    type: "services",
-    label: "Cards for Consultants",
-    bestFor: "",
-    html: `<section class="bg-white py-24">
+	},
+	{
+		id: "services-cards-for-consultants",
+		type: "services",
+		label: "Cards for Consultants",
+		bestFor: "",
+		html: `<section class="bg-white py-24">
   <div class="mx-auto max-w-7xl px-6">
     <div class="text-center">
       <h2 class="text-3xl font-bold text-gray-900">How I Can Help</h2>
@@ -466,13 +466,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "about-personal-bio-section",
-    type: "about",
-    label: "Personal Bio Section",
-    bestFor: "",
-    html: `<section class="bg-stone-50 py-24">
+	},
+	{
+		id: "about-personal-bio-section",
+		type: "about",
+		label: "Personal Bio Section",
+		bestFor: "",
+		html: `<section class="bg-stone-50 py-24">
   <div class="mx-auto max-w-4xl px-6">
     <div class="md:flex md:items-start md:gap-12">
       <div class="md:w-1/3">
@@ -499,13 +499,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "stats-metrics-grid",
-    type: "stats",
-    label: "Metrics Grid",
-    bestFor: "",
-    html: `<section class="bg-white py-16">
+	},
+	{
+		id: "stats-metrics-grid",
+		type: "stats",
+		label: "Metrics Grid",
+		bestFor: "",
+		html: `<section class="bg-white py-16">
   <div class="mx-auto max-w-7xl px-6">
     <div class="grid grid-cols-2 gap-8 lg:grid-cols-4">
       <div class="text-center">
@@ -527,13 +527,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "logos-trust-bar",
-    type: "logos",
-    label: "Trust Bar",
-    bestFor: "",
-    html: `<section class="bg-gray-50 py-12">
+	},
+	{
+		id: "logos-trust-bar",
+		type: "logos",
+		label: "Trust Bar",
+		bestFor: "",
+		html: `<section class="bg-gray-50 py-12">
   <div class="mx-auto max-w-7xl px-6">
     <p class="text-center text-sm font-medium uppercase tracking-widest text-gray-500">Trusted by innovative teams</p>
     <div class="mt-8 flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
@@ -545,13 +545,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "faq-accordion",
-    type: "faq",
-    label: "Accordion",
-    bestFor: "",
-    html: `<section class="bg-white py-24">
+	},
+	{
+		id: "faq-accordion",
+		type: "faq",
+		label: "Accordion",
+		bestFor: "",
+		html: `<section class="bg-white py-24">
   <div class="mx-auto max-w-3xl px-6">
     <h2 class="text-center text-3xl font-bold text-gray-900">Frequently Asked Questions</h2>
     <div class="mt-12 space-y-4" x-data="{ open: null }">
@@ -585,13 +585,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "team-grid-with-cards",
-    type: "team",
-    label: "Grid with Cards",
-    bestFor: "",
-    html: `<section class="bg-gray-50 py-24">
+	},
+	{
+		id: "team-grid-with-cards",
+		type: "team",
+		label: "Grid with Cards",
+		bestFor: "",
+		html: `<section class="bg-gray-50 py-24">
   <div class="mx-auto max-w-7xl px-6">
     <div class="text-center">
       <h2 class="text-3xl font-bold text-gray-900">Meet the Team</h2>
@@ -621,13 +621,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "process-timeline-steps",
-    type: "process",
-    label: "Timeline Steps",
-    bestFor: "",
-    html: `<section class="bg-white py-24">
+	},
+	{
+		id: "process-timeline-steps",
+		type: "process",
+		label: "Timeline Steps",
+		bestFor: "",
+		html: `<section class="bg-white py-24">
   <div class="mx-auto max-w-4xl px-6">
     <div class="text-center">
       <h2 class="text-3xl font-bold text-gray-900">How It Works</h2>
@@ -666,13 +666,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "bento-asymmetric-grid",
-    type: "bento",
-    label: "Asymmetric Grid",
-    bestFor: "",
-    html: `<section class="bg-gray-50 py-24">
+	},
+	{
+		id: "bento-asymmetric-grid",
+		type: "bento",
+		label: "Asymmetric Grid",
+		bestFor: "",
+		html: `<section class="bg-gray-50 py-24">
   <div class="mx-auto max-w-7xl px-6">
     <h2 class="text-3xl font-bold text-gray-900">Everything in one place</h2>
     <div class="mt-12 grid gap-4 lg:grid-cols-3 lg:grid-rows-2">
@@ -696,13 +696,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "hero-gradient-mesh-background",
-    type: "hero",
-    label: "Gradient Mesh Background",
-    bestFor: "",
-    html: `<section class="relative min-h-screen overflow-hidden bg-slate-950">
+	},
+	{
+		id: "hero-gradient-mesh-background",
+		type: "hero",
+		label: "Gradient Mesh Background",
+		bestFor: "",
+		html: `<section class="relative min-h-screen overflow-hidden bg-slate-950">
   <div class="absolute inset-0 overflow-hidden">
     <div class="absolute -left-1/4 -top-1/4 h-96 w-96 rounded-full bg-purple-500/30 blur-3xl"></div>
     <div class="absolute -right-1/4 top-1/4 h-96 w-96 rounded-full bg-blue-500/30 blur-3xl"></div>
@@ -721,13 +721,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "hero-asymmetric-split-with-shapes",
-    type: "hero",
-    label: "Asymmetric Split with Shapes",
-    bestFor: "",
-    html: `<section class="bg-orange-50 py-24 lg:py-0 lg:min-h-screen">
+	},
+	{
+		id: "hero-asymmetric-split-with-shapes",
+		type: "hero",
+		label: "Asymmetric Split with Shapes",
+		bestFor: "",
+		html: `<section class="bg-orange-50 py-24 lg:py-0 lg:min-h-screen">
   <div class="mx-auto max-w-7xl lg:flex lg:items-center">
     <div class="px-6 lg:w-1/2 lg:py-24">
       <span class="inline-block rounded-full bg-orange-200 px-4 py-1 text-sm font-medium text-orange-800">New Release</span>
@@ -750,13 +750,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "gallery-portfolio-grid",
-    type: "gallery",
-    label: "Portfolio Grid",
-    bestFor: "",
-    html: `<section class="bg-white py-24">
+	},
+	{
+		id: "gallery-portfolio-grid",
+		type: "gallery",
+		label: "Portfolio Grid",
+		bestFor: "",
+		html: `<section class="bg-white py-24">
   <div class="mx-auto max-w-7xl px-6">
     <h2 class="text-3xl font-bold text-gray-900">Our Work</h2>
     <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -790,13 +790,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "contact-simple-info-display",
-    type: "contact",
-    label: "Simple Info Display",
-    bestFor: "",
-    html: `<section class="bg-gray-50 py-24">
+	},
+	{
+		id: "contact-simple-info-display",
+		type: "contact",
+		label: "Simple Info Display",
+		bestFor: "",
+		html: `<section class="bg-gray-50 py-24">
   <div class="mx-auto max-w-4xl px-6">
     <div class="text-center">
       <h2 class="text-3xl font-bold text-gray-900">Get in Touch</h2>
@@ -827,13 +827,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "cta-with-stats",
-    type: "cta",
-    label: "With Stats",
-    bestFor: "",
-    html: `<section class="bg-gradient-to-r from-indigo-600 to-purple-700 py-24">
+	},
+	{
+		id: "cta-with-stats",
+		type: "cta",
+		label: "With Stats",
+		bestFor: "",
+		html: `<section class="bg-gradient-to-r from-indigo-600 to-purple-700 py-24">
   <div class="mx-auto max-w-7xl px-6">
     <div class="lg:flex lg:items-center lg:justify-between">
       <div>
@@ -862,13 +862,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "testimonials-large-quote",
-    type: "testimonials",
-    label: "Large Quote",
-    bestFor: "",
-    html: `<section class="bg-white py-24">
+	},
+	{
+		id: "testimonials-large-quote",
+		type: "testimonials",
+		label: "Large Quote",
+		bestFor: "",
+		html: `<section class="bg-white py-24">
   <div class="mx-auto max-w-4xl px-6 text-center">
     <svg class="mx-auto h-12 w-12 text-gray-300" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
     <blockquote class="mt-8 text-2xl font-medium leading-relaxed text-gray-900 md:text-3xl">
@@ -880,13 +880,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "footer-multi-column",
-    type: "footer",
-    label: "Multi-column",
-    bestFor: "",
-    html: `<footer class="bg-gray-900 py-16">
+	},
+	{
+		id: "footer-multi-column",
+		type: "footer",
+		label: "Multi-column",
+		bestFor: "",
+		html: `<footer class="bg-gray-900 py-16">
   <div class="mx-auto max-w-7xl px-6">
     <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
       <div>
@@ -936,13 +936,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </footer>`,
-  },
-  {
-    id: "hero-event-countdown",
-    type: "hero",
-    label: "Event Countdown with Date",
-    bestFor: "Events/Parties/Conferences",
-    html: `<section class="relative overflow-hidden bg-gradient-to-br from-violet-950 via-fuchsia-900 to-rose-900 py-32">
+	},
+	{
+		id: "hero-event-countdown",
+		type: "hero",
+		label: "Event Countdown with Date",
+		bestFor: "Events/Parties/Conferences",
+		html: `<section class="relative overflow-hidden bg-gradient-to-br from-violet-950 via-fuchsia-900 to-rose-900 py-32">
   <div class="absolute inset-0">
     <div class="absolute left-1/4 top-1/3 h-64 w-64 rounded-full bg-fuchsia-500/20 blur-3xl"></div>
     <div class="absolute right-1/4 bottom-1/4 h-48 w-48 rounded-full bg-amber-500/15 blur-3xl"></div>
@@ -972,13 +972,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "hero-brutalist-bold",
-    type: "hero",
-    label: "Brutalist Bold Typography",
-    bestFor: "Creative Agencies/Bold Brands",
-    html: `<section class="bg-lime-300 py-24">
+	},
+	{
+		id: "hero-brutalist-bold",
+		type: "hero",
+		label: "Brutalist Bold Typography",
+		bestFor: "Creative Agencies/Bold Brands",
+		html: `<section class="bg-lime-300 py-24">
   <div class="mx-auto max-w-7xl px-6">
     <div class="border-b-4 border-black pb-8">
       <p class="font-mono text-sm uppercase tracking-widest text-black/60">Est. 2024 — Creative Studio</p>
@@ -999,13 +999,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "schedule-event-timeline",
-    type: "schedule",
-    label: "Event Timeline with Blocks",
-    bestFor: "Events/Watch Parties/Conferences",
-    html: `<section class="bg-zinc-950 py-24">
+	},
+	{
+		id: "schedule-event-timeline",
+		type: "schedule",
+		label: "Event Timeline with Blocks",
+		bestFor: "Events/Watch Parties/Conferences",
+		html: `<section class="bg-zinc-950 py-24">
   <div class="mx-auto max-w-4xl px-6">
     <h2 class="text-center text-3xl font-bold text-white">Game Day Schedule</h2>
     <p class="mt-4 text-center text-lg text-zinc-400">Here's how the day breaks down</p>
@@ -1053,13 +1053,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "features-playful-emoji-cards",
-    type: "features",
-    label: "Playful Cards with Emoji Icons",
-    bestFor: "Fun/Casual/Events",
-    html: `<section class="bg-amber-50 py-24">
+	},
+	{
+		id: "features-playful-emoji-cards",
+		type: "features",
+		label: "Playful Cards with Emoji Icons",
+		bestFor: "Fun/Casual/Events",
+		html: `<section class="bg-amber-50 py-24">
   <div class="mx-auto max-w-7xl px-6">
     <h2 class="text-center text-4xl font-extrabold text-gray-900">What to Expect</h2>
     <p class="mt-4 text-center text-lg text-gray-600">Everything you need for a perfect day</p>
@@ -1087,13 +1087,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "cta-rsvp-bold",
-    type: "cta",
-    label: "Bold RSVP with Details",
-    bestFor: "Events/Parties/Invitations",
-    html: `<section class="bg-gradient-to-br from-emerald-600 to-teal-700 py-24">
+	},
+	{
+		id: "cta-rsvp-bold",
+		type: "cta",
+		label: "Bold RSVP with Details",
+		bestFor: "Events/Parties/Invitations",
+		html: `<section class="bg-gradient-to-br from-emerald-600 to-teal-700 py-24">
   <div class="mx-auto max-w-3xl px-6 text-center">
     <p class="text-6xl">🏈</p>
     <h2 class="mt-6 text-4xl font-extrabold text-white md:text-5xl">Don't Just Watch.<br>Watch With Us.</h2>
@@ -1122,13 +1122,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "menu-food-drink-grid",
-    type: "menu",
-    label: "Food & Drink Grid",
-    bestFor: "Restaurants/Cafes/Events",
-    html: `<section class="bg-stone-50 py-24">
+	},
+	{
+		id: "menu-food-drink-grid",
+		type: "menu",
+		label: "Food & Drink Grid",
+		bestFor: "Restaurants/Cafes/Events",
+		html: `<section class="bg-stone-50 py-24">
   <div class="mx-auto max-w-5xl px-6">
     <h2 class="text-center font-serif text-4xl font-bold text-stone-900">The Menu</h2>
     <p class="mt-4 text-center text-lg text-stone-500">Made with love, served with style</p>
@@ -1188,13 +1188,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "navbar-dark-transparent",
-    type: "navbar",
-    label: "Dark Transparent with Accent",
-    bestFor: "Events/Bold Brands/Nightlife",
-    html: `<nav class="fixed top-0 z-50 w-full bg-black/60 backdrop-blur-xl border-b border-white/10" x-data="{ open: false }">
+	},
+	{
+		id: "navbar-dark-transparent",
+		type: "navbar",
+		label: "Dark Transparent with Accent",
+		bestFor: "Events/Bold Brands/Nightlife",
+		html: `<nav class="fixed top-0 z-50 w-full bg-black/60 backdrop-blur-xl border-b border-white/10" x-data="{ open: false }">
   <div class="mx-auto max-w-7xl px-6">
     <div class="flex h-16 items-center justify-between">
       <a href="/" class="flex items-center gap-2">
@@ -1222,13 +1222,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </nav>`,
-  },
-  {
-    id: "hero-warm-organic",
-    type: "hero",
-    label: "Warm Organic with Soft Shapes",
-    bestFor: "Wellness/Food/Lifestyle",
-    html: `<section class="relative overflow-hidden bg-orange-50 py-32">
+	},
+	{
+		id: "hero-warm-organic",
+		type: "hero",
+		label: "Warm Organic with Soft Shapes",
+		bestFor: "Wellness/Food/Lifestyle",
+		html: `<section class="relative overflow-hidden bg-orange-50 py-32">
   <div class="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-orange-200/50" style="border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;"></div>
   <div class="absolute -left-16 bottom-0 h-64 w-64 rounded-full bg-rose-200/40" style="border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;"></div>
   <div class="relative mx-auto max-w-4xl px-6 text-center">
@@ -1250,13 +1250,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "features-numbered-steps-horizontal",
-    type: "features",
-    label: "Numbered Horizontal Steps",
-    bestFor: "Onboarding/How-it-works",
-    html: `<section class="bg-white py-24">
+	},
+	{
+		id: "features-numbered-steps-horizontal",
+		type: "features",
+		label: "Numbered Horizontal Steps",
+		bestFor: "Onboarding/How-it-works",
+		html: `<section class="bg-white py-24">
   <div class="mx-auto max-w-7xl px-6">
     <h2 class="text-3xl font-bold text-gray-900">How It Works</h2>
     <p class="mt-4 text-lg text-gray-500">Three steps. Zero friction.</p>
@@ -1288,13 +1288,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "contact-map-and-form",
-    type: "contact",
-    label: "Split Form with Location Details",
-    bestFor: "Local Businesses/Events",
-    html: `<section class="bg-white py-24">
+	},
+	{
+		id: "contact-map-and-form",
+		type: "contact",
+		label: "Split Form with Location Details",
+		bestFor: "Local Businesses/Events",
+		html: `<section class="bg-white py-24">
   <div class="mx-auto max-w-7xl px-6">
     <div class="lg:flex lg:gap-16">
       <div class="lg:w-1/2">
@@ -1345,13 +1345,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
-  {
-    id: "footer-colorful-stacked",
-    type: "footer",
-    label: "Colorful Stacked with Social",
-    bestFor: "Events/Creative/Fun Brands",
-    html: `<footer class="bg-gradient-to-b from-fuchsia-950 to-black py-16">
+	},
+	{
+		id: "footer-colorful-stacked",
+		type: "footer",
+		label: "Colorful Stacked with Social",
+		bestFor: "Events/Creative/Fun Brands",
+		html: `<footer class="bg-gradient-to-b from-fuchsia-950 to-black py-16">
   <div class="mx-auto max-w-4xl px-6 text-center">
     <p class="text-4xl">🎉</p>
     <p class="mt-4 text-2xl font-bold text-white">See you on game day!</p>
@@ -1369,13 +1369,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </footer>`,
-  },
-  {
-    id: "hero-emoji-minimal",
-    type: "hero",
-    label: "Giant Emoji Minimal",
-    bestFor: "Joke Sites/Meme Pages/Party Invites",
-    html: `<section class="flex min-h-screen items-center justify-center bg-gradient-to-b from-yellow-300 to-orange-400">
+	},
+	{
+		id: "hero-emoji-minimal",
+		type: "hero",
+		label: "Giant Emoji Minimal",
+		bestFor: "Joke Sites/Meme Pages/Party Invites",
+		html: `<section class="flex min-h-screen items-center justify-center bg-gradient-to-b from-yellow-300 to-orange-400">
   <div class="mx-auto max-w-2xl px-6 text-center">
     <p class="text-9xl md:text-[12rem] leading-none">🎉</p>
     <h1 class="mt-6 text-5xl font-black uppercase text-black md:text-7xl">
@@ -1390,13 +1390,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     <p class="mt-6 text-lg text-black/50">Bring snacks or don't come</p>
   </div>
 </section>`,
-  },
-  {
-    id: "hero-single-joke",
-    type: "hero",
-    label: "Single Purpose Joke Page",
-    bestFor: "Meme/Novelty/One-Joke Sites",
-    html: `<section class="flex min-h-screen flex-col items-center justify-center bg-black px-6 text-center">
+	},
+	{
+		id: "hero-single-joke",
+		type: "hero",
+		label: "Single Purpose Joke Page",
+		bestFor: "Meme/Novelty/One-Joke Sites",
+		html: `<section class="flex min-h-screen flex-col items-center justify-center bg-black px-6 text-center">
   <h1 class="text-6xl font-black text-white md:text-8xl">
     IS IT<br>
     <span class="bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">FRIDAY</span><br>
@@ -1412,13 +1412,13 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </a>
   </div>
 </section>`,
-  },
-  {
-    id: "cta-simple-fun-rsvp",
-    type: "cta",
-    label: "One-Button Fun RSVP",
-    bestFor: "Casual Events/Parties",
-    html: `<section class="bg-pink-500 py-20">
+	},
+	{
+		id: "cta-simple-fun-rsvp",
+		type: "cta",
+		label: "One-Button Fun RSVP",
+		bestFor: "Casual Events/Parties",
+		html: `<section class="bg-pink-500 py-20">
   <div class="mx-auto max-w-lg px-6 text-center">
     <p class="text-6xl">👇</p>
     <h2 class="mt-4 text-3xl font-black text-white">That's It. That's the Whole Site.</h2>
@@ -1434,54 +1434,54 @@ export const COMPONENT_EXAMPLES_LIST: ComponentExample[] = [
     </div>
   </div>
 </section>`,
-  },
+	},
 ];
 
 function mulberry32(seed: number): () => number {
-  return () => {
-    seed |= 0;
-    seed = (seed + 0x6d2b79f5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+	return () => {
+		seed |= 0;
+		seed = (seed + 0x6d2b79f5) | 0;
+		let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+		t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+		return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+	};
 }
 
 export function selectComponentExamples(
-  neededTypes: string[],
-  seed?: number,
-  perType = 1,
-  extraCount = 2,
+	neededTypes: string[],
+	seed?: number,
+	perType = 1,
+	extraCount = 2,
 ): ComponentExample[] {
-  const rng = mulberry32(seed ?? Date.now());
-  const selected: ComponentExample[] = [];
-  const usedIds = new Set<string>();
+	const rng = mulberry32(seed ?? Date.now());
+	const selected: ComponentExample[] = [];
+	const usedIds = new Set<string>();
 
-  for (const type of neededTypes) {
-    const candidates = COMPONENT_EXAMPLES_LIST.filter(
-      (e) => e.type === type && !usedIds.has(e.id),
-    );
-    if (candidates.length > 0) {
-      const shuffled = [...candidates].sort(() => rng() - 0.5);
-      for (let i = 0; i < Math.min(perType, shuffled.length); i++) {
-        selected.push(shuffled[i]);
-        usedIds.add(shuffled[i].id);
-      }
-    }
-  }
+	for (const type of neededTypes) {
+		const candidates = COMPONENT_EXAMPLES_LIST.filter(
+			(e) => e.type === type && !usedIds.has(e.id),
+		);
+		if (candidates.length > 0) {
+			const shuffled = [...candidates].sort(() => rng() - 0.5);
+			for (let i = 0; i < Math.min(perType, shuffled.length); i++) {
+				selected.push(shuffled[i]);
+				usedIds.add(shuffled[i].id);
+			}
+		}
+	}
 
-  const remaining = COMPONENT_EXAMPLES_LIST.filter((e) => !usedIds.has(e.id));
-  const shuffledRemaining = [...remaining].sort(() => rng() - 0.5);
-  for (let i = 0; i < Math.min(extraCount, shuffledRemaining.length); i++) {
-    selected.push(shuffledRemaining[i]);
-    usedIds.add(shuffledRemaining[i].id);
-  }
+	const remaining = COMPONENT_EXAMPLES_LIST.filter((e) => !usedIds.has(e.id));
+	const shuffledRemaining = [...remaining].sort(() => rng() - 0.5);
+	for (let i = 0; i < Math.min(extraCount, shuffledRemaining.length); i++) {
+		selected.push(shuffledRemaining[i]);
+		usedIds.add(shuffledRemaining[i].id);
+	}
 
-  return selected;
+	return selected;
 }
 
 export function formatComponentExamples(examples: ComponentExample[]): string {
-  const header = `## REFERENCE COMPONENTS
+	const header = `## REFERENCE COMPONENTS
 
 These are a FEW examples of high-quality designs. Study the PRINCIPLES behind them, then create ORIGINAL designs tailored to each project. Do NOT copy these verbatim — they exist only to show the expected level of craft and polish.
 
@@ -1489,15 +1489,15 @@ IMPORTANT: You will see different examples each time. Do not try to reproduce th
 
 ---`;
 
-  const fence = "```";
-  const sections = examples.map(
-    (ex) =>
-      `\n### ${ex.type.toUpperCase()}: ${ex.label}${ex.bestFor ? ` (${ex.bestFor})` : ""}\n${fence}html\n${ex.html}\n${fence}`,
-  );
+	const fence = "```";
+	const sections = examples.map(
+		(ex) =>
+			`\n### ${ex.type.toUpperCase()}: ${ex.label}${ex.bestFor ? ` (${ex.bestFor})` : ""}\n${fence}html\n${ex.html}\n${fence}`,
+	);
 
-  return `${header}\n${sections.join("\n\n---\n")}`;
+	return `${header}\n${sections.join("\n\n---\n")}`;
 }
 
 export const COMPONENT_EXAMPLES = formatComponentExamples(
-  COMPONENT_EXAMPLES_LIST,
+	COMPONENT_EXAMPLES_LIST,
 );

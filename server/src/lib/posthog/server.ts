@@ -1,55 +1,54 @@
 import { PostHog } from "posthog-node";
 
 const POSTHOG_KEY = process.env.POSTHOG_KEY;
-const POSTHOG_HOST =
-  process.env.POSTHOG_HOST || "https://us.i.posthog.com";
+const POSTHOG_HOST = process.env.POSTHOG_HOST || "https://us.i.posthog.com";
 
 let posthogServer: PostHog | null = null;
 
 export function getPostHogServer(): PostHog | null {
-  if (!POSTHOG_KEY) {
-    return null;
-  }
+	if (!POSTHOG_KEY) {
+		return null;
+	}
 
-  if (!posthogServer) {
-    posthogServer = new PostHog(POSTHOG_KEY, {
-      host: POSTHOG_HOST,
-      flushAt: 1,
-      flushInterval: 0,
-    });
-  }
+	if (!posthogServer) {
+		posthogServer = new PostHog(POSTHOG_KEY, {
+			host: POSTHOG_HOST,
+			flushAt: 1,
+			flushInterval: 0,
+		});
+	}
 
-  return posthogServer;
+	return posthogServer;
 }
 
 export async function trackServerEvent(
-  distinctId: string,
-  event: string,
-  properties?: Record<string, unknown>,
+	distinctId: string,
+	event: string,
+	properties?: Record<string, unknown>,
 ) {
-  const client = getPostHogServer();
-  if (!client) return;
+	const client = getPostHogServer();
+	if (!client) return;
 
-  client.capture({
-    distinctId,
-    event,
-    properties,
-  });
+	client.capture({
+		distinctId,
+		event,
+		properties,
+	});
 
-  await client.flush();
+	await client.flush();
 }
 
 export async function identifyUser(
-  distinctId: string,
-  properties?: Record<string, unknown>,
+	distinctId: string,
+	properties?: Record<string, unknown>,
 ) {
-  const client = getPostHogServer();
-  if (!client) return;
+	const client = getPostHogServer();
+	if (!client) return;
 
-  client.identify({
-    distinctId,
-    properties,
-  });
+	client.identify({
+		distinctId,
+		properties,
+	});
 
-  await client.flush();
+	await client.flush();
 }

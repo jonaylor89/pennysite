@@ -2,40 +2,40 @@ import type { HTMLAttributes } from "react";
 import { cn } from "./cn";
 
 const variantClasses = {
-  default: "border-border bg-surface",
-  interactive:
-    "border-border bg-surface hover:border-border-strong hover:shadow-lg hover:-translate-y-[3px] transition-all",
-  danger: "border-error/30 bg-error/5",
+	default: "border-border bg-surface",
+	interactive:
+		"border-border bg-surface hover:border-border-strong hover:shadow-lg hover:-translate-y-[3px] transition-all",
+	danger: "border-error/30 bg-error/5",
 } as const;
 
 const paddingClasses = {
-  md: "p-4",
-  lg: "p-6",
+	md: "p-4",
+	lg: "p-6",
 } as const;
 
 type CardProps = HTMLAttributes<HTMLDivElement> & {
-  variant?: keyof typeof variantClasses;
-  padding?: keyof typeof paddingClasses;
+	variant?: keyof typeof variantClasses;
+	padding?: keyof typeof paddingClasses;
 };
 
 export function Card({
-  variant = "default",
-  padding = "lg",
-  className,
-  children,
-  ...props
+	variant = "default",
+	padding = "lg",
+	className,
+	children,
+	...props
 }: CardProps) {
-  return (
-    <div
-      className={cn(
-        "rounded-2xl border",
-        variantClasses[variant],
-        paddingClasses[padding],
-        className,
-      )}
-      {...props}
-    >
-      {children}
-    </div>
-  );
+	return (
+		<div
+			className={cn(
+				"rounded-2xl border",
+				variantClasses[variant],
+				paddingClasses[padding],
+				className,
+			)}
+			{...props}
+		>
+			{children}
+		</div>
+	);
 }

@@ -1,7 +1,7 @@
 import {
-  COMPONENT_EXAMPLES,
-  type ComponentExample,
-  formatComponentExamples,
+	COMPONENT_EXAMPLES,
+	type ComponentExample,
+	formatComponentExamples,
 } from "./components.js";
 import { DESIGN_SYSTEM_PROMPT } from "./prompts.js";
 
@@ -187,14 +187,14 @@ ${DESIGN_SYSTEM_PROMPT}
 `;
 
 export function buildAgentSystemPrompt(
-  selectedExamples?: ComponentExample[],
-  designSeed?: string,
+	selectedExamples?: ComponentExample[],
+	designSeed?: string,
 ): string {
-  const componentBlock = selectedExamples
-    ? formatComponentExamples(selectedExamples)
-    : COMPONENT_EXAMPLES;
-  const seedBlock = designSeed ? `\n${designSeed}\n` : "";
-  return `${AGENT_SYSTEM_PROMPT_TEMPLATE}${seedBlock}${componentBlock}${AGENT_SYSTEM_PROMPT_FOOTER}`;
+	const componentBlock = selectedExamples
+		? formatComponentExamples(selectedExamples)
+		: COMPONENT_EXAMPLES;
+	const seedBlock = designSeed ? `\n${designSeed}\n` : "";
+	return `${AGENT_SYSTEM_PROMPT_TEMPLATE}${seedBlock}${componentBlock}${AGENT_SYSTEM_PROMPT_FOOTER}`;
 }
 
 export const AGENT_SYSTEM_PROMPT = buildAgentSystemPrompt();
