@@ -137,7 +137,7 @@ function PreviewFrame({ html }: { html: string }) {
 		>
 			<iframe
 				srcDoc={html}
-				sandbox="allow-scripts allow-same-origin"
+				sandbox="allow-scripts"
 				title="Preview"
 				className="absolute left-0 top-0 origin-top-left border-0"
 				style={{
@@ -220,7 +220,7 @@ export function ProjectList({
 }: {
 	projects: Project[];
 }) {
-	const _navigate = useNavigate();
+	const navigate = useNavigate();
 	const [projects, setProjects] = useState(initialProjects);
 	const [deletingId, setDeletingId] = useState<string | null>(null);
 	const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);

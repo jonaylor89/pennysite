@@ -8,12 +8,16 @@ export function AuthCallbackPage() {
 	const [searchParams] = useSearchParams();
 	const navigate = useNavigate();
 	const { refreshUser } = useAuth();
-	const [error, _setError] = useState<string | null>(null);
+	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
 		const code = searchParams.get("code");
-		const next =
+		const rawNext =
 			searchParams.get("redirect") || searchParams.get("next") || "/projects";
+		const next =
+			rawNext.startsWith("/") && !rawNext.startsWith("//")
+				? rawNext
+				: "/projects";
 
 		if (!code) {
 			navigate("/auth/login?error=auth_failed", { replace: true });

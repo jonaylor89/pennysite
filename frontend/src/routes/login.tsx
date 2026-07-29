@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { api } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth/useAuth";
-import { captureEvent } from "@/lib/posthog";
+import { captureEvent, identifyUser } from "@/lib/posthog";
 
 export function LoginPage() {
 	const [email, setEmail] = useState("");
@@ -18,7 +18,11 @@ export function LoginPage() {
 	const [searchParams] = useSearchParams();
 	const { login, signup } = useAuth();
 
-	const redirectTo = searchParams.get("redirect") || "/projects";
+	const rawRedirect = searchParams.get("redirect") || "/projects";
+	const redirectTo =
+		rawRedirect.startsWith("/") && !rawRedirect.startsWith("//")
+			? rawRedirect
+			: "/projects";
 
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
