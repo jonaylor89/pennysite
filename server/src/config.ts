@@ -51,7 +51,4 @@ export const config = {
 
 	// Sentry
 	sentryDsn: process.env.SENTRY_DSN,
-
-	// Cron
-	cronSecret: process.env.CRON_SECRET || crypto.randomUUID(),
 } as const;

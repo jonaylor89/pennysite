@@ -76,16 +76,6 @@ export async function updateProject(
 		is_public?: boolean;
 	},
 ): Promise<Project | null> {
-	const _setClauses: string[] = [];
-	const values: Record<string, unknown> = {};
-
-	if (updates.name !== undefined) {
-		values.name = updates.name;
-	}
-	if (updates.is_public !== undefined) {
-		values.is_public = updates.is_public;
-	}
-
 	// Use a single dynamic update query
 	const rows = await sql`
     UPDATE projects SET

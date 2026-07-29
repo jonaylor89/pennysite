@@ -1,6 +1,18 @@
 import type { Context, Next } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
+let _sentry: typeof import("@sentry/node") | null | undefined;
+async function getSentry() {
+	if (_sentry === undefined) {
+		try {
+			_sentry = await import("@sentry/node");
+		} catch {
+			_sentry = null;
+		}
+	}
+	return _sentry;
+}
+
 export async function errorHandler(c: Context, next: Next) {
 	try {
 		await next();
@@ -8,16 +20,20 @@ export async function errorHandler(c: Context, next: Next) {
 		console.error("Unhandled error:", err);
 
 		// Try to capture with Sentry if available
-		try {
-			const Sentry = await import("@sentry/node");
-			Sentry.captureException(err, {
-				extra: {
-					method: c.req.method,
-					path: c.req.path,
-				},
-			});
-		} catch {
-			// Sentry not initialized, skip
+		const sentry = await getSentry();
+		sentry?.captureException(err, {
+			extra: {
+				method: c.req.method,
+				path: c.req.path,
+			},
+		});
+
+		// Return 400 for invalid UUID path parameters
+		if (
+			err instanceof Error &&
+			err.message?.includes("invalid input syntax for type uuid")
+		) {
+			return c.json({ error: "Invalid ID format" }, 400);
 		}
 
 		const errStatus = (err as { status?: number }).status;

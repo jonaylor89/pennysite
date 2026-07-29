@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import { authMiddleware, optionalAuthMiddleware } from "./auth/middleware.js";
-import { getProject } from "./db/projects.js";
 import { corsMiddleware } from "./middleware/cors.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import accountRoutes from "./routes/account.js";
+
 // Route imports
 import authRoutes from "./routes/auth.js";
 import billingRoutes from "./routes/billing.js";
@@ -140,22 +140,6 @@ export function createApp() {
 		}
 	});
 
-	// Project GET — public access for is_public projects
-	app.get("/api/projects/:id", optionalAuthMiddleware, async (c) => {
-		const projectId = c.req.param("id")!;
-		const user = c.get("user");
-
-		if (user) {
-			const project = await getProject(projectId, user.id);
-			if (project) return c.json({ ...project, isOwner: true });
-		}
-
-		const project = await getProject(projectId);
-		if (project?.is_public) return c.json({ ...project, isOwner: false });
-
-		return c.json({ error: "Project not found" }, 404);
-	});
-
 	// ── Authenticated routes ────────────────────────────────
 	app.use("/api/generate/*", authMiddleware);
 	app.use("/api/enhance/*", authMiddleware);
@@ -163,9 +147,15 @@ export function createApp() {
 	app.use("/api/account/*", authMiddleware);
 	app.use("/api/generations/*", authMiddleware);
 
-	// Projects — list/POST/PUT/DELETE need auth, single GET is handled above with optional auth
+	// Projects — list/POST/PUT/DELETE need auth, single GET /:id uses optional auth (handled in projects.ts)
 	app.use("/api/projects", authMiddleware);
-	app.use("/api/projects/*", authMiddleware);
+	app.use("/api/projects/*", async (c, next) => {
+		// GET /api/projects/:id uses optional auth so public projects work
+		if (c.req.method === "GET") {
+			return optionalAuthMiddleware(c, next);
+		}
+		return authMiddleware(c, next);
+	});
 
 	// Billing — checkout needs auth, guest-checkout and session-status handled above
 	app.post("/api/billing/checkout", authMiddleware);
