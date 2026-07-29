@@ -17,13 +17,25 @@ export interface Project {
 	is_public: boolean;
 }
 
-export async function listProjects(userId: string): Promise<Project[]> {
+export async function listProjects(
+	userId: string,
+	limit = 10,
+	offset = 0,
+): Promise<Project[]> {
 	const rows = await sql`
     SELECT * FROM projects
     WHERE user_id = ${userId}::uuid
     ORDER BY updated_at DESC
+    LIMIT ${limit} OFFSET ${offset}
   `;
 	return rows as unknown as Project[];
+}
+
+export async function countProjects(userId: string): Promise<number> {
+	const rows = await sql`
+    SELECT COUNT(*)::int as count FROM projects WHERE user_id = ${userId}::uuid
+  `;
+	return (rows[0]?.count as number) ?? 0;
 }
 
 export async function getProject(

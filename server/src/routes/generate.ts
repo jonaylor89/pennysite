@@ -36,7 +36,14 @@ generate.post("/", async (c) => {
 			projectId?: string;
 		}>();
 
+	if (!Array.isArray(messages) || messages.length === 0) {
+		return c.json({ error: "messages must be a non-empty array" }, 400);
+	}
 	const lastMessage = messages[messages.length - 1];
+	if (!lastMessage?.content) {
+		return c.json({ error: "Last message must have content" }, 400);
+	}
+
 	const userRequest = lastMessage.content;
 	const userImages = lastMessage.images;
 

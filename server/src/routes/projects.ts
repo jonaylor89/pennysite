@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { optionalAuthMiddleware } from "../auth/middleware.js";
 import {
+	countProjects,
 	countUserProjects,
 	createProject,
 	deleteProject,
@@ -20,14 +21,16 @@ projects.get("/", async (c) => {
 	const user = c.get("user");
 	const page = Number(c.req.query("page") || "1");
 	const pageSize = Number(c.req.query("pageSize") || "10");
+	const offset = (page - 1) * pageSize;
 
-	const allProjects = await listProjects(user.id);
-	const start = (page - 1) * pageSize;
-	const paged = allProjects.slice(start, start + pageSize);
+	const [paged, count] = await Promise.all([
+		listProjects(user.id, pageSize, offset),
+		countProjects(user.id),
+	]);
 
 	return c.json({
 		projects: paged,
-		count: allProjects.length,
+		count,
 	});
 });
 
