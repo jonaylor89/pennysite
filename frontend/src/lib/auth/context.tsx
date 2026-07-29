@@ -3,6 +3,7 @@ import {
 	type ReactNode,
 	useCallback,
 	useEffect,
+	useMemo,
 	useState,
 } from "react";
 import {
@@ -66,53 +67,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		refreshUser();
 	}, [refreshUser]);
 
-	const login = async (
-		email: string,
-		password: string,
-	): Promise<{ error?: string }> => {
-		try {
-			const res = await fetch(`${BASE_URL}/api/auth/login`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				credentials: "include",
-				body: JSON.stringify({ email, password }),
-			});
-			const data = await res.json();
-			if (!res.ok) {
-				return { error: data.error || "Login failed" };
+	const login = useCallback(
+		async (email: string, password: string): Promise<{ error?: string }> => {
+			try {
+				const res = await fetch(`${BASE_URL}/api/auth/login`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					credentials: "include",
+					body: JSON.stringify({ email, password }),
+				});
+				const data = await res.json();
+				if (!res.ok) {
+					return { error: data.error || "Login failed" };
+				}
+				setAccessToken(data.accessToken);
+				setUser(data.user);
+				return {};
+			} catch {
+				return { error: "Network error" };
 			}
-			setAccessToken(data.accessToken);
-			setUser(data.user);
-			return {};
-		} catch {
-			return { error: "Network error" };
-		}
-	};
+		},
+		[],
+	);
 
-	const signup = async (
-		email: string,
-		password: string,
-	): Promise<{ error?: string; message?: string }> => {
-		try {
-			const res = await fetch(`${BASE_URL}/api/auth/signup`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				credentials: "include",
-				body: JSON.stringify({ email, password }),
-			});
-			const data = await res.json();
-			if (!res.ok) {
-				return { error: data.error || "Signup failed" };
+	const signup = useCallback(
+		async (
+			email: string,
+			password: string,
+		): Promise<{ error?: string; message?: string }> => {
+			try {
+				const res = await fetch(`${BASE_URL}/api/auth/signup`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					credentials: "include",
+					body: JSON.stringify({ email, password }),
+				});
+				const data = await res.json();
+				if (!res.ok) {
+					return { error: data.error || "Signup failed" };
+				}
+				setAccessToken(data.accessToken);
+				setUser(data.user);
+				return {};
+			} catch {
+				return { error: "Network error" };
 			}
-			setAccessToken(data.accessToken);
-			setUser(data.user);
-			return {};
-		} catch {
-			return { error: "Network error" };
-		}
-	};
+		},
+		[],
+	);
 
-	const logout = async () => {
+	const logout = useCallback(async () => {
 		try {
 			await fetch(`${BASE_URL}/api/auth/logout`, {
 				method: "POST",
@@ -123,48 +127,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		}
 		clearAccessToken();
 		setUser(null);
-	};
+	}, []);
 
-	const setPasswordFn = async (
-		password: string,
-	): Promise<{ error?: string }> => {
-		try {
-			const token = getAccessToken();
-			const res = await fetch(`${BASE_URL}/api/auth/set-password`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${token}`,
-				},
-				credentials: "include",
-				body: JSON.stringify({ password }),
-			});
-			if (!res.ok) {
-				const data = await res.json();
-				return { error: data.error || "Failed to set password" };
+	const setPasswordFn = useCallback(
+		async (password: string): Promise<{ error?: string }> => {
+			try {
+				const token = getAccessToken();
+				const res = await fetch(`${BASE_URL}/api/auth/set-password`, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${token}`,
+					},
+					credentials: "include",
+					body: JSON.stringify({ password }),
+				});
+				if (!res.ok) {
+					const data = await res.json();
+					return { error: data.error || "Failed to set password" };
+				}
+				// Refresh user to clear needs_password flag
+				await refreshUser();
+				return {};
+			} catch {
+				return { error: "Network error" };
 			}
-			// Refresh user to clear needs_password flag
-			await refreshUser();
-			return {};
-		} catch {
-			return { error: "Network error" };
-		}
-	};
-
-	return (
-		<AuthContext.Provider
-			value={{
-				user,
-				isLoading,
-				isAuthenticated: !!user,
-				login,
-				signup,
-				logout,
-				setPassword: setPasswordFn,
-				refreshUser,
-			}}
-		>
-			{children}
-		</AuthContext.Provider>
+		},
+		[refreshUser],
 	);
+
+	const value = useMemo(
+		() => ({
+			user,
+			isLoading,
+			isAuthenticated: !!user,
+			login,
+			signup,
+			logout,
+			setPassword: setPasswordFn,
+			refreshUser,
+		}),
+		[user, isLoading, login, signup, logout, setPasswordFn, refreshUser],
+	);
+
+	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

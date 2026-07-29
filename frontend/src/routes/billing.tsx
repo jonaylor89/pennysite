@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router";
 import { Alert } from "@/components/ui/Alert";
 import { Card } from "@/components/ui/Card";
 import { api } from "@/lib/api-client";
+import { CREDIT_PACKS } from "@/lib/billing/config";
 
 type CreditBalance = {
 	availableCredits: number;
@@ -14,12 +15,7 @@ type CreditBalance = {
 	};
 };
 
-const packs = [
-	{ id: "starter", name: "Starter", credits: 100, price: 5 },
-	{ id: "basic", name: "Basic", credits: 440, price: 20, popular: true },
-	{ id: "pro", name: "Pro", credits: 1200, price: 50 },
-	{ id: "max", name: "Max", credits: 2600, price: 100 },
-];
+const packs = CREDIT_PACKS;
 
 export function BillingPage() {
 	const navigate = useNavigate();
