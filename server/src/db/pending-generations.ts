@@ -14,27 +14,20 @@ export async function storePendingGeneration(
 export async function consumePendingGeneration(
 	checkoutSessionId: string,
 ): Promise<{ userId: string; prompt: string } | null> {
-	const rows = await sql`
-    SELECT id, user_id, prompt_token
-    FROM pending_generations
+	// Atomic UPDATE ... RETURNING to prevent double-consumption races
+	const [row] = await sql`
+    UPDATE pending_generations
+    SET consumed_at = NOW()
     WHERE checkout_session_id = ${checkoutSessionId}
       AND consumed_at IS NULL
       AND expires_at > NOW()
-    LIMIT 1
+    RETURNING user_id, prompt_token
   `;
 
-	if (!rows[0]) return null;
-
-	const pending = rows[0];
-
-	await sql`
-    UPDATE pending_generations
-    SET consumed_at = NOW()
-    WHERE id = ${pending.id}::uuid
-  `;
+	if (!row) return null;
 
 	return {
-		userId: pending.user_id as string,
-		prompt: pending.prompt_token as string,
+		userId: row.user_id as string,
+		prompt: row.prompt_token as string,
 	};
 }
